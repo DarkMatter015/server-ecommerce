@@ -22,20 +22,16 @@ public class ProductResponseServiceImpl extends CrudResponseServiceImpl<Product,
 
     @Override
     public Page<Product> findByCriteria(String name, String categoryName, Pageable pageable) {
-        // 1. Inicia uma Spec nula (base para encadear)
         Specification<Product> spec = Specification.anyOf();
 
-        // 2. Adiciona o filtro de nome APENAS se o usuário enviou algo
         if (name != null && !name.isBlank()) {
             spec = spec.and(ProductSpecification.hasNameLike(name));
         }
 
-        // 3. Adiciona o filtro de categoria APENAS se o usuário enviou algo
         if (categoryName != null && !categoryName.isBlank()) {
             spec = spec.and(ProductSpecification.hasCategoryNameLike(categoryName));
         }
 
-        // 4. O Repository executa a query composta final
         return productRepository.findAll(spec, pageable);
     }
 }
