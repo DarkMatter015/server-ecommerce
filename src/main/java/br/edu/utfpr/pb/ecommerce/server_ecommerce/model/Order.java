@@ -1,5 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.model;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipment;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -38,8 +39,13 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 
+    @NotNull
     @Embedded
     private EmbeddedAddress address;
+
+    @NotNull
+    @Embedded
+    private EmbeddedShipment shipment;
 
     public void addItem(OrderItem item){
         item.setOrder(this);
