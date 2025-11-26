@@ -9,8 +9,8 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRequest
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.payment.PaymentResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipmentDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.PaymentNotFoundException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.ProductNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.PaymentNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.ProductNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.*;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.PaymentRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
@@ -77,7 +77,7 @@ public class OrderMapper {
         PaymentResponseDTO paymentResponseDTO = map(order.getPayment(), PaymentResponseDTO.class, modelMapper);
         responseDTO.setPayment(paymentResponseDTO);
         responseDTO.setShipment(order.getShipment());
-        responseDTO.setStatus(order.getStatus());
+        responseDTO.setStatus(order.getStatus().getName());
         return responseDTO;
     }
 

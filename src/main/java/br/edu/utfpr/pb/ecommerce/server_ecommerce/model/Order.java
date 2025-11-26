@@ -1,7 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.model;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipmentDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.OrderStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -38,6 +37,7 @@ public class Order {
 
     @NotNull
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<OrderItem> orderItems = new ArrayList<>();
 
     @NotNull
@@ -48,8 +48,9 @@ public class Order {
     @Embedded
     private EmbeddedShipmentDTO shipment;
 
-    @Enumerated(EnumType.STRING)
-    private OrderStatus status = OrderStatus.PENDING;
+    @ManyToOne
+    @JoinColumn(name = "status_id")
+    private OrderStatus status;
 
     public void addItem(OrderItem item){
         item.setOrder(this);

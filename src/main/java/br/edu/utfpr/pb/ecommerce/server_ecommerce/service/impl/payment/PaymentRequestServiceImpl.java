@@ -2,7 +2,7 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.payment;
 
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.payment.PaymentUpdateDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.PaymentNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.PaymentNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Payment;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.PaymentRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IPayment.IPaymentRequestService;

@@ -1,6 +1,5 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.Role;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Pattern;
@@ -23,6 +22,5 @@ public class UserUpdateDTO {
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$", message = "{field.password.pattern}")
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    private Set<Role> roles;
+    private Set<String> roles;
 }
