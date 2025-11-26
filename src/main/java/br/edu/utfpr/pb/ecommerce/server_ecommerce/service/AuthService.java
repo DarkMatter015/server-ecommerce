@@ -46,4 +46,12 @@ public class AuthService implements UserDetailsService {
 
         return user;
     }
+
+    public User loadUserByCpf(String cpf) {
+        User user = userRepository.findByCpf(cpf);
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found with cpf: " + cpf);
+        }
+        return user;
+    }
 }

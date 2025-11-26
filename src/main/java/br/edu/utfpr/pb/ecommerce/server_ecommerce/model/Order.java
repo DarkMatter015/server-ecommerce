@@ -47,6 +47,10 @@ public class Order {
     @Embedded
     private EmbeddedShipmentDTO shipment;
 
+    @ManyToOne
+    @JoinColumn(name = "status_id")
+    private OrderStatus status;
+
     public void addItem(OrderItem item){
         item.setOrder(this);
         this.orderItems.add(item);

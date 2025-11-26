@@ -40,13 +40,24 @@ insert into tb_product(name, description, price, url_image, quantity_available_i
 insert into tb_product(name, description, price, url_image, quantity_available_in_stock, category_id) values ('Capa Acolchoada para Violão Folk','Capa acolchoada 12mm com alças reforçadas e bolsos frontais.',119.00,'https://cdn.awsli.com.br/600x450/55/55384/produto/11894507/45e822c9ee.jpg',27,5);
 
 -- ==================================================================================
--- 4. USUÁRIOS E ENDEREÇOS
+-- 4. ROLES e ORDER_STATUS
 -- ==================================================================================
-INSERT INTO tb_user(display_name, email, password) VALUES ('Administrador', 'admin@teste.com','$2a$10$LOqePml/koRGsk2YAIOFI.1YNKZg7EsQ5BAIuYP1nWOyYRl21dlne');
-INSERT INTO tb_user(display_name, email, password) VALUES ('Teste', 'test@teste.com','$2a$10$LOqePml/koRGsk2YAIOFI.1YNKZg7EsQ5BAIuYP1nWOyYRl21dlne');
+INSERT INTO role(name) VALUES ('ADMIN');
+INSERT INTO role(name) VALUES ('USER');
 
-INSERT INTO tb_user_roles(user_id, role) VALUES (1, 'ADMIN');
-INSERT INTO tb_user_roles(user_id, role) VALUES (2, 'USER');
+INSERT INTO order_status(name) VALUES ('PENDING');
+INSERT INTO order_status(name) VALUES ('PROCESSING');
+INSERT INTO order_status(name) VALUES ('COMPLETED');
+INSERT INTO order_status(name) VALUES ('FAILED');
+
+-- ==================================================================================
+-- 5. USUÁRIOS E ENDEREÇOS
+-- ==================================================================================
+INSERT INTO tb_user(display_name, email, password, cpf) VALUES ('Administrador', 'admin@teste.com','$2a$10$LOqePml/koRGsk2YAIOFI.1YNKZg7EsQ5BAIuYP1nWOyYRl21dlne', '11111111111');
+INSERT INTO tb_user(display_name, email, password, cpf) VALUES ('Teste', 'test@teste.com','$2a$10$LOqePml/koRGsk2YAIOFI.1YNKZg7EsQ5BAIuYP1nWOyYRl21dlne', '22222222222');
+
+INSERT INTO tb_user_roles(user_id, role_id) VALUES (1, 1);
+INSERT INTO tb_user_roles(user_id, role_id) VALUES (2, 2);
 
 insert into tb_address(user_id, street, number, complement, neighborhood, city, state, cep) values (1, 'Rua das Palmeiras', '120', 'Apto 301', 'Centro', 'Pato Branco', 'PR', '85501000');
 INSERT INTO tb_address (user_id, street, number, complement, neighborhood, city, state, cep) VALUES (1, 'Avenida Brasil', '950', NULL, 'Bela Vista', 'Curitiba', 'PR', '80010020');
@@ -54,11 +65,11 @@ INSERT INTO tb_address (user_id, street, number, complement, neighborhood, city,
 INSERT INTO tb_address (user_id, street, number, complement, neighborhood, city, state, cep) VALUES (2, 'Travessa das Acácias', '78', NULL, 'Jardim América', 'Maringá', 'PR', '87020200');
 
 -- ==================================================================================
--- 5. PEDIDOS (TB_ORDER)
+-- 6. PEDIDOS (TB_ORDER)
 -- ==================================================================================
 -- [USER 1 - ADMIN] - 10 Pedidos
-INSERT INTO tb_order (data, user_id, address_street, address_number, address_complement, address_neighborhood, address_city, address_state, address_cep, payment_id, shipment_id, shipment_name, shipment_price, shipment_custom_price, shipment_discount, shipment_currency, shipment_delivery_time, company_name, company_picture) VALUES (NOW(), 1, 'Rua das Palmeiras', '120', 'Apto 301', 'Centro', 'Pato Branco', 'PR', '85501000', 1, 1, 'SEDEX', 45.90, 45.90, 0.00, 'BRL', 2, 'Correios', 'https://melhorenvio.com.br/images/shipping-companies/correios.png');
-INSERT INTO tb_order (data, user_id, address_street, address_number, address_complement, address_neighborhood, address_city, address_state, address_cep, payment_id, shipment_id, shipment_name, shipment_price, shipment_custom_price, shipment_discount, shipment_currency, shipment_delivery_time, company_name, company_picture) VALUES (NOW(), 1, 'Rua das Palmeiras', '120', 'Apto 301', 'Centro', 'Pato Branco', 'PR', '85501000', 2, 2, 'PAC', 22.50, 22.50, 0.00, 'BRL', 7, 'Correios', 'https://melhorenvio.com.br/images/shipping-companies/correios.png');
+INSERT INTO tb_order (data, user_id, address_street, address_number, address_complement, address_neighborhood, address_city, address_state, address_cep, payment_id, shipment_id, shipment_name, shipment_price, shipment_custom_price, shipment_discount, shipment_currency, shipment_delivery_time, company_name, company_picture, status_id) VALUES (NOW(), 1, 'Rua das Palmeiras', '120', 'Apto 301', 'Centro', 'Pato Branco', 'PR', '85501000', 1, 1, 'SEDEX', 45.90, 45.90, 0.00, 'BRL', 2, 'Correios', 'https://melhorenvio.com.br/images/shipping-companies/correios.png', 3);
+INSERT INTO tb_order (data, user_id, address_street, address_number, address_complement, address_neighborhood, address_city, address_state, address_cep, payment_id, shipment_id, shipment_name, shipment_price, shipment_custom_price, shipment_discount, shipment_currency, shipment_delivery_time, company_name, company_picture, status_id) VALUES (NOW(), 1, 'Rua das Palmeiras', '120', 'Apto 301', 'Centro', 'Pato Branco', 'PR', '85501000', 2, 2, 'PAC', 22.50, 22.50, 0.00, 'BRL', 7, 'Correios', 'https://melhorenvio.com.br/images/shipping-companies/correios.png', 3);
 INSERT INTO tb_order (data, user_id, address_street, address_number, address_complement, address_neighborhood, address_city, address_state, address_cep, payment_id, shipment_id, shipment_name, shipment_price, shipment_custom_price, shipment_discount, shipment_currency, shipment_delivery_time, company_name, company_picture) VALUES (NOW(), 1, 'Avenida Brasil', '950', NULL, 'Bela Vista', 'Curitiba', 'PR', '80010020', 1, 3, '.Com', 28.90, 28.90, 0.00, 'BRL', 4, 'JadLog', 'https://melhorenvio.com.br/images/shipping-companies/jadlog.png');
 INSERT INTO tb_order (data, user_id, address_street, address_number, address_complement, address_neighborhood, address_city, address_state, address_cep, payment_id, shipment_id, shipment_name, shipment_price, shipment_custom_price, shipment_discount, shipment_currency, shipment_delivery_time, company_name, company_picture) VALUES (NOW(), 1, 'Avenida Brasil', '950', NULL, 'Bela Vista', 'Curitiba', 'PR', '80010020', 3, 4, 'Package', 30.00, 25.00, 5.00, 'BRL', 5, 'JadLog', 'https://melhorenvio.com.br/images/shipping-companies/jadlog.png');
 INSERT INTO tb_order (data, user_id, address_street, address_number, address_complement, address_neighborhood, address_city, address_state, address_cep, payment_id, shipment_id, shipment_name, shipment_price, shipment_custom_price, shipment_discount, shipment_currency, shipment_delivery_time, company_name, company_picture) VALUES (NOW(), 1, 'Rua das Palmeiras', '120', 'Apto 301', 'Centro', 'Pato Branco', 'PR', '85501000', 2, 1, 'SEDEX', 50.00, 50.00, 0.00, 'BRL', 2, 'Correios', 'https://melhorenvio.com.br/images/shipping-companies/correios.png');

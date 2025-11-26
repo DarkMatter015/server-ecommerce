@@ -29,4 +29,6 @@ public class OrderResponseDTO {
     private PaymentResponseDTO payment;
 
     private EmbeddedShipmentDTO shipment;
+
+    private String status;
 }

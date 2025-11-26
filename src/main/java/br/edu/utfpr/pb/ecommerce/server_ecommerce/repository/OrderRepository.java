@@ -13,6 +13,8 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<Order,Long> {
     List<Order> findAllByUser(User user);
     Optional<Order> findByIdAndUser(Long id, User user);
+
+    Order findByUserAndId(User user, Long id);
     List<Order> findAllByUser(User user, Sort sort);
     Page<Order> findAllByUser(User user, Pageable pageable);
     boolean existsByUserAndId(User user, Long id);

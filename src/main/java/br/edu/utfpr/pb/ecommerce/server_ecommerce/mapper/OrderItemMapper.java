@@ -46,4 +46,10 @@ public class OrderItemMapper {
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
+
+    public List<br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRequestDTO> toRequestDTOList(List<OrderItem> items) {
+        return items.stream()
+                .map(item -> new br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRequestDTO(null, item.getProduct().getId(), item.getQuantity()))
+                .collect(Collectors.toList());
+    }
 }

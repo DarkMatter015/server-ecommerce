@@ -75,6 +75,7 @@ public class OrderMapper {
         PaymentResponseDTO paymentResponseDTO = map(order.getPayment(), PaymentResponseDTO.class, modelMapper);
         responseDTO.setPayment(paymentResponseDTO);
         responseDTO.setShipment(order.getShipment());
+        responseDTO.setStatus(order.getStatus().getName());
         return responseDTO;
     }
 
@@ -94,7 +95,24 @@ public class OrderMapper {
 
         order.setPayment(payment);
 
+        br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipmentDTO shipmentDTO = new br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipmentDTO(
+                dto.getShipmentId(), null, null, null, null, null, null, null
+        );
+        order.setShipment(shipmentDTO);
+
         return order;
+    }
+
+    public br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderEventDTO toEventDTO(Order order, String cpf) {
+        return br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderEventDTO.builder()
+                .orderId(order.getId())
+                .date(order.getData().toLocalDate())
+                .payment(order.getPayment())
+                .orderItems(new java.util.HashSet<>(orderItemMapper.toRequestDTOList(order.getOrderItems())))
+                .address(addressMapper.toRequestDTO(order.getAddress()))
+                .shipmentId(order.getShipment().id())
+                .userCpf(cpf)
+                .build();
     }
     
 }

@@ -3,8 +3,9 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.user;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserUpdateDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.UserNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Role;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.Role;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.RoleRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IUser.IUserRequestService;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ValidationUtils.validateStringNullOrBlank;
 
@@ -25,11 +28,13 @@ public class UserRequestServiceImpl extends CrudRequestServiceImpl<User, UserUpd
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final AuthService authService;
+    private final RoleRepository roleRepository;
 
-    public UserRequestServiceImpl(UserRepository userRepository, AuthService authService) {
+    public UserRequestServiceImpl(UserRepository userRepository, AuthService authService, RoleRepository roleRepository) {
         super(userRepository);
         this.userRepository = userRepository;
         this.authService = authService;
+        this.roleRepository = roleRepository;
         this.bCryptPasswordEncoder = new BCryptPasswordEncoder();
     }
 
@@ -52,7 +57,7 @@ public class UserRequestServiceImpl extends CrudRequestServiceImpl<User, UserUpd
     }
 
     private boolean isAdmin(User user){
-        return user.getRoles().contains(Role.ADMIN);
+        return user.getRoles().stream().anyMatch(role -> role.getName().equals("ADMIN"));
     }
 
     private boolean isAuthenticatedAndAdmin() {
@@ -70,16 +75,24 @@ public class UserRequestServiceImpl extends CrudRequestServiceImpl<User, UserUpd
         user.setDisplayName(userRequestDTO.getDisplayName());
         user.setEmail(userRequestDTO.getEmail());
         user.setPassword(bCryptPasswordEncoder.encode(userRequestDTO.getPassword()));
+        user.setCpf(userRequestDTO.getCpf());
 
         if (!isAuthenticatedAndAdmin()) {
-            if (userRequestDTO.getRoles() != null) {
+            if (userRequestDTO.getRoles() != null && !userRequestDTO.getRoles().equals(Collections.singleton("USER"))) {
                 throw new AccessDeniedException("You don't have permission to create this user with roles.");
             }
-            user.setRoles(Collections.singleton(Role.USER));
-        }
-        else {
+            Role userRole = roleRepository.findByName("USER").orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+            user.setRoles(Collections.singleton(userRole));
+        } else {
             if (userRequestDTO.getRoles() == null) {
-                user.setRoles(Collections.singleton(Role.USER));
+                Role userRole = roleRepository.findByName("USER").orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                user.setRoles(Collections.singleton(userRole));
+            } else {
+                Set<Role> roles = userRequestDTO.getRoles().stream()
+                        .map(roleName -> roleRepository.findByName(roleName)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found.")))
+                        .collect(Collectors.toSet());
+                user.setRoles(roles);
             }
         }
 

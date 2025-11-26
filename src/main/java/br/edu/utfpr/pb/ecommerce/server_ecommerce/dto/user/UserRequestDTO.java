@@ -29,6 +29,8 @@ public class UserRequestDTO {
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$", message = "{field.password.pattern}")
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    private Set<Role> roles;
+    @NotBlank
+    private String cpf;
+
+    private Set<String> roles;
 }
