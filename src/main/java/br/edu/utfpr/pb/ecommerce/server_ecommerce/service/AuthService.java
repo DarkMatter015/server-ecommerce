@@ -1,6 +1,7 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.AuthenticatedUserNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.UserNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
 import org.springframework.security.core.Authentication;
@@ -44,6 +45,14 @@ public class AuthService implements UserDetailsService {
 
         if ( user == null) throw new AuthenticatedUserNotFoundException("Authenticated user not found!");
 
+        return user;
+    }
+
+    public User loadUserByCpf(String cpf) {
+        User user = userRepository.findByCpf(cpf);
+        if (user == null) {
+            throw new UserNotFoundException("User not found with cpf: " + cpf);
+        }
         return user;
     }
 }

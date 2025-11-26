@@ -4,6 +4,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRespons
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.payment.PaymentResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipmentDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.EmbeddedAddress;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,4 +30,6 @@ public class OrderResponseDTO {
     private PaymentResponseDTO payment;
 
     private EmbeddedShipmentDTO shipment;
+
+    private OrderStatus status;
 }

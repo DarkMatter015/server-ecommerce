@@ -21,4 +21,8 @@ public class AddressMapper {
         embeddedAddress.setComplement(addressRequestDTO.getComplement());
         return embeddedAddress;
     }
+
+    public AddressRequestDTO toRequestDTO(EmbeddedAddress embeddedAddress) {
+        return modelMapper.map(embeddedAddress, AddressRequestDTO.class);
+    }
 }

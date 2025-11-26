@@ -70,17 +70,15 @@ public class UserRequestServiceImpl extends CrudRequestServiceImpl<User, UserUpd
         user.setDisplayName(userRequestDTO.getDisplayName());
         user.setEmail(userRequestDTO.getEmail());
         user.setPassword(bCryptPasswordEncoder.encode(userRequestDTO.getPassword()));
+        user.setCpf(userRequestDTO.getCpf());
 
         if (!isAuthenticatedAndAdmin()) {
-            if (userRequestDTO.getRoles() != null) {
+            if (userRequestDTO.getRoles() != null && !userRequestDTO.getRoles().equals(Collections.singleton(Role.USER))) {
                 throw new AccessDeniedException("You don't have permission to create this user with roles.");
             }
             user.setRoles(Collections.singleton(Role.USER));
-        }
-        else {
-            if (userRequestDTO.getRoles() == null) {
-                user.setRoles(Collections.singleton(Role.USER));
-            }
+        } else {
+            user.setRoles(userRequestDTO.getRoles() == null ? Collections.singleton(Role.USER) : userRequestDTO.getRoles());
         }
 
         return super.save(user);
