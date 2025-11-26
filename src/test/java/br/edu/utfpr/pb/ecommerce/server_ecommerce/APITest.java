@@ -9,6 +9,9 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.OrderStatus;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.Role;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.rabbitmq.publisher.OrderPublisher;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -43,13 +47,13 @@ public class APITest {
     private MelhorEnvioService melhorEnvioService;
 
     @MockitoBean
-    private br.edu.utfpr.pb.ecommerce.server_ecommerce.rabbitmq.publisher.OrderPublisher orderPublisher;
+    private OrderPublisher orderPublisher;
 
     @BeforeEach
     public void setup() {
         // Garante que o usuário do import.sql existe (ou recria se o banco for h2 in-memory limpo)
         if (userRepository.findByEmail("admin@teste.com") == null) {
-            // Lógica de fallback caso o import.sql falhe ou não rode nos testes
+           fail();
         }
     }
 

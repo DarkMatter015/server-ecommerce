@@ -13,4 +13,6 @@ public class UserResponseDTO {
     private String displayName;
 
     private String email;
+
+    private String cpf;
 }

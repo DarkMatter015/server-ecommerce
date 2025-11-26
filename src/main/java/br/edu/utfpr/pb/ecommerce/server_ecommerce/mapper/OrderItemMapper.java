@@ -1,5 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.product.ProductResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.OrderItem;
@@ -47,9 +48,9 @@ public class OrderItemMapper {
                 .collect(Collectors.toList());
     }
 
-    public List<br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRequestDTO> toRequestDTOList(List<OrderItem> items) {
+    public List<OrderItemRequestDTO> toRequestDTOList(List<OrderItem> items) {
         return items.stream()
-                .map(item -> new br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRequestDTO(null, item.getProduct().getId(), item.getQuantity()))
+                .map(item -> new OrderItemRequestDTO(null, item.getProduct().getId(), item.getQuantity()))
                 .collect(Collectors.toList());
     }
 }

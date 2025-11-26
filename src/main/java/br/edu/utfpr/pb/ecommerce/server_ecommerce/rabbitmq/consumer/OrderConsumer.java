@@ -21,7 +21,7 @@ public class OrderConsumer {
 
     @RabbitListener(queues = "${rabbitmq.queue.name}")
     public void consumer(String message) throws JsonProcessingException {
-        log.info("Consuming message: " + message);
+        log.info("Consuming message: {}", message);
         var orderEventDTO = objectMapper.readValue(message, OrderEventDTO.class);
         orderRequestService.processOrder(orderEventDTO);
     }

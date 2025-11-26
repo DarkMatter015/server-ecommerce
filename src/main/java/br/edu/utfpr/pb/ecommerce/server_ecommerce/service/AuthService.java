@@ -1,6 +1,7 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.AuthenticatedUserNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.AuthenticatedUserNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.UserNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +49,7 @@ public class AuthService implements UserDetailsService {
     public User loadUserByCpf(String cpf) {
         User user = userRepository.findByCpf(cpf);
         if (user == null) {
-            throw new UsernameNotFoundException("User not found with cpf: " + cpf);
+            throw new UserNotFoundException("User not found with cpf: " + cpf);
         }
         return user;
     }

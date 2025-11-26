@@ -1,6 +1,7 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.model;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipmentDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.OrderStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
