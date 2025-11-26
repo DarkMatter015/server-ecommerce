@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -21,6 +22,10 @@ public class MelhorEnvioService {
 
     public List<ShipmentResponseDTO> calculateShipmentByProducts(ShipmentRequestDTO shipmentRequestDto) {
         shipmentRequestDto.setFrom(new PostalCodeRequest(ORIGIN_CEP));
-        return melhorEnvioApi.calculateFreightByProducts(shipmentRequestDto);
+        return melhorEnvioApi.calculateFreightByProducts(shipmentRequestDto).stream()
+                .filter(s -> s.error() == null || s.error().isBlank())
+                .sorted(Comparator.comparing(ShipmentResponseDTO::price))
+                .limit(4)
+                .toList();
     }
 }

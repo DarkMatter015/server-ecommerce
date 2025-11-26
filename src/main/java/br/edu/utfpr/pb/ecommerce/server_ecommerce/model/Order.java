@@ -1,6 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.model;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipment;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipmentDTO;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -45,7 +45,7 @@ public class Order {
 
     @NotNull
     @Embedded
-    private EmbeddedShipment shipment;
+    private EmbeddedShipmentDTO shipment;
 
     public void addItem(OrderItem item){
         item.setOrder(this);

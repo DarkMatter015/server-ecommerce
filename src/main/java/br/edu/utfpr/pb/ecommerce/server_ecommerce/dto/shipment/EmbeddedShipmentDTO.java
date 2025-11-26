@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 @Embeddable
-public record EmbeddedShipment(
+public record EmbeddedShipmentDTO(
 
         @NotNull
         @Column(name = "shipment_id")
@@ -37,6 +37,6 @@ public record EmbeddedShipment(
 
         @NotNull
         @Embedded
-        EmbeddedCompany company
+        EmbeddedCompanyDTO company
 ) {
 }

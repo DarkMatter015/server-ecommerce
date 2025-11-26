@@ -1,3 +1,8 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.request;
 
-public record PostalCodeRequest(String postal_code) {}
+import jakarta.validation.constraints.NotEmpty;
+
+public record PostalCodeRequest(
+        @NotEmpty
+        String postal_code
+) {}

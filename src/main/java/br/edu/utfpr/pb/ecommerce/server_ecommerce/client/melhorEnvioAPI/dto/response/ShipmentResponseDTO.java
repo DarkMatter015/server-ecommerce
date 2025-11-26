@@ -27,6 +27,8 @@ public record ShipmentResponseDTO(
 
         List<PackageResponse> packages,
 
-        CompanyResponse company
+        CompanyResponse company,
+
+        String error
 ) {
 }

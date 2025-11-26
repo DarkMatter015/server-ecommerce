@@ -4,7 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
 @Embeddable
-public record EmbeddedCompany(
+public record EmbeddedCompanyDTO(
 
         @Column(name = "company_name")
         String name,

@@ -94,8 +94,6 @@ public class OrderMapper {
 
         order.setPayment(payment);
 
-        order.setShipment(dto.getShipment());
-
         return order;
     }
     

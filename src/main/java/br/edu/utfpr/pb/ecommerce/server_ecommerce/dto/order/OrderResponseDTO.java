@@ -2,7 +2,7 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.payment.PaymentResponseDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipment;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipmentDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.EmbeddedAddress;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,5 +28,5 @@ public class OrderResponseDTO {
 
     private PaymentResponseDTO payment;
 
-    private EmbeddedShipment shipment;
+    private EmbeddedShipmentDTO shipment;
 }
