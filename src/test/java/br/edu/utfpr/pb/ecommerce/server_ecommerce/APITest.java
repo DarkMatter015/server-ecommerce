@@ -9,8 +9,6 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.OrderStatus;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.Role;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.rabbitmq.publisher.OrderPublisher;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;

@@ -16,7 +16,6 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.ProductNotF
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.OrderMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ProductMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ShipmentMapper;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.OrderStatus;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.rabbitmq.publisher.OrderPublisher;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.EmbeddedAddress;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
