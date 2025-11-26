@@ -2,7 +2,8 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.user;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserUpdateDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.UserNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.RoleNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.UserNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Role;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.RoleRepository;
@@ -81,16 +82,16 @@ public class UserRequestServiceImpl extends CrudRequestServiceImpl<User, UserUpd
             if (userRequestDTO.getRoles() != null && !userRequestDTO.getRoles().equals(Collections.singleton("USER"))) {
                 throw new AccessDeniedException("You don't have permission to create this user with roles.");
             }
-            Role userRole = roleRepository.findByName("USER").orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+            Role userRole = roleRepository.findByName("USER").orElseThrow(() -> new RoleNotFoundException("Error: Role is not found."));
             user.setRoles(Collections.singleton(userRole));
         } else {
             if (userRequestDTO.getRoles() == null) {
-                Role userRole = roleRepository.findByName("USER").orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                Role userRole = roleRepository.findByName("USER").orElseThrow(() -> new RoleNotFoundException("Error: Role is not found."));
                 user.setRoles(Collections.singleton(userRole));
             } else {
                 Set<Role> roles = userRequestDTO.getRoles().stream()
                         .map(roleName -> roleRepository.findByName(roleName)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found.")))
+                                .orElseThrow(() -> new RoleNotFoundException("Error: Role is not found.")))
                         .collect(Collectors.toSet());
                 user.setRoles(roles);
             }

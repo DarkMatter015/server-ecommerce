@@ -1,8 +1,8 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.product;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.product.ProductUpdateDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.CategoryNotFoundException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.ProductNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.CategoryNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.ProductNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Category;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.CategoryRepository;
