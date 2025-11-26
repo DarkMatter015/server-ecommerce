@@ -148,7 +148,6 @@ public class OrderRequestServiceImpl extends CrudRequestServiceImpl<Order, Order
                 .orElseThrow(() -> new BusinessException("The selected shipping method is no longer available or is invalid for this order."));
 
         order.setShipment(shipmentMapper.toEmbedded(selectedShipment));
-        order.setStatus(OrderStatus.COMPLETED);
         orderRepository.save(order);
     } catch (Exception e) {
         order.setStatus(OrderStatus.FAILED);
