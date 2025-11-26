@@ -22,7 +22,7 @@ public class AddressMapper {
         return embeddedAddress;
     }
 
-    public br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressRequestDTO toRequestDTO(EmbeddedAddress embeddedAddress) {
-        return modelMapper.map(embeddedAddress, br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressRequestDTO.class);
+    public AddressRequestDTO toRequestDTO(EmbeddedAddress embeddedAddress) {
+        return modelMapper.map(embeddedAddress, AddressRequestDTO.class);
     }
 }

@@ -15,6 +15,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.ProductNotFoundExcep
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.OrderMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ProductMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ShipmentMapper;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.OrderStatus;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.rabbitmq.publisher.OrderPublisher;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.EmbeddedAddress;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
@@ -111,7 +112,7 @@ public class OrderRequestServiceImpl extends CrudRequestServiceImpl<Order, Order
         }
 
         try {
-            order.setStatus(br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.OrderStatus.PROCESSING);
+            order.setStatus(OrderStatus.PROCESSING);
             orderRepository.save(order);
 
             Map<Long, Integer> quantityByIdMap = orderEventDTO.orderItems().stream()
@@ -147,10 +148,10 @@ public class OrderRequestServiceImpl extends CrudRequestServiceImpl<Order, Order
                 .orElseThrow(() -> new BusinessException("The selected shipping method is no longer available or is invalid for this order."));
 
         order.setShipment(shipmentMapper.toEmbedded(selectedShipment));
-        order.setStatus(br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.OrderStatus.COMPLETED);
+        order.setStatus(OrderStatus.COMPLETED);
         orderRepository.save(order);
     } catch (Exception e) {
-        order.setStatus(br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.OrderStatus.FAILED);
+        order.setStatus(OrderStatus.FAILED);
         orderRepository.save(order);
         throw new RuntimeException("Error processing order", e);
     }

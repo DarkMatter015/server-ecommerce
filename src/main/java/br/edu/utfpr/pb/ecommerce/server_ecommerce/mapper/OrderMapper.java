@@ -2,11 +2,13 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.dto.AddressCEP;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.service.CepService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderEventDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.payment.PaymentResponseDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipmentDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.PaymentNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.ProductNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.*;
@@ -95,7 +97,7 @@ public class OrderMapper {
 
         order.setPayment(payment);
 
-        br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipmentDTO shipmentDTO = new br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipmentDTO(
+        EmbeddedShipmentDTO shipmentDTO = new EmbeddedShipmentDTO(
                 dto.getShipmentId(), null, null, null, null, null, null, null
         );
         order.setShipment(shipmentDTO);
@@ -103,8 +105,8 @@ public class OrderMapper {
         return order;
     }
 
-    public br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderEventDTO toEventDTO(Order order, String cpf) {
-        return br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderEventDTO.builder()
+    public OrderEventDTO toEventDTO(Order order, String cpf) {
+        return OrderEventDTO.builder()
                 .orderId(order.getId())
                 .date(order.getData().toLocalDate())
                 .payment(order.getPayment())

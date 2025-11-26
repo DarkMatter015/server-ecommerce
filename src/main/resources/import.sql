@@ -42,8 +42,8 @@ insert into tb_product(name, description, price, url_image, quantity_available_i
 -- ==================================================================================
 -- 4. USUÁRIOS E ENDEREÇOS
 -- ==================================================================================
-INSERT INTO tb_user(display_name, email, password) VALUES ('Administrador', 'admin@teste.com','$2a$10$LOqePml/koRGsk2YAIOFI.1YNKZg7EsQ5BAIuYP1nWOyYRl21dlne');
-INSERT INTO tb_user(display_name, email, password) VALUES ('Teste', 'test@teste.com','$2a$10$LOqePml/koRGsk2YAIOFI.1YNKZg7EsQ5BAIuYP1nWOyYRl21dlne');
+INSERT INTO tb_user(display_name, email, password, cpf) VALUES ('Administrador', 'admin@teste.com','$2a$10$LOqePml/koRGsk2YAIOFI.1YNKZg7EsQ5BAIuYP1nWOyYRl21dlne', '12345678');
+INSERT INTO tb_user(display_name, email, password, cpf) VALUES ('Teste', 'test@teste.com','$2a$10$LOqePml/koRGsk2YAIOFI.1YNKZg7EsQ5BAIuYP1nWOyYRl21dlne', '87654321');
 
 INSERT INTO tb_user_roles(user_id, role) VALUES (1, 'ADMIN');
 INSERT INTO tb_user_roles(user_id, role) VALUES (2, 'USER');
