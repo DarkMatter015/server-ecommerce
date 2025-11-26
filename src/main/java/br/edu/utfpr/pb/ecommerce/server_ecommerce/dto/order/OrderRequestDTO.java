@@ -24,4 +24,7 @@ public class OrderRequestDTO {
 
     @NotNull
     private Long paymentId;
+
+    @NotNull
+    private Long shipmentId;
 }

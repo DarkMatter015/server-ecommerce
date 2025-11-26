@@ -1,5 +1,7 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.request;
 
+import jakarta.validation.constraints.NotNull;
+
 import java.math.BigDecimal;
 
 public record ShipmentProductRequest(
@@ -7,6 +9,10 @@ public record ShipmentProductRequest(
         BigDecimal width,
         BigDecimal height,
         BigDecimal length,
+
+        @NotNull
         BigDecimal insurance_value,
+
+        @NotNull
         Integer quantity
 ) {}
