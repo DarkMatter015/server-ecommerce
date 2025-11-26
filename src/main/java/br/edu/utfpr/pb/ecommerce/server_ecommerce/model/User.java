@@ -41,6 +41,10 @@ public class User implements UserDetails {
     @Size(min = 6, message = "{field.password.size}")
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$", message = "{field.password.pattern}")
     private String password;
+
+    @NotBlank
+    @Column(unique = true)
+    private String cpf;
     
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "tb_user_roles", joinColumns = @JoinColumn(name = "user_id"))

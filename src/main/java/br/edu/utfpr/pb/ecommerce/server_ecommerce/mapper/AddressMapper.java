@@ -21,4 +21,8 @@ public class AddressMapper {
         embeddedAddress.setComplement(addressRequestDTO.getComplement());
         return embeddedAddress;
     }
+
+    public br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressRequestDTO toRequestDTO(EmbeddedAddress embeddedAddress) {
+        return modelMapper.map(embeddedAddress, br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressRequestDTO.class);
+    }
 }

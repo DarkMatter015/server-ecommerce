@@ -47,6 +47,9 @@ public class Order {
     @Embedded
     private EmbeddedShipmentDTO shipment;
 
+    @Enumerated(EnumType.STRING)
+    private br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.OrderStatus status = br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.OrderStatus.PENDING;
+
     public void addItem(OrderItem item){
         item.setOrder(this);
         this.orderItems.add(item);

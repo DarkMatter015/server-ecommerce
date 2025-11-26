@@ -5,6 +5,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.requ
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.request.ShipmentRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.response.ShipmentResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.service.MelhorEnvioService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderEventDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderUpdateDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRequestDTO;
@@ -14,6 +15,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.ProductNotFoundExcep
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.OrderMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ProductMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ShipmentMapper;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.rabbitmq.publisher.OrderPublisher;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.EmbeddedAddress;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
@@ -44,8 +46,9 @@ public class OrderRequestServiceImpl extends CrudRequestServiceImpl<Order, Order
     private final ProductMapper productMapper;
     private final ShipmentMapper shipmentMapper;
     private final MelhorEnvioService melhorEnvioService;
+    private final OrderPublisher orderPublisher;
 
-    public OrderRequestServiceImpl(OrderRepository orderRepository, ProductRepository productRepository, AuthService authService, ModelMapper modelMapper, OrderMapper orderMapper, ProductMapper productMapper, ShipmentMapper shipmentMapper, MelhorEnvioService melhorEnvioService) {
+    public OrderRequestServiceImpl(OrderRepository orderRepository, ProductRepository productRepository, AuthService authService, ModelMapper modelMapper, OrderMapper orderMapper, ProductMapper productMapper, ShipmentMapper shipmentMapper, MelhorEnvioService melhorEnvioService, OrderPublisher orderPublisher) {
         super(orderRepository);
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
@@ -55,6 +58,7 @@ public class OrderRequestServiceImpl extends CrudRequestServiceImpl<Order, Order
         this.productMapper = productMapper;
         this.shipmentMapper = shipmentMapper;
         this.melhorEnvioService = melhorEnvioService;
+        this.orderPublisher = orderPublisher;
     }
 
     private Order findAndValidateOrder(Long id, User user) {
@@ -77,60 +81,80 @@ public class OrderRequestServiceImpl extends CrudRequestServiceImpl<Order, Order
     }
 
     @Override
-    public Order createOrder(OrderRequestDTO dto) {
-        Map<Long, Integer> quantityByIdMap = dto.getOrderItems().stream()
-                .collect(Collectors.toMap(OrderItemRequestDTO::getProductId, OrderItemRequestDTO::getQuantity));
+    @Transactional
+    public Order createOrder(OrderRequestDTO request) {
+        try {
+            User user = authService.getAuthenticatedUser();
+            Order order = create(request, user);
+            orderPublisher.send(
+                    orderMapper.toEventDTO(order, user.getCpf())
+            );
+            return order;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-// 2. Buscar as entidades no banco
+    private Order create(OrderRequestDTO request, User user) {
+        Order order = orderMapper.toEntity(request);
+        order.setUser(user);
+        return orderRepository.save(order);
+    }
+
+    @Transactional
+    public void processOrder(OrderEventDTO orderEventDTO) {
+        User user = authService.loadUserByCpf(orderEventDTO.userCpf());
+        Order order = orderRepository.findByUserAndId(user, orderEventDTO.orderId());
+
+        if (order == null) {
+            throw new OrderNotFoundException("Order not found.");
+        }
+
+        try {
+            order.setStatus(br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.OrderStatus.PROCESSING);
+            orderRepository.save(order);
+
+            Map<Long, Integer> quantityByIdMap = orderEventDTO.orderItems().stream()
+                    .collect(Collectors.toMap(OrderItemRequestDTO::getProductId, OrderItemRequestDTO::getQuantity));
+
         List<Product> products = productRepository.findAllById(quantityByIdMap.keySet());
 
-// 3. Validação de integridade (Se pediu 5 produtos, tem que voltar 5)
         if (products.size() != quantityByIdMap.size()) {
             throw new ProductNotFoundException("Divergência de produtos: Um ou mais IDs não existem.");
         }
 
-// 4. Construção do Map<Product, Integer> solicitado
         Map<Product, Integer> productQuantityMap = products.stream()
                 .collect(Collectors.toMap(
-                        product -> product,                                  // Key: A entidade Product
-                        product -> quantityByIdMap.get(product.getId())      // Value: A quantidade correspondente
+                        product -> product,
+                        product -> quantityByIdMap.get(product.getId())
                 ));
 
         if (products.size() != productQuantityMap.size()) {
             throw new ProductNotFoundException("One or more products were not found.");
         }
 
-        // 2. Preparação para API Externa
         ShipmentRequestDTO shipmentRequestDTO = new ShipmentRequestDTO();
-        shipmentRequestDTO.setTo(new PostalCodeRequest(dto.getAddress().getCep()));
+        shipmentRequestDTO.setTo(new PostalCodeRequest(orderEventDTO.address().getCep()));
 
-        // Mapeamento mais seguro passando o Map para garantir a quantidade correta por ID
         List<ShipmentProductRequest> shipmentProductRequests = productMapper.toShipmentProductRequestList(productQuantityMap);
         shipmentRequestDTO.setProducts(shipmentProductRequests);
 
-        // 3. Chamada Externa
         List<ShipmentResponseDTO> shipmentOptions = melhorEnvioService.calculateShipmentByProducts(shipmentRequestDTO);
 
-        // 4. Validação e Seleção do Frete
         ShipmentResponseDTO selectedShipment = shipmentOptions.stream()
-                .filter(s -> s.id().equals(dto.getShipmentId()))
+                .filter(s -> s.id().equals(orderEventDTO.shipmentId()))
                 .findFirst()
                 .orElseThrow(() -> new BusinessException("The selected shipping method is no longer available or is invalid for this order."));
 
-        return saveOrderInTransaction(dto, selectedShipment);
+        order.setShipment(shipmentMapper.toEmbedded(selectedShipment));
+        order.setStatus(br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.OrderStatus.COMPLETED);
+        orderRepository.save(order);
+    } catch (Exception e) {
+        order.setStatus(br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.OrderStatus.FAILED);
+        orderRepository.save(order);
+        throw new RuntimeException("Error processing order", e);
     }
-
-    @Transactional
-    protected Order saveOrderInTransaction(OrderRequestDTO dto, ShipmentResponseDTO shipmentData) {
-        Order order = orderMapper.toEntity(dto);
-
-        order.setShipment(shipmentMapper.toEmbedded(shipmentData));
-
-        User user = authService.getAuthenticatedUser();
-        order.setUser(user);
-
-        return orderRepository.save(order);
-    }
+}
 
     @Override
     @Transactional

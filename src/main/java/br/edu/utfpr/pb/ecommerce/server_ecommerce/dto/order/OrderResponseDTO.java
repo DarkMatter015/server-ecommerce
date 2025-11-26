@@ -29,4 +29,6 @@ public class OrderResponseDTO {
     private PaymentResponseDTO payment;
 
     private EmbeddedShipmentDTO shipment;
+
+    private br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.OrderStatus status;
 }
