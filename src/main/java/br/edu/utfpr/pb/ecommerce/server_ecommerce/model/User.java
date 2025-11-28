@@ -43,6 +43,7 @@ public class User implements UserDetails {
 
     @NotBlank
     @Column(unique = true)
+    @Pattern(regexp = "\\d{11}", message = "{field.cpf.pattern}")
     private String cpf;
     
     @ManyToMany(fetch = FetchType.EAGER)

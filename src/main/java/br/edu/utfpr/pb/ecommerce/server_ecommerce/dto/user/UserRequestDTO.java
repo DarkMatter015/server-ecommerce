@@ -30,6 +30,7 @@ public class UserRequestDTO {
     private String password;
 
     @NotBlank
+    @Pattern(regexp = "\\d{11}", message = "{field.cpf.pattern}")
     private String cpf;
 
     private Set<String> roles;

@@ -87,7 +87,7 @@ public class WebSecurity {
             authorize
                     // ROTAS PÚBLICAS (permitAll)
                     .requestMatchers(HttpMethod.POST, "/users", "/shipment/products").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/products/**", "/categories/**", "/payments/**", "/cep/validate/").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/products/**", "/categories/**", "/payments/**", "/cep/validate/", "/users/**").permitAll()
                     .requestMatchers("/error/**").permitAll()
 
                     // ROTAS DE ADMIN

@@ -3,7 +3,6 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.user;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserUpdateDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.RoleNotFoundException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.UserNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Role;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.RoleRepository;
@@ -20,7 +19,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ValidationUtils.validateStringNullOrBlank;
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ValidationUtils.*;
 
 
 @Service
@@ -43,32 +42,6 @@ public class UserRequestServiceImpl extends CrudRequestServiceImpl<User, UserUpd
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
     }
 
-    private User findAndValidateUser(Long id, User authenticatedUser) {
-        User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found."));
-
-        if (isAdmin(authenticatedUser)) {
-            return existingUser;
-        }
-
-        if (!existingUser.getId().equals(authenticatedUser.getId())) {
-            throw new AccessDeniedException("You don't have permission to modify this user.");
-        }
-        return existingUser;
-    }
-
-    private boolean isAdmin(User user){
-        return user.getRoles().stream().anyMatch(role -> role.getName().equals("ADMIN"));
-    }
-
-    private boolean isAuthenticatedAndAdmin() {
-        if (authService.isAuthenticated()){
-            return isAdmin(authService.getAuthenticatedUser());
-        }
-
-        return false;
-    }
-
     @Override
     @Transactional
     public User createUser(UserRequestDTO userRequestDTO) {
@@ -78,7 +51,7 @@ public class UserRequestServiceImpl extends CrudRequestServiceImpl<User, UserUpd
         user.setPassword(bCryptPasswordEncoder.encode(userRequestDTO.getPassword()));
         user.setCpf(userRequestDTO.getCpf());
 
-        if (!isAuthenticatedAndAdmin()) {
+        if (!isAuthenticatedAndAdmin(authService)) {
             if (userRequestDTO.getRoles() != null && !userRequestDTO.getRoles().equals(Collections.singleton("USER"))) {
                 throw new AccessDeniedException("You don't have permission to create this user with roles.");
             }
@@ -125,17 +98,27 @@ public class UserRequestServiceImpl extends CrudRequestServiceImpl<User, UserUpd
     @Transactional
     public User update(Long id, UserUpdateDTO dto) {
         User authenticatedUser = authService.getAuthenticatedUser();
-        User existingUser = findAndValidateUser(id,  authenticatedUser);
+        User existingUser = findAndValidateUser(id,  authenticatedUser, userRepository);
 
         if (dto.getDisplayName() != null) {
             validateStringNullOrBlank(dto.getDisplayName());
             existingUser.setDisplayName(dto.getDisplayName());
         }
 
+        if (dto.getEmail() != null) {
+            validateStringNullOrBlank(dto.getEmail());
+            existingUser.setEmail(dto.getEmail());
+        }
+
         if (dto.getPassword() != null) {
             validateStringNullOrBlank(dto.getPassword());
             existingUser.setPassword(dto.getPassword());
             encodePassword(existingUser);
+        }
+
+        if (dto.getCpf() != null) {
+            validateStringNullOrBlank(dto.getCpf());
+            existingUser.setCpf(dto.getCpf());
         }
 
         if (!isAdmin(authenticatedUser)) {
@@ -151,7 +134,7 @@ public class UserRequestServiceImpl extends CrudRequestServiceImpl<User, UserUpd
     @Transactional
     public void deleteById(Long id) {
         User authenticatedUser = authService.getAuthenticatedUser();
-        User existingUser = findAndValidateUser(id, authenticatedUser);
+        User existingUser = findAndValidateUser(id, authenticatedUser, userRepository);
         userRepository.delete(existingUser);
     }
 
