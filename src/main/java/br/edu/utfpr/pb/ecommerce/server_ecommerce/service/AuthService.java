@@ -12,6 +12,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService implements UserDetailsService {
@@ -27,7 +29,7 @@ public class AuthService implements UserDetailsService {
         return user;
     }
 
-    public boolean isAuthenticated() {
+    public static boolean isAuthenticated() {
         return !SecurityContextHolder.getContext().getAuthentication().getName().contains("anonymous");
     }
 
@@ -38,12 +40,13 @@ public class AuthService implements UserDetailsService {
             throw new AuthenticatedUserNotFoundException("No authenticated user found");
         }
 
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email);
+        String id = authentication.getName();
+        Optional<User> user = userRepository.findById(Long.valueOf(id));
+        if (user.isEmpty()) {
+            throw new AuthenticatedUserNotFoundException("Authenticated user not found!");
+        }
 
-        if ( user == null) throw new AuthenticatedUserNotFoundException("Authenticated user not found!");
-
-        return user;
+        return user.get();
     }
 
     public User loadUserByCpf(String cpf) {

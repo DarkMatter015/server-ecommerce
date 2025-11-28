@@ -102,7 +102,7 @@ public class OrderRequestServiceImpl extends CrudRequestServiceImpl<Order, Order
     private Order create(OrderRequestDTO request, User user) {
         Order order = orderMapper.toEntity(request);
         order.setUser(user);
-        order.setStatus(orderStatusRepository.findByName("PENDING").orElseThrow(() -> new OrderStatusNotFoundException("Error: Order status is not found.")));
+        order.setStatus(orderStatusRepository.findByName("PENDENTE").orElseThrow(() -> new OrderStatusNotFoundException("Error: Order status is not found.")));
         return orderRepository.save(order);
     }
 
@@ -116,46 +116,46 @@ public class OrderRequestServiceImpl extends CrudRequestServiceImpl<Order, Order
         }
 
         try {
-            order.setStatus(orderStatusRepository.findByName("PROCESSING").orElseThrow(() -> new OrderStatusNotFoundException("Error: Order status is not found.")));
+            order.setStatus(orderStatusRepository.findByName("PROCESSANDO").orElseThrow(() -> new OrderStatusNotFoundException("Error: Order status is not found.")));
             orderRepository.save(order);
 
             Map<Long, Integer> quantityByIdMap = orderEventDTO.orderItems().stream()
                     .collect(Collectors.toMap(OrderItemRequestDTO::getProductId, OrderItemRequestDTO::getQuantity));
 
-        List<Product> products = productRepository.findAllById(quantityByIdMap.keySet());
+            List<Product> products = productRepository.findAllById(quantityByIdMap.keySet());
 
-        if (products.size() != quantityByIdMap.size()) {
-            throw new ProductNotFoundException("Divergência de produtos: Um ou mais IDs não existem.");
-        }
+            if (products.size() != quantityByIdMap.size()) {
+                throw new ProductNotFoundException("Product discrepancy: One or more IDs do not exist.");
+            }
 
-        Map<Product, Integer> productQuantityMap = products.stream()
-                .collect(Collectors.toMap(
-                        product -> product,
-                        product -> quantityByIdMap.get(product.getId())
-                ));
+            Map<Product, Integer> productQuantityMap = products.stream()
+                    .collect(Collectors.toMap(
+                            product -> product,
+                            product -> quantityByIdMap.get(product.getId())
+                    ));
 
-        if (products.size() != productQuantityMap.size()) {
-            throw new ProductNotFoundException("One or more products were not found.");
-        }
+            if (products.size() != productQuantityMap.size()) {
+                throw new ProductNotFoundException("One or more products were not found.");
+            }
 
-        ShipmentRequestDTO shipmentRequestDTO = new ShipmentRequestDTO();
-        shipmentRequestDTO.setTo(new PostalCodeRequest(orderEventDTO.address().getCep()));
+            ShipmentRequestDTO shipmentRequestDTO = new ShipmentRequestDTO();
+            shipmentRequestDTO.setTo(new PostalCodeRequest(orderEventDTO.address().getCep()));
 
-        List<ShipmentProductRequest> shipmentProductRequests = productMapper.toShipmentProductRequestList(productQuantityMap);
-        shipmentRequestDTO.setProducts(shipmentProductRequests);
+            List<ShipmentProductRequest> shipmentProductRequests = productMapper.toShipmentProductRequestList(productQuantityMap);
+            shipmentRequestDTO.setProducts(shipmentProductRequests);
 
-        List<ShipmentResponseDTO> shipmentOptions = melhorEnvioService.calculateShipmentByProducts(shipmentRequestDTO);
+            List<ShipmentResponseDTO> shipmentOptions = melhorEnvioService.calculateShipmentByProducts(shipmentRequestDTO);
 
-        ShipmentResponseDTO selectedShipment = shipmentOptions.stream()
-                .filter(s -> s.id().equals(orderEventDTO.shipmentId()))
-                .findFirst()
-                .orElseThrow(() -> new BusinessException("The selected shipping method is no longer available or is invalid for this order."));
+            ShipmentResponseDTO selectedShipment = shipmentOptions.stream()
+                    .filter(s -> s.id().equals(orderEventDTO.shipmentId()))
+                    .findFirst()
+                    .orElseThrow(() -> new BusinessException("The selected shipping method is no longer available or is invalid for this order."));
 
-        order.setShipment(shipmentMapper.toEmbedded(selectedShipment));
-        order.setStatus(orderStatusRepository.findByName("COMPLETED").orElseThrow(() -> new OrderStatusNotFoundException("Error: Order status is not found.")));
-        orderRepository.save(order);
+            order.setShipment(shipmentMapper.toEmbedded(selectedShipment));
+            order.setStatus(orderStatusRepository.findByName("PENDENTE").orElseThrow(() -> new OrderStatusNotFoundException("Error: Order status is not found.")));
+            orderRepository.save(order);
         } catch (Exception e) {
-            order.setStatus(orderStatusRepository.findByName("FAILED").orElseThrow(() -> new OrderStatusNotFoundException("Error: Order status is not found.")));
+            order.setStatus(orderStatusRepository.findByName("CANCELADO").orElseThrow(() -> new OrderStatusNotFoundException("Error: Order status is not found.")));
             orderRepository.save(order);
             throw new RuntimeException("Error processing order", e);
         }
