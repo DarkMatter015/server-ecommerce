@@ -210,7 +210,7 @@ public class APITest {
         assertThat(response.getBody()).isNotNull();
         // Opcional: Verificar se o frete foi gravado
          assertThat(response.getBody().getShipment().id()).isEqualTo(123);
-        assertThat(response.getBody().getStatus()).isEqualTo("PENDING");
+        assertThat(response.getBody().getStatus()).isEqualTo("PENDENTE");
     }
 
     @Test
