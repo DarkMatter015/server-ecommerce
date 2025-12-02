@@ -8,12 +8,14 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IUser.IUserRequestService;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ControllerUtils.createUri;
 
 
 @RestController
@@ -28,18 +30,14 @@ public class WriteUserController extends WriteController<User, UserRequestDTO, U
     }
 
     @Override
-    public ResponseEntity<UserResponseDTO> create(@RequestBody @Valid UserRequestDTO userRequestDTO) {
-        User user = iUserRequestService.createUser(userRequestDTO);
-        UserResponseDTO responseDTO = convertToResponseDto(user);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
+    public ResponseEntity<UserResponseDTO> create(@RequestBody @Valid UserRequestDTO userRequestDTO, UriComponentsBuilder uriBuilder) {
+        User savedUser = iUserRequestService.createUser(userRequestDTO);
+        return ResponseEntity.created(createUri(savedUser)).body(convertToResponseDto(savedUser));
     }
 
     @Override
     public ResponseEntity<UserResponseDTO> update(@PathVariable Long id, @RequestBody @Valid UserUpdateDTO updateDTO) {
         User user = iUserRequestService.update(id, updateDTO);
-        UserResponseDTO responseDTO = convertToResponseDto(user);
-
-        return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+        return ResponseEntity.ok(convertToResponseDto(user));
     }
 }

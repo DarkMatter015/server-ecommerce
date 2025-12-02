@@ -7,34 +7,37 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.OrderMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.order.OrderRequestServiceImpl;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("orders")
+@RequiredArgsConstructor
 public class WriteOrderController {
     private final OrderRequestServiceImpl orderRequestService;
     private final OrderMapper orderMapper;
 
-    public WriteOrderController(OrderRequestServiceImpl orderRequestService, OrderMapper orderMapper) {
-        this.orderRequestService = orderRequestService;
-        this.orderMapper = orderMapper;
-    }
-
     @PostMapping
-    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody @Valid OrderRequestDTO orderDTO) {
-        Order order = orderRequestService.createOrder(orderDTO);
-        OrderResponseDTO responseDTO = orderMapper.toDTO(order);
+    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody @Valid OrderRequestDTO orderDTO, UriComponentsBuilder uriBuilder) {
+        Order savedOrder = orderRequestService.createOrder(orderDTO);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(savedOrder.getId())
+                .toUri();
+
+        return ResponseEntity.created(uri).body(orderMapper.toDTO(savedOrder));
     }
 
     @PatchMapping("{id}")
     public ResponseEntity<OrderResponseDTO> updateOrder(@PathVariable Long id, @RequestBody @Valid OrderUpdateDTO updateDTO) {
         Order order = orderRequestService.update(id, updateDTO);
-        OrderResponseDTO responseDTO = orderMapper.toDTO(order);
 
-        return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+        return ResponseEntity.ok(orderMapper.toDTO(order));
     }
 }
