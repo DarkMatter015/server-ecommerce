@@ -1,0 +1,52 @@
+services:
+  - type: web
+    name: riffhouse-api
+    env: docker
+    plan: free
+    dockerContext: .
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: PORT
+        value: 8080
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DB_HOST
+        fromDatabase:
+          name: riffhouse-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: riffhouse-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: riffhouse-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: riffhouse-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: riffhouse-db
+          property: password
+      - key: RABBITMQ_HOST
+        sync: false
+      - key: RABBITMQ_PORT
+        sync: false
+      - key: RABBITMQ_USERNAME
+        sync: false
+      - key: RABBITMQ_PASSWORD
+        sync: false
+      - key: RABBITMQ_VHOST
+        sync: false
+      - key: MELHOR_ENVIO_API_TOKEN
+        sync: false
+
+databases:
+  - name: riffhouse-db
+    databaseName: riffhouse
+    user: riffhouse_user
+    plan: free
+    region: oregon
