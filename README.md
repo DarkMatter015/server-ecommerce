@@ -166,6 +166,13 @@ cd server-ecommerce
 ### 3️⃣ Acesse:
 👉 `http://localhost:8080/`
 
+### 4️⃣ (Opcional) Execute com Docker Compose:
+Caso prefira rodar a aplicação com todas as dependências (PostgreSQL, RabbitMQ) via Docker:
+
+```bash
+docker-compose up --build -d
+```
+
 ---
 
 ## 🔗 Integração com o Front-end
@@ -204,7 +211,7 @@ Durante o desenvolvimento deste projeto, pude consolidar e aprofundar meus conhe
 - 🔸 Cálculo de frete baseado no endereço  
 - 🔸 Implementar **refresh token JWT**  
 - 🔸 Testes unitários e de integração (JUnit + Mockito)  
-- 🔸 Adicionar **Dockerfile** e `docker-compose.yml`  
+- ✅ Adicionar **Dockerfile** e `docker-compose.yml`
 - 🔸 Deploy em **Render** ou **Railway**
 
 ---
