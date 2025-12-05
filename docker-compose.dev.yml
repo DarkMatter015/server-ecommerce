@@ -1,0 +1,48 @@
+services:
+  app:
+    build:
+      context: .
+      target: build
+    container_name: riffhouse-api-dev
+    volumes:
+      - .:/app
+      - maven_data:/root/.m2
+    command: mvn spring-boot:run -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+    ports:
+      - "8080:8080"
+      - "5005:5005"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/riffhouse
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - postgres
+      - rabbitmq
+    restart: no
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: riffhouse-db-dev
+    environment:
+      - POSTGRES_DB=riffhouse
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    restart: always
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: riffhouse-rabbitmq-dev
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    restart: always
+
+volumes:
+  postgres_data_dev:
+  maven_data:
