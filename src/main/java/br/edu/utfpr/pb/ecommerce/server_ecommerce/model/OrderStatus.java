@@ -12,11 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tb_order_status")
-public class OrderStatus {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class OrderStatus extends BaseEntity {
 
     @Column(nullable = false, unique = true)
     private String name;

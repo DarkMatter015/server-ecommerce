@@ -6,11 +6,14 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.Serializable;
+import java.net.URI;
 
 // T = class type (User, Category...), D = DTO type (Request), RD = DTO type (Response), UD = DTO type (Update), ID = primary key attribute of the class
-public abstract class WriteController<T, D, RD, UD, ID extends Serializable> {
+public abstract class WriteController<T extends Identifiable<ID>, D, RD, UD, ID extends Serializable> {
 
     private final ICrudRequestService<T, UD, ID> service;
     protected final ModelMapper modelMapper; // 'protected' to be used by 'hooks'
@@ -39,12 +42,17 @@ public abstract class WriteController<T, D, RD, UD, ID extends Serializable> {
     }
 
     @PostMapping
-    public ResponseEntity<RD> create(@RequestBody @Valid D entityDto) {
+    public ResponseEntity<RD> create(@RequestBody @Valid D entityDto, UriComponentsBuilder uriBuilder) {
         T entity = convertToEntity(entityDto);
         T savedEntity = service.save(entity);
 
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(savedEntity.getId())
+                .toUri();
+
         RD responseDto = convertToResponseDto(savedEntity);
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+        return ResponseEntity.created(uri).body(responseDto);
     }
 
     @PatchMapping("{id}")
@@ -54,7 +62,7 @@ public abstract class WriteController<T, D, RD, UD, ID extends Serializable> {
 
         RD responseDto = convertToResponseDto(updatedEntity);
 
-        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+        return ResponseEntity.ok(responseDto);
     }
 
     @DeleteMapping("{id}")
