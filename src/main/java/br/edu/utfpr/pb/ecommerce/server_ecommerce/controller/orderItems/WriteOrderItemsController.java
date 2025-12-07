@@ -13,6 +13,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("orderItems")
@@ -25,10 +29,15 @@ public class WriteOrderItemsController extends WriteController<OrderItem, OrderI
     }
 
     @Override
-    public ResponseEntity<OrderItemResponseDTO> create(@RequestBody @Valid OrderItemRequestDTO dto) {
-        OrderItem itemSalvo = orderItemsRequestService.createOrderItem(dto);
-        OrderItemResponseDTO response = convertToResponseDto(itemSalvo);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<OrderItemResponseDTO> create(@RequestBody @Valid OrderItemRequestDTO dto, UriComponentsBuilder uriBuilder) {
+        OrderItem savedItem = orderItemsRequestService.createOrderItem(dto);
+
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(savedItem.getId())
+                .toUri();
+
+        return ResponseEntity.created(uri).body(convertToResponseDto(savedItem));
     }
 
 }

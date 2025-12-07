@@ -1,0 +1,17 @@
+package br.edu.utfpr.pb.ecommerce.server_ecommerce.util;
+
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.BaseEntity;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
+
+public final class ControllerUtils {
+    private ControllerUtils() {}
+
+    public static URI createUri(BaseEntity entity){
+        return ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(entity.getId())
+                .toUri();
+    }
+}

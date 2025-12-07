@@ -8,11 +8,14 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Address;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IAddress.IAddressRequestService;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("addresses")
@@ -25,9 +28,14 @@ public class WriteAddressController extends WriteController<Address, AddressRequ
     }
 
     @Override
-    public ResponseEntity<AddressResponseDTO> create(@RequestBody @Valid AddressRequestDTO address) {
-        Address addressSalvo = addressRequestService.createAddress(address);
-        AddressResponseDTO responseDTO = convertToResponseDto(addressSalvo);
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
+    public ResponseEntity<AddressResponseDTO> create(@RequestBody @Valid AddressRequestDTO address, UriComponentsBuilder uriBuilder) {
+        Address savedAddress = addressRequestService.createAddress(address);
+
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(savedAddress.getId())
+                .toUri();
+
+        return ResponseEntity.created(uri).body(convertToResponseDto(savedAddress));
     }
 }
