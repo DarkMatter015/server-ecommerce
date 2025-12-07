@@ -1,6 +1,7 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.model;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.InvalidQuantityException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

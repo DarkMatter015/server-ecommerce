@@ -2,6 +2,8 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.product;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.FilterManager;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IProduct.IProductResponseService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudResponseServiceImpl;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.specification.ProductSpecification;
@@ -15,9 +17,9 @@ public class ProductResponseServiceImpl extends CrudResponseServiceImpl<Product,
 
     private final ProductRepository productRepository;
 
-    public ProductResponseServiceImpl(ProductRepository productRepository, ProductRepository productRepository1) {
-        super(productRepository);
-        this.productRepository = productRepository1;
+    public ProductResponseServiceImpl(ProductRepository productRepository, FilterManager filterManager, AuthService authService) {
+        super(productRepository, filterManager, authService);
+        this.productRepository = productRepository;
     }
 
     @Override

@@ -1,15 +1,15 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.address;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.dto.AddressCEP;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.exception.CepNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.service.CepService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressUpdateDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.AddressNotFoundException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.exception.CepNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Address;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.dto.AddressCEP;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.AddressRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.service.CepService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IAddress.IAddressRequestService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudRequestServiceImpl;
 import org.modelmapper.ModelMapper;
@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.MapperUtils.map;
@@ -118,23 +117,27 @@ public class AddressRequestServiceImpl extends CrudRequestServiceImpl<Address, A
     @Transactional
     public void deleteAll() {
         User user = authService.getAuthenticatedUser();
-        addressRepository.deleteAllByUser(user);
+        List<Address> addresses = addressRepository.findAllByUser(user);
+        super.delete(addresses);
     }
 
     @Override
     @Transactional
     public void deleteById(Long id) {
         User user = authService.getAuthenticatedUser();
-        addressRepository.deleteByIdAndUser(id, user);
+        findAndValidateAddress(id, user);
+        super.deleteById(id);
     }
 
     @Override
     @Transactional
     public void delete(Iterable<? extends Address> iterable) {
         User user = authService.getAuthenticatedUser();
-        List<Long> addressIds = StreamSupport.stream(iterable.spliterator(), false)
-                .map(Address::getId)
-                .collect(Collectors.toList());
-        addressRepository.deleteAllByIdInAndUser(addressIds, user);
+        iterable.forEach(address -> {
+            if (!address.getUser().getId().equals(user.getId())) {
+                throw new AccessDeniedException("You don't have permission to modify this address!");
+            }
+        });
+        super.delete(iterable);
     }
 }

@@ -1,11 +1,10 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.model;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
 @Builder

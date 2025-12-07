@@ -15,8 +15,11 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IOrder.IOrderRequestService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudRequestServiceImpl;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.MapperUtils.map;
 
@@ -85,20 +88,28 @@ public class OrderRequestServiceImpl extends CrudRequestServiceImpl<Order, Order
     @Transactional
     public void deleteAll() {
         User user = authService.getAuthenticatedUser();
-        orderRepository.deleteAllByUser(user);
+        List<Order> orders = orderRepository.findAllByUser(user);
+        super.delete(orders);
     }
 
     @Override
     @Transactional
-    public void deleteById(Long aLong) {
+    public void deleteById(Long id) {
         User user = authService.getAuthenticatedUser();
-        orderRepository.deleteByIdAndUser(aLong, user);
+        //Valida se o pedido pertence ao usuário antes de deletar
+        findAndValidateOrder(id, user);
+        super.deleteById(id);
     }
 
     @Override
     @Transactional
     public void delete(Iterable<? extends Order> iterable) {
         User user = authService.getAuthenticatedUser();
-        orderRepository.deleteAllByUserAndIdIn(user, iterable);
+        iterable.forEach(order -> {
+            if (!order.getUser().getId().equals(user.getId())) {
+                throw new AccessDeniedException("You don't have permission to modify this order!");
+            }
+        });
+        super.delete(iterable);
     }
 }

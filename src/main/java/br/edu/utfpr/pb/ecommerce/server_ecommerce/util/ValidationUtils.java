@@ -15,15 +15,14 @@ public final class ValidationUtils {
     private ValidationUtils() {}
 
     public static void validateQuantityOfProducts(Integer quantity, Product product) {
-        if (quantity == null || quantity > product.getQuantityAvailableInStock()) {
-            throw new InvalidQuantityException("Quantity greater than that available in the product stock. Quantity available in stock: " + product.getQuantityAvailableInStock());
-        }
+        if (quantity == null || quantity > product.getQuantityAvailableInStock())
+            throw new InvalidQuantityException("Quantity greater than that available in the product stock. Quantity available in stock: "
+                    + product.getQuantityAvailableInStock());
     }
 
     public static void validateStringNullOrBlank(String fieldName) {
-        if (fieldName == null || fieldName.isBlank()){
+        if (fieldName == null || fieldName.isBlank())
             throw new InvalidStringException("String cannot be null or blank.");
-        }
     }
 
     public static boolean isAdmin(User user){
@@ -31,24 +30,19 @@ public final class ValidationUtils {
     }
 
     public static boolean isAuthenticatedAndAdmin(AuthService authService) {
-        if (isAuthenticated()){
-            return isAdmin(authService.getAuthenticatedUser());
-        }
-
-        return false;
+        return isAuthenticated() && isAdmin(authService.getAuthenticatedUser());
     }
 
     public static User findAndValidateUser(Long id, User authenticatedUser, UserRepository userRepository) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found."));
 
-        if (isAdmin(authenticatedUser)) {
+        if (isAdmin(authenticatedUser))
             return existingUser;
-        }
 
-        if (!existingUser.getId().equals(authenticatedUser.getId())) {
+        if (!existingUser.getId().equals(authenticatedUser.getId()))
             throw new AccessDeniedException("You don't have permission to modify this user.");
-        }
+
         return existingUser;
     }
 }

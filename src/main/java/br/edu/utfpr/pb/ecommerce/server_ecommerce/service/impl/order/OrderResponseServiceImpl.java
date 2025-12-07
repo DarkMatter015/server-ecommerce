@@ -5,6 +5,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.FilterManager;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IOrder.IOrderResponseService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudResponseServiceImpl;
 import org.springframework.data.domain.Page;
@@ -21,8 +22,8 @@ public class OrderResponseServiceImpl extends CrudResponseServiceImpl<Order, Lon
     private final OrderRepository orderRepository;
     private final AuthService authService;
 
-    public OrderResponseServiceImpl(OrderRepository orderRepository, AuthService authService) {
-        super(orderRepository);
+    public OrderResponseServiceImpl(OrderRepository orderRepository, FilterManager filterManager, AuthService authService) {
+        super(orderRepository, filterManager, authService);
         this.orderRepository = orderRepository;
         this.authService = authService;
     }

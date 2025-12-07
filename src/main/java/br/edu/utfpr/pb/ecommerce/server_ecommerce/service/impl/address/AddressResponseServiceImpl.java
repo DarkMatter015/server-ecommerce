@@ -5,6 +5,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Address;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.AddressRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.FilterManager;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IAddress.IAddressResponseService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudResponseServiceImpl;
 import org.springframework.data.domain.Page;
@@ -21,8 +22,8 @@ public class AddressResponseServiceImpl extends CrudResponseServiceImpl<Address,
     private final AddressRepository addressRepository;
     private final AuthService authService;
 
-    public AddressResponseServiceImpl(AddressRepository addressRepository, AuthService authService) {
-        super(addressRepository);
+    public AddressResponseServiceImpl(AddressRepository addressRepository, FilterManager filterManager, AuthService authService) {
+        super(addressRepository, filterManager, authService);
         this.addressRepository = addressRepository;
         this.authService = authService;
     }

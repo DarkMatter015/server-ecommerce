@@ -4,12 +4,11 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.OrderItem;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface OrderItemsRepository extends JpaRepository<OrderItem,Long> {
+public interface OrderItemsRepository extends BaseRepository<OrderItem,Long> {
     List<OrderItem> findAllByOrder_User_Id(Long orderUserId);
 
     Optional<OrderItem> findByIdAndOrder_User_Id(Long id, Long orderUserId);

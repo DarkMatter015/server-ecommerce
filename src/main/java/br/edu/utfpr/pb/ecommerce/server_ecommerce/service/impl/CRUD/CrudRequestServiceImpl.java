@@ -1,18 +1,17 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseEntity;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.BaseRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.ICRUD.ICrudRequestService;
-import org.springframework.data.jpa.repository.JpaRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 
-public abstract class CrudRequestServiceImpl<T, UD, ID extends Serializable> implements ICrudRequestService<T, UD, ID> {
+@RequiredArgsConstructor
+public abstract class CrudRequestServiceImpl<T extends BaseEntity, UD, ID extends Serializable> implements ICrudRequestService<T, UD, ID> {
 
-    private final JpaRepository<T, ID> repository;
-    
-    public CrudRequestServiceImpl(JpaRepository<T, ID> repository) {
-        this.repository = repository;
-    }
+    private final BaseRepository<T, ID> repository;
     
     @Override
     @Transactional

@@ -1,24 +1,27 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseEntity;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.BaseRepository;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.FilterManager;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.ICRUD.ICrudResponseService;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.util.List;
 
-public abstract class CrudResponseServiceImpl<T, ID extends Serializable> implements ICrudResponseService<T, ID> {
+@RequiredArgsConstructor
+public abstract class CrudResponseServiceImpl<T extends BaseEntity, ID extends Serializable> implements ICrudResponseService<T, ID> {
 
-    private final JpaRepository<T, ID> repository;
+    private final BaseRepository<T, ID> repository;
+    private final FilterManager filterManager;
+    private final AuthService authService;
 
-    protected CrudResponseServiceImpl(JpaRepository<T, ID> repository) {
-        this.repository = repository;
-    }
-    
     @Override
     @Transactional(readOnly = true)
     public List<T> findAll() {
