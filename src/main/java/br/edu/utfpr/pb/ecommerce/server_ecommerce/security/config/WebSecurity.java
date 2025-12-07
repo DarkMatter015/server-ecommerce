@@ -18,7 +18,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
@@ -40,14 +39,16 @@ public class WebSecurity {
     private final ObjectMapper objectMapper;
     private final JwtProperties jwtProperties;
     private final Environment env;
+    private final PasswordEncoder passwordEncoder;
 
-    public WebSecurity(AuthService authService, AuthenticationEntryPoint authenticationEntryPoint, CustomAuthenticationFailureHandler customAuthenticationFailureHandler, ObjectMapper objectMapper, JwtProperties jwtProperties, Environment env) {
+    public WebSecurity(AuthService authService, AuthenticationEntryPoint authenticationEntryPoint, CustomAuthenticationFailureHandler customAuthenticationFailureHandler, ObjectMapper objectMapper, JwtProperties jwtProperties, Environment env, PasswordEncoder passwordEncoder) {
         this.authService = authService;
         this.authenticationEntryPoint = authenticationEntryPoint;
         this.customAuthenticationFailureHandler = customAuthenticationFailureHandler;
         this.objectMapper = objectMapper;
         this.jwtProperties = jwtProperties;
         this.env = env;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Bean
@@ -56,7 +57,7 @@ public class WebSecurity {
         AuthenticationManagerBuilder authenticationManagerBuilder =
                 http.getSharedObject(AuthenticationManagerBuilder.class);
         authenticationManagerBuilder.userDetailsService(authService)
-                .passwordEncoder(passwordEncoder());
+                .passwordEncoder(passwordEncoder);
 
         // authenticationManager -> responsável por gerenciar a autenticação dos usuários
         AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
@@ -92,9 +93,7 @@ public class WebSecurity {
 
                     // ROTAS DE ADMIN
                     // Apenas ADMIN pode gerenciar (criar, editar, deletar) produtos, categorias e pagamentos
-                    .requestMatchers("/products/**", "/categories/**", "/payments/**").hasRole("ADMIN")
-                    // Apenas ADMIN pode ver a lista de todos os usuários
-                    .requestMatchers(HttpMethod.GET, "/users/**").hasRole("ADMIN");
+                    .requestMatchers("/products/**", "/categories/**", "/payments/**").hasAnyAuthority("ADMIN");
 
                     // ROTAS AUTENTICADAS (USER ou ADMIN)
                     // Qualquer usuário autenticado pode acessar as demais rotas
@@ -113,12 +112,6 @@ public class WebSecurity {
                                 sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
         return http.build();
-    }
-
-    // Criação do objeto utilizado na criptografia da senha, ele é usado no UserService ao cadastrar um usuário e pelo authenticationManagerBean para autenticar um usuário no sistema.
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 
     /*
