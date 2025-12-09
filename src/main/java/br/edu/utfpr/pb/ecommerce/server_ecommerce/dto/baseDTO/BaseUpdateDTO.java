@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BaseDTO{
+public class BaseUpdateDTO {
 
     private Boolean active;
 }

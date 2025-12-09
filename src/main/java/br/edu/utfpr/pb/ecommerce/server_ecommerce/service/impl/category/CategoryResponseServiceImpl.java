@@ -3,7 +3,6 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.category;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Category;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.CategoryRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.FilterManager;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.iCategory.ICategoryResponseService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudResponseServiceImpl;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.specification.CategorySpecification;
@@ -17,8 +16,8 @@ public class CategoryResponseServiceImpl extends CrudResponseServiceImpl<Categor
 
     private final CategoryRepository categoryRepository;
 
-    public CategoryResponseServiceImpl(CategoryRepository categoryRepository, FilterManager filterManager, AuthService authService) {
-        super(categoryRepository, filterManager, authService);
+    public CategoryResponseServiceImpl(CategoryRepository categoryRepository, AuthService authService) {
+        super(categoryRepository, authService);
         this.categoryRepository = categoryRepository;
     }
 

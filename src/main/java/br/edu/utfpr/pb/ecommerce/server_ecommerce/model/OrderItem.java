@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
 
 import java.math.BigDecimal;
 
@@ -15,7 +16,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class OrderItem extends BaseEntity {
+@SQLDelete(sql = "UPDATE tb_order_item SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
+public class OrderItem extends BaseEntity implements Ownable{
 
     @NotNull
     @ManyToOne
@@ -40,5 +42,10 @@ public class OrderItem extends BaseEntity {
         if (quantity != null && product != null && product.getPrice() != null) {
             this.totalPrice = product.getPrice().multiply(new BigDecimal(quantity));
         }
+    }
+
+    @Override
+    public User getUser() {
+        return this.order.getUser();
     }
 }

@@ -1,6 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.baseDTO.BaseDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.baseDTO.BaseResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserResponseDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,8 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddressResponseDTO extends BaseDTO {
-    private Long id;
+public class AddressResponseDTO extends BaseResponseDTO {
 
     private UserResponseDTO user;
 
