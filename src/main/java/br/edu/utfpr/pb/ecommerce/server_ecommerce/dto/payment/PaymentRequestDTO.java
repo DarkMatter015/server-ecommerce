@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 public class PaymentRequestDTO {
 
     @NotBlank
-    @Size(min = 4, max = 255)
+    @Size(min = 4, max = 25)
     private String name;
 }

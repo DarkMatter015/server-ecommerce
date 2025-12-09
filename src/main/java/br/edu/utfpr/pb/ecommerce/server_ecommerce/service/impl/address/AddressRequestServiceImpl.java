@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.stream.StreamSupport;
 
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.MapperUtils.map;
-import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ValidationUtils.validateStringNullOrBlank;
-
 @Service
 public class AddressRequestServiceImpl extends CrudRequestServiceImpl<Address, AddressUpdateDTO, Long> implements IAddressRequestService {
 
@@ -31,8 +29,8 @@ public class AddressRequestServiceImpl extends CrudRequestServiceImpl<Address, A
     private final ModelMapper modelMapper;
     private final CepService cepService;
 
-    public AddressRequestServiceImpl(AddressRepository addressRepository, AuthService authService, ModelMapper modelMapper, CepService cepService) {
-        super(addressRepository);
+    public AddressRequestServiceImpl(AddressRepository addressRepository, AddressResponseServiceImpl addressResponseService, AuthService authService, ModelMapper modelMapper, CepService cepService) {
+        super(addressRepository, addressResponseService);
         this.addressRepository = addressRepository;
         this.authService = authService;
         this.modelMapper = modelMapper;
@@ -46,8 +44,8 @@ public class AddressRequestServiceImpl extends CrudRequestServiceImpl<Address, A
         }
     }
 
-    protected Address findAndValidateAddress(Long id, User user) {
-        return addressRepository.findByIdAndUser(id, user)
+    protected void findAndValidateAddress(Long id, User user) {
+        addressRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new AddressNotFoundException("Address not found."));
     }
 
@@ -85,25 +83,6 @@ public class AddressRequestServiceImpl extends CrudRequestServiceImpl<Address, A
         StreamSupport.stream(iterable.spliterator(), false)
                 .forEach(this::validateAddressOwnership);
         return super.save(iterable);
-    }
-
-    @Override
-    @Transactional
-    public Address update(Long id, AddressUpdateDTO updateDTO) {
-        User user = authService.getAuthenticatedUser();
-        Address address = findAndValidateAddress(id, user);
-
-        if(updateDTO.getNumber() != null) {
-            validateStringNullOrBlank(updateDTO.getNumber());
-            address.setNumber(updateDTO.getNumber());
-        }
-
-        if(updateDTO.getComplement() != null) {
-            validateStringNullOrBlank(updateDTO.getComplement());
-            address.setComplement(updateDTO.getComplement());
-        }
-
-        return addressRepository.save(address);
     }
 
     @Override

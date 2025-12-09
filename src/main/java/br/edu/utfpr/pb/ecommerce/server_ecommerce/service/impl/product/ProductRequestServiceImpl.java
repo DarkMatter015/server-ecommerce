@@ -20,8 +20,8 @@ public class ProductRequestServiceImpl extends CrudRequestServiceImpl<Product, P
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
 
-    public ProductRequestServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository) {
-        super(productRepository);
+    public ProductRequestServiceImpl(ProductRepository productRepository, ProductResponseServiceImpl productResponseService, CategoryRepository categoryRepository) {
+        super(productRepository, productResponseService);
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
     }

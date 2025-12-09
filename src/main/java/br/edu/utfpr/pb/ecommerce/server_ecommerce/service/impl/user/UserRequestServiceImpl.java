@@ -30,8 +30,8 @@ public class UserRequestServiceImpl extends CrudRequestServiceImpl<User, UserUpd
     private final AuthService authService;
     private final RoleRepository roleRepository;
 
-    public UserRequestServiceImpl(UserRepository userRepository, AuthService authService, RoleRepository roleRepository) {
-        super(userRepository);
+    public UserRequestServiceImpl(UserRepository userRepository, UserResponseServiceImpl userResponseService, AuthService authService, RoleRepository roleRepository) {
+        super(userRepository, userResponseService);
         this.userRepository = userRepository;
         this.authService = authService;
         this.roleRepository = roleRepository;

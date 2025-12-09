@@ -33,8 +33,8 @@ public class OrderRequestServiceImpl extends CrudRequestServiceImpl<Order, Order
     private final OrderPublisher orderPublisher;
     private final OrderStatusRepository orderStatusRepository;
 
-    public OrderRequestServiceImpl(OrderRepository orderRepository, AuthService authService, ModelMapper modelMapper, OrderMapper orderMapper, OrderPublisher orderPublisher, br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderStatusRepository orderStatusRepository) {
-        super(orderRepository);
+    public OrderRequestServiceImpl(OrderRepository orderRepository, OrderResponseServiceImpl orderResponseService, AuthService authService, ModelMapper modelMapper, OrderMapper orderMapper, OrderPublisher orderPublisher, br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderStatusRepository orderStatusRepository) {
+        super(orderRepository, orderResponseService);
         this.orderRepository = orderRepository;
         this.authService = authService;
         this.modelMapper = modelMapper;
