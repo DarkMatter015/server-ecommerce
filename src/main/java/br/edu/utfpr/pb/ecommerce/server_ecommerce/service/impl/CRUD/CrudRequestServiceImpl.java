@@ -80,7 +80,7 @@ public abstract class CrudRequestServiceImpl<T extends BaseEntity, UD, ID extend
         T entity = crudResponseService.findById(id);
         applyPartialUpdate(updateDTO, entity);
         return repository.save(entity);
-    };
+    }
 
     @Override
     @Transactional
