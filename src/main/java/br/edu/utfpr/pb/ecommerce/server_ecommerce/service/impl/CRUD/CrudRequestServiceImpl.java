@@ -1,7 +1,7 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseEntity;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.BaseRepository;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.base.BaseRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.ICRUD.ICrudRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -20,13 +20,13 @@ public abstract class CrudRequestServiceImpl<T extends BaseEntity, UD, ID extend
     private final BaseRepository<T, ID> repository;
     private final CrudResponseServiceImpl<T, ID> crudResponseService;
 
+    @Override
     @Transactional
-    public void activate(ID id) {
+    public T activate(ID id) {
         T entity = crudResponseService.findById(id);
-
+        if (entity.isActive()) return entity;
         entity.setDeletedAt(null);
-
-        repository.save(entity);
+        return repository.save(entity);
     }
 
     /**
@@ -46,7 +46,7 @@ public abstract class CrudRequestServiceImpl<T extends BaseEntity, UD, ID extend
         for (PropertyDescriptor pd : pds) {
             Object srcValue = src.getPropertyValue(pd.getName());
             if (srcValue == null) emptyNames.add(pd.getName());
-            if (srcValue instanceof String && ((String) srcValue).isBlank()) emptyNames.add(pd.getName());
+            if (srcValue instanceof String && ((String) srcValue).trim().isBlank()) emptyNames.add(pd.getName());
         }
 
         // Campos que não devem ser sobrescritos (redundancia)
@@ -92,11 +92,5 @@ public abstract class CrudRequestServiceImpl<T extends BaseEntity, UD, ID extend
     @Transactional
     public void delete(Iterable<? extends T> iterable) {
         this.repository.deleteAll(iterable);
-    }
-
-    @Override
-    @Transactional
-    public void deleteAll() {
-        this.repository.deleteAll();
     }
 }

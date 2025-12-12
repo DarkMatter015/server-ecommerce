@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 
-import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ValidationUtils.isAuthenticatedAndAdmin;
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.AuthValidation.isAuthenticatedAndAdmin;
 
 @Service
 public class UserResponseServiceImpl extends CrudResponseServiceImpl<User, Long> implements IUserResponseService {

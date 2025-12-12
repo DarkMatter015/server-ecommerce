@@ -12,6 +12,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipmentD
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.PaymentNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.ProductNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.*;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.EmbeddedAddress;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.PaymentRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.MapperUtils.map;
-import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ValidationUtils.validateQuantityOfProducts;
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.validateQuantityOfProducts;
 
 @Component
 @RequiredArgsConstructor

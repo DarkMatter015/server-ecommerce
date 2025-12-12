@@ -70,4 +70,10 @@ public abstract class WriteController<T extends BaseEntity, D, RD, UD, ID extend
         this.service.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("activate/{id}")
+    public ResponseEntity<RD> activate(@PathVariable ID id) {
+        T entity = this.service.activate(id);
+        return ResponseEntity.ok(convertToResponseDto(entity));
+    }
 }

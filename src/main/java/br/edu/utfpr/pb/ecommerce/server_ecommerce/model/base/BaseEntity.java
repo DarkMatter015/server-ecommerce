@@ -1,5 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.interfaces.Identifiable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public abstract class BaseEntity implements Identifiable<Long> {
+public class BaseEntity implements Identifiable<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

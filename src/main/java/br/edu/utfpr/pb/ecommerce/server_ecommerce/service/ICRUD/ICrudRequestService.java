@@ -17,5 +17,5 @@ public interface ICrudRequestService<T extends BaseEntity, UD, ID extends Serial
 
     void delete(Iterable<? extends T> iterable);
 
-    void deleteAll();
+    T activate(ID id);
 }

@@ -1,4 +1,4 @@
-package br.edu.utfpr.pb.ecommerce.server_ecommerce.model;
+package br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

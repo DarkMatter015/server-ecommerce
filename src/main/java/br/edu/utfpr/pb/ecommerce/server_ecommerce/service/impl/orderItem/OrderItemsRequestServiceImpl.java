@@ -18,7 +18,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudRequestS
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ValidationUtils.validateQuantityOfProducts;
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.validateQuantityOfProducts;
 
 @Service
 public class OrderItemsRequestServiceImpl extends CrudRequestServiceImpl<OrderItem, OrderItemUpdateDTO, Long> implements IOrderItemsRequestService {

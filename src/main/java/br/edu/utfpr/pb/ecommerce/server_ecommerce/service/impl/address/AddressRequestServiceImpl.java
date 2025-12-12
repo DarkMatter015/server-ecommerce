@@ -5,6 +5,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.exception.Cep
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.service.CepService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressUpdateDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.BusinessException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.AddressNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Address;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
@@ -12,12 +13,12 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.AddressRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IAddress.IAddressRequestService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudRequestServiceImpl;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.user.UserResponseServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.stream.StreamSupport;
 
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.MapperUtils.map;
@@ -25,13 +26,17 @@ import static br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.MapperUtils.map;
 public class AddressRequestServiceImpl extends CrudRequestServiceImpl<Address, AddressUpdateDTO, Long> implements IAddressRequestService {
 
     private final AddressRepository addressRepository;
+    private final AddressResponseServiceImpl addressResponseService;
+    private final UserResponseServiceImpl userResponseService;
     private final AuthService  authService;
     private final ModelMapper modelMapper;
     private final CepService cepService;
 
-    public AddressRequestServiceImpl(AddressRepository addressRepository, AddressResponseServiceImpl addressResponseService, AuthService authService, ModelMapper modelMapper, CepService cepService) {
+    public AddressRequestServiceImpl(AddressRepository addressRepository, AddressResponseServiceImpl addressResponseService, AddressResponseServiceImpl addressResponseService1, UserResponseServiceImpl userResponseService, AuthService authService, ModelMapper modelMapper, CepService cepService) {
         super(addressRepository, addressResponseService);
         this.addressRepository = addressRepository;
+        this.addressResponseService = addressResponseService1;
+        this.userResponseService = userResponseService;
         this.authService = authService;
         this.modelMapper = modelMapper;
         this.cepService = cepService;
@@ -47,6 +52,17 @@ public class AddressRequestServiceImpl extends CrudRequestServiceImpl<Address, A
     protected void findAndValidateAddress(Long id, User user) {
         addressRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new AddressNotFoundException("Address not found."));
+    }
+
+    @Override
+    @Transactional
+    public Address activate(Long id) {
+        Address address = addressResponseService.findById(id);
+        if (address.isActive()) return address;
+        User user = userResponseService.findById(address.getUser().getId());
+        if (!user.isActive()) throw new BusinessException("Activate the user first. User: " + user.getEmail() + ", ID: " + user.getId());
+        address.setDeletedAt(null);
+        return addressRepository.save(address);
     }
 
     @Override
@@ -90,14 +106,6 @@ public class AddressRequestServiceImpl extends CrudRequestServiceImpl<Address, A
     public Address saveAndFlush(Address address) {
         validateAddressOwnership(address);
         return super.saveAndFlush(address);
-    }
-
-    @Override
-    @Transactional
-    public void deleteAll() {
-        User user = authService.getAuthenticatedUser();
-        List<Address> addresses = addressRepository.findAllByUser(user);
-        super.delete(addresses);
     }
 
     @Override

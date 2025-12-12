@@ -5,9 +5,9 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderUpdateDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.OrderNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.OrderStatusNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.OrderMapper;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.EmbeddedAddress;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.EmbeddedAddress;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.rabbitmq.publisher.OrderPublisher;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderStatusRepository;
@@ -18,8 +18,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.MapperUtils.map;
 
@@ -82,14 +80,6 @@ public class OrderRequestServiceImpl extends CrudRequestServiceImpl<Order, Order
         order.setUser(user);
         order.setStatus(orderStatusRepository.findByName("PENDENTE").orElseThrow(() -> new OrderStatusNotFoundException("Error: Order status is not found.")));
         return orderRepository.save(order);
-    }
-
-    @Override
-    @Transactional
-    public void deleteAll() {
-        User user = authService.getAuthenticatedUser();
-        List<Order> orders = orderRepository.findAllByUser(user);
-        super.delete(orders);
     }
 
     @Override

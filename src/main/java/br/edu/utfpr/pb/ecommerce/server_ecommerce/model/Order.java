@@ -2,6 +2,8 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.model;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipmentDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseEntity;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.EmbeddedAddress;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.interfaces.Ownable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -19,7 +21,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @SQLDelete(sql = "UPDATE tb_order SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
-public class Order extends BaseEntity implements Ownable{
+public class Order extends BaseEntity implements Ownable {
 
 
     @NotNull

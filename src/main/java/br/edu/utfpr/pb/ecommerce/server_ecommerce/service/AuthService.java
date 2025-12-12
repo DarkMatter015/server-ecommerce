@@ -4,6 +4,8 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.Authenticat
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.UserNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.security.dto.AuthenticationResponseDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.security.dto.SecurityUserResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -47,5 +49,18 @@ public class AuthService implements UserDetailsService {
         User user = userRepository.findByCpf(cpf);
         if (user == null) throw new UserNotFoundException("User not found with cpf: " + cpf);
         return user;
+    }
+
+    public AuthenticationResponseDTO validateUserToken() {
+        try {
+            User user = getAuthenticatedUser();
+
+            AuthenticationResponseDTO response = new AuthenticationResponseDTO();
+            response.setUser(new SecurityUserResponseDTO(user));
+
+            return response;
+        } catch (Exception e) {
+            throw new AuthenticatedUserNotFoundException("No authenticated user found");
+        }
     }
 }

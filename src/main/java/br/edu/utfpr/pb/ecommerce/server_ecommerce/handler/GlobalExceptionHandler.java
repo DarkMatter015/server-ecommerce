@@ -2,6 +2,7 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.handler;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.handler.dto.ApiErrorDTO;
 import feign.FeignException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,17 @@ public class GlobalExceptionHandler {
         return new ApiErrorDTO(
                 exception.getMessage(),
                 HttpStatus.BAD_REQUEST.value(),
+                request.getServletPath());
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiErrorDTO handleEntityNotFoundException(EntityNotFoundException exception,
+                                       HttpServletRequest request) {
+
+        return new ApiErrorDTO(
+                exception.getMessage(),
+                HttpStatus.NOT_FOUND.value(),
                 request.getServletPath());
     }
 

@@ -1,8 +1,8 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Ownable;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.interfaces.Ownable;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseEntity;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.BaseRepository;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.base.BaseRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.ICRUD.ICrudResponseService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.specification.BaseSpecification;
@@ -17,7 +17,7 @@ import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
 
-import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ValidationUtils.isAuthenticatedAndAdmin;
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.AuthValidation.isAuthenticatedAndAdmin;
 
 public abstract class CrudResponseServiceImpl<T extends BaseEntity, ID extends Serializable> implements ICrudResponseService<T, ID> {
 

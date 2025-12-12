@@ -5,6 +5,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRequest
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,6 +14,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class OrderRequestDTO {
 
     @NotNull
