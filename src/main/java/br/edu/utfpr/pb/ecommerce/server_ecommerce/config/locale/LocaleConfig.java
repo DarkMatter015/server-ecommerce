@@ -1,4 +1,4 @@
-package br.edu.utfpr.pb.ecommerce.server_ecommerce.config;
+package br.edu.utfpr.pb.ecommerce.server_ecommerce.config.locale;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;

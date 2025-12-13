@@ -2,6 +2,7 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseEntity;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.ICRUD.ICrudRequestService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import java.io.Serializable;
 import java.net.URI;
 
 // T = class type (User, Category...), D = DTO type (Request), RD = DTO type (Response), UD = DTO type (Update), ID = primary key attribute of the class
+@SecurityRequirement(name = "bearer-key")
 public abstract class WriteController<T extends BaseEntity, D, RD, UD, ID extends Serializable> {
 
     private final ICrudRequestService<T, UD, ID> service;

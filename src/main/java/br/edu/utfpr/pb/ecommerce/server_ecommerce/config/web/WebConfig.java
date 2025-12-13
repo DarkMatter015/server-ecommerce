@@ -1,4 +1,4 @@
-package br.edu.utfpr.pb.ecommerce.server_ecommerce.config;
+package br.edu.utfpr.pb.ecommerce.server_ecommerce.config.web;
 
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
