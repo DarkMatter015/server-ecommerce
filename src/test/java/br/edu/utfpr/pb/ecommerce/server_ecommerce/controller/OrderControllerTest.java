@@ -10,8 +10,8 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.resp
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.service.MelhorEnvioService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderRequestDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRequestDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -74,11 +74,11 @@ public class OrderControllerTest extends BaseIntegrationTest {
                 .build();
 
         // 3. Executa a requisição
-        ResponseEntity<Order> response = testRestTemplate.exchange(
+        ResponseEntity<OrderResponseDTO> response = testRestTemplate.exchange(
                 API_URL,
                 HttpMethod.POST,
                 getRequestEntity(newOrder, userToken),
-                Order.class
+                OrderResponseDTO.class
         );
 
         // 4. Valida a resposta
@@ -87,6 +87,6 @@ public class OrderControllerTest extends BaseIntegrationTest {
         assertThat(response.getBody().getId()).isNotNull();
         assertThat(response.getBody().getOrderItems()).hasSize(1);
         assertThat(response.getBody().getAddress().getStreet()).isEqualTo("Avenida Tupi"); // Verifica se o endereço do mock foi usado
-        assertThat(response.getBody().getStatus().getName()).isEqualTo("PENDENTE"); // Verifica se o endereço do mock foi usado
+        assertThat(response.getBody().getStatus()).isEqualTo("PENDENTE"); // Verifica se o endereço do mock foi usado
     }
 }
