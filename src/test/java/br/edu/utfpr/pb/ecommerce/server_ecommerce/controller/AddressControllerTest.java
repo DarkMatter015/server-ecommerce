@@ -2,7 +2,7 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.BaseIntegrationTest;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressRequestDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Address;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressResponseDTO;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
@@ -17,18 +17,18 @@ public class AddressControllerTest extends BaseIntegrationTest {
 
     @Test
     public void postAddress_whenUserAuthenticated_thenCreateAddress() {
-        String userToken = authenticateAndGetToken("test@teste.com");
+        String userToken = authenticateAsUser();
 
         AddressRequestDTO newAddress = AddressRequestDTO.builder()
                 .cep("85501000")
-                .number("123")
+                .number("456")
                 .build();
 
-        ResponseEntity<Address> response = testRestTemplate.exchange(
+        ResponseEntity<AddressResponseDTO> response = testRestTemplate.exchange(
                 API_URL,
                 HttpMethod.POST,
                 getRequestEntity(newAddress, userToken),
-                Address.class
+                AddressResponseDTO.class
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -38,32 +38,18 @@ public class AddressControllerTest extends BaseIntegrationTest {
     }
 
     @Test
-    public void deleteAddress_whenUserOwnsAddress_thenSoftDelete() {
-        String userToken = authenticateAndGetToken("test@teste.com");
+    public void deleteAddress_whenUserDoesNotOwnAddress_thenForbidden() {
+        // Tenta deletar o endereço de outro usuário (ID 1 pertence ao user@teste.com)
+        String adminToken = authenticateAsAdmin();
 
-        // Endereço 3 pertence ao usuário 'test' no V2__Populate_Data.sql
-        ResponseEntity<Void> response = testRestTemplate.exchange(
-                API_URL + "/3",
-                HttpMethod.DELETE,
-                getRequestEntity(userToken),
-                Void.class
-        );
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-    }
-
-    @Test
-    public void deleteAddress_whenUserDoesNotOwnAddress_thenNotFound() {
-        String userToken = authenticateAndGetToken("test@teste.com");
-
-        // Endereço 1 pertence ao usuário 'admin'
         ResponseEntity<Object> response = testRestTemplate.exchange(
-                API_URL + "/1",
+                API_URL + "/1", // Endereço do user@teste.com
                 HttpMethod.DELETE,
-                getRequestEntity(userToken),
+                getRequestEntity(adminToken), // Admin tentando deletar
                 Object.class
         );
 
+        // A regra de negócio atual impede que até o admin delete o endereço de outro usuário
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 }

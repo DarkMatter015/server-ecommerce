@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 
 import java.util.Map;
 
@@ -16,12 +17,21 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
+@Sql(scripts = {"/clean.sql", "/test-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 public abstract class BaseIntegrationTest {
 
     @Autowired
     protected TestRestTemplate testRestTemplate;
 
-    protected String authenticateAndGetToken(String email) {
+    protected String authenticateAsAdmin() {
+        return authenticateAndGetToken("admin@teste.com");
+    }
+
+    protected String authenticateAsUser() {
+        return authenticateAndGetToken("user@teste.com");
+    }
+
+    private String authenticateAndGetToken(String email) {
         LoginRequestDTO loginRequest = new LoginRequestDTO();
         loginRequest.setEmail(email);
         loginRequest.setPassword("123456");
