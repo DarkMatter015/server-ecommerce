@@ -1,19 +1,22 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseEntity;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.ICRUD.ICrudResponseService;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
 
 // T = class type (User, Category...), RD = DTO type (Response), ID = primary key attribute of the class
-public abstract class ReadController<T, RD, ID extends Serializable> {
+public abstract class ReadController<T extends BaseEntity, RD, ID extends Serializable> {
 
     private final ICrudResponseService<T, ID> service;
     protected final ModelMapper modelMapper; // 'protected' to be used by 'hooks'

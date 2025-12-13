@@ -1,6 +1,8 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound;
 
-public class AddressNotFoundException extends RuntimeException {
+import jakarta.persistence.EntityNotFoundException;
+
+public class AddressNotFoundException extends EntityNotFoundException {
     public AddressNotFoundException(String message) {
         super(message);
     }

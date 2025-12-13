@@ -1,9 +1,9 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseEntity;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.ICRUD.ICrudRequestService;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -13,7 +13,7 @@ import java.io.Serializable;
 import java.net.URI;
 
 // T = class type (User, Category...), D = DTO type (Request), RD = DTO type (Response), UD = DTO type (Update), ID = primary key attribute of the class
-public abstract class WriteController<T extends Identifiable<ID>, D, RD, UD, ID extends Serializable> {
+public abstract class WriteController<T extends BaseEntity, D, RD, UD, ID extends Serializable> {
 
     private final ICrudRequestService<T, UD, ID> service;
     protected final ModelMapper modelMapper; // 'protected' to be used by 'hooks'
@@ -69,5 +69,11 @@ public abstract class WriteController<T extends Identifiable<ID>, D, RD, UD, ID 
     public ResponseEntity<Void> delete(@PathVariable ID id) {
         this.service.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("activate/{id}")
+    public ResponseEntity<RD> activate(@PathVariable ID id) {
+        T entity = this.service.activate(id);
+        return ResponseEntity.ok(convertToResponseDto(entity));
     }
 }

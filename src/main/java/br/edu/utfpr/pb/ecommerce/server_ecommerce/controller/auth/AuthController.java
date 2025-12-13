@@ -1,8 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.auth;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.security.dto.AuthenticationResponseDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.security.dto.SecurityUserResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,16 +17,6 @@ public class AuthController {
 
     @GetMapping("/validate")
     public ResponseEntity<AuthenticationResponseDTO> validateToken() {
-        try {
-            User user = authService.getAuthenticatedUser();
-
-            AuthenticationResponseDTO response = new AuthenticationResponseDTO();
-            response.setUser(new SecurityUserResponseDTO(user));
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(401).build();
-        }
+        return ResponseEntity.ok(authService.validateUserToken());
     }
-
 }

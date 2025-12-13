@@ -1,10 +1,10 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.repository;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Role;
-import org.springframework.data.jpa.repository.JpaRepository;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.base.BaseRepository;
 
 import java.util.Optional;
 
-public interface RoleRepository extends JpaRepository<Role, Long> {
+public interface RoleRepository extends BaseRepository<Role, Long> {
     Optional<Role> findByName(String name);
 }

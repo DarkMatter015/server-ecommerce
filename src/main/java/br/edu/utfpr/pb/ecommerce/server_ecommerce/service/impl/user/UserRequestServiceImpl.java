@@ -3,8 +3,10 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.user;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserUpdateDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.RoleNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.UserNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Role;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.AddressRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.RoleRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
@@ -19,27 +21,56 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ValidationUtils.*;
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.AuthValidation.isAdmin;
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.AuthValidation.isAuthenticatedAndAdmin;
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.*;
 
 
 @Service
 public class UserRequestServiceImpl extends CrudRequestServiceImpl<User, UserUpdateDTO, Long> implements IUserRequestService {
 
     private final UserRepository userRepository;
+    private final UserResponseServiceImpl userResponseService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final AuthService authService;
     private final RoleRepository roleRepository;
+    private final AddressRepository addressRepository;
 
-    public UserRequestServiceImpl(UserRepository userRepository, AuthService authService, RoleRepository roleRepository) {
-        super(userRepository);
+    public UserRequestServiceImpl(UserRepository userRepository, UserResponseServiceImpl userResponseService, UserResponseServiceImpl userResponseService1, AuthService authService, RoleRepository roleRepository, AddressRepository addressRepository) {
+        super(userRepository, userResponseService);
         this.userRepository = userRepository;
+        this.userResponseService = userResponseService1;
         this.authService = authService;
         this.roleRepository = roleRepository;
+        this.addressRepository = addressRepository;
         this.bCryptPasswordEncoder = new BCryptPasswordEncoder();
     }
 
     private void encodePassword(User user) {
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+    }
+
+    private User findAndValidateUser(Long id, User authenticatedUser) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found."));
+
+        if (isAdmin(authenticatedUser))
+            return existingUser;
+
+        if (!existingUser.getId().equals(authenticatedUser.getId()))
+            throw new AccessDeniedException("You don't have permission to modify this user.");
+
+        return existingUser;
+    }
+
+    @Override
+    @Transactional
+    public User activate(Long id) {
+        User user = userResponseService.findById(id);
+        if (user.isActive()) return user;
+        addressRepository.activateByUserId(user.getId());
+        user.setDeletedAt(null);
+        return userRepository.save(user);
     }
 
     @Override
@@ -98,7 +129,7 @@ public class UserRequestServiceImpl extends CrudRequestServiceImpl<User, UserUpd
     @Transactional
     public User update(Long id, UserUpdateDTO dto) {
         User authenticatedUser = authService.getAuthenticatedUser();
-        User existingUser = findAndValidateUser(id,  authenticatedUser, userRepository);
+        User existingUser = findAndValidateUser(id,  authenticatedUser);
 
         if (dto.getDisplayName() != null) {
             validateStringNullOrBlank(dto.getDisplayName());
@@ -121,10 +152,14 @@ public class UserRequestServiceImpl extends CrudRequestServiceImpl<User, UserUpd
             existingUser.setCpf(dto.getCpf());
         }
 
-        if (!isAdmin(authenticatedUser)) {
-            if (dto.getRoles() != null) {
-                throw new AccessDeniedException("You don't have permission to update this user roles.");
-            }
+        if (!isAdmin(authenticatedUser) && dto.getRoles() != null) {
+            throw new AccessDeniedException("You don't have permission to update this user roles.");
+        } else if (isAdmin(authenticatedUser) && dto.getRoles() != null) {
+            Set<Role> roles = dto.getRoles().stream()
+                    .map(roleName -> roleRepository.findByName(roleName)
+                            .orElseThrow(() -> new RoleNotFoundException("Role is not found: " + roleName)))
+                    .collect(Collectors.toSet());
+            existingUser.setRoles(roles);
         }
 
         return userRepository.save(existingUser);
@@ -134,19 +169,19 @@ public class UserRequestServiceImpl extends CrudRequestServiceImpl<User, UserUpd
     @Transactional
     public void deleteById(Long id) {
         User authenticatedUser = authService.getAuthenticatedUser();
-        User existingUser = findAndValidateUser(id, authenticatedUser, userRepository);
-        userRepository.delete(existingUser);
-    }
-
-    @Override
-    @Transactional
-    public void deleteAll() {
-        super.deleteAll();
+        findAndValidateUser(id, authenticatedUser);
+        addressRepository.softDeleteByUserId(id);
+        userRepository.softDeleteById(id);
     }
 
     @Override
     @Transactional
     public void delete(Iterable<? extends User> iterable) {
-        super.delete(iterable);
+        User authenticatedUser = authService.getAuthenticatedUser();
+        iterable.forEach(user -> {
+            findAndValidateUser(user.getId(), authenticatedUser);
+            addressRepository.softDeleteByUserId(user.getId());
+            userRepository.softDeleteById(user.getId());
+        });
     }
 }

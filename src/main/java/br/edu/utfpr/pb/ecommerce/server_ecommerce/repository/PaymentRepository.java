@@ -1,7 +1,7 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.repository;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Payment;
-import org.springframework.data.jpa.repository.JpaRepository;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.base.BaseRepository;
 
-public interface PaymentRepository extends JpaRepository<Payment, Long> {
+public interface PaymentRepository extends BaseRepository<Payment, Long> {
 }
