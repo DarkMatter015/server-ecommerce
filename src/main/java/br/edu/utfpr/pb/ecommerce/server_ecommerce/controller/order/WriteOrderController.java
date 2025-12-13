@@ -16,6 +16,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ControllerUtils.createUri;
+
 @RestController
 @RequestMapping("orders")
 @RequiredArgsConstructor
@@ -27,13 +29,7 @@ public class WriteOrderController {
     @PostMapping
     public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody @Valid OrderRequestDTO orderDTO, UriComponentsBuilder uriBuilder) {
         Order savedOrder = orderRequestService.createOrder(orderDTO);
-
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(savedOrder.getId())
-                .toUri();
-
-        return ResponseEntity.created(uri).body(orderMapper.toDTO(savedOrder));
+        return ResponseEntity.created(createUri(savedOrder)).body(orderMapper.toDTO(savedOrder));
     }
 
     @PatchMapping("{id}")
