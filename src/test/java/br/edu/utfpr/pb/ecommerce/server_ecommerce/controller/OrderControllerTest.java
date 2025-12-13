@@ -81,6 +81,8 @@ public class OrderControllerTest extends BaseIntegrationTest {
                 OrderResponseDTO.class
         );
 
+        System.out.println(response.getBody());
+
         // 4. Valida a resposta
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         Assertions.assertNotNull(response.getBody());
