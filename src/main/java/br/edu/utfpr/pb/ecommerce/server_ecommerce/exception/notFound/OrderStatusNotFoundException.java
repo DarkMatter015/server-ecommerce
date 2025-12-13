@@ -1,6 +1,8 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound;
 
-public class OrderStatusNotFoundException extends RuntimeException {
+import jakarta.persistence.EntityNotFoundException;
+
+public class OrderStatusNotFoundException extends EntityNotFoundException {
     public OrderStatusNotFoundException(String message) {
         super(message);
     }

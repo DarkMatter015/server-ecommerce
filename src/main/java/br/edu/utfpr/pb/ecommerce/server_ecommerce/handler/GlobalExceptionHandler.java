@@ -1,6 +1,8 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.handler;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.handler.dto.ApiErrorDTO;
 import feign.FeignException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,18 +21,29 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError handleException(Exception exception,
+    public ApiErrorDTO handleException(Exception exception,
                                     HttpServletRequest request) {
 
-        return new ApiError(
+        return new ApiErrorDTO(
                 exception.getMessage(),
                 HttpStatus.BAD_REQUEST.value(),
                 request.getServletPath());
     }
 
+    @ExceptionHandler(EntityNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiErrorDTO handleEntityNotFoundException(EntityNotFoundException exception,
+                                       HttpServletRequest request) {
+
+        return new ApiErrorDTO(
+                exception.getMessage(),
+                HttpStatus.NOT_FOUND.value(),
+                request.getServletPath());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError handleExceptionArguments(MethodArgumentNotValidException exception,
+    public ApiErrorDTO handleExceptionArguments(MethodArgumentNotValidException exception,
                                              HttpServletRequest request) {
 
         BindingResult result = exception.getBindingResult();
@@ -40,7 +53,7 @@ public class GlobalExceptionHandler {
                     fieldError.getDefaultMessage());
         }
 
-        return new ApiError(
+        return new ApiErrorDTO(
                 "Fields not valid",
                 HttpStatus.BAD_REQUEST.value(),
                 request.getServletPath(),
@@ -48,14 +61,14 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(FeignException.class)
-    public ResponseEntity<ApiError> handleFeignException(FeignException exception,
+    public ResponseEntity<ApiErrorDTO> handleFeignException(FeignException exception,
                                                          HttpServletRequest request) {
 
         int status = exception.status() != -1
                 ? exception.status()
                 : HttpStatus.BAD_REQUEST.value();
 
-        ApiError error = new ApiError(
+        ApiErrorDTO error = new ApiErrorDTO(
                 "Error to call External API (MelhorEnvio)",
                 status,
                 request.getServletPath(),

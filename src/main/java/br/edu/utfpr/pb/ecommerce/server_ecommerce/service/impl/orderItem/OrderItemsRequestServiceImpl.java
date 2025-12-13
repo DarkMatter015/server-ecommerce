@@ -18,7 +18,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudRequestS
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ValidationUtils.validateQuantityOfProducts;
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.validateQuantityOfProducts;
 
 @Service
 public class OrderItemsRequestServiceImpl extends CrudRequestServiceImpl<OrderItem, OrderItemUpdateDTO, Long> implements IOrderItemsRequestService {
@@ -28,8 +28,8 @@ public class OrderItemsRequestServiceImpl extends CrudRequestServiceImpl<OrderIt
     private final OrderRepository orderRepository;
     private final AuthService authService;
 
-    public OrderItemsRequestServiceImpl(OrderItemsRepository orderItemsRepository, ProductRepository productRepository, OrderRepository orderRepository, AuthService authService) {
-        super(orderItemsRepository);
+    public OrderItemsRequestServiceImpl(OrderItemsRepository orderItemsRepository, OrderItemsResponseServiceImpl orderItemsResponseService, ProductRepository productRepository, OrderRepository orderRepository, AuthService authService) {
+        super(orderItemsRepository, orderItemsResponseService);
         this.orderItemsRepository = orderItemsRepository;
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;

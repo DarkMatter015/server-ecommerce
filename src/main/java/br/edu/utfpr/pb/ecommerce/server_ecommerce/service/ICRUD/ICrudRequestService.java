@@ -1,8 +1,10 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.ICRUD;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseEntity;
+
 import java.io.Serializable;
 
-public interface ICrudRequestService<T, UD, ID extends Serializable>{
+public interface ICrudRequestService<T extends BaseEntity, UD, ID extends Serializable>{
     T save(T entity);
 
     T saveAndFlush(T entity);
@@ -15,5 +17,5 @@ public interface ICrudRequestService<T, UD, ID extends Serializable>{
 
     void delete(Iterable<? extends T> iterable);
 
-    void deleteAll();
+    T activate(ID id);
 }

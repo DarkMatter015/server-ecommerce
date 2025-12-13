@@ -1,7 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.rabbitmq.consumer;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderEventDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.order.OrderRequestServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -17,12 +16,12 @@ import org.springframework.stereotype.Service;
 public class OrderConsumer {
 
     private final ObjectMapper objectMapper;
-    private final OrderRequestServiceImpl orderRequestService;
+    private final ProcessOrder processOrder;
 
     @RabbitListener(queues = "${rabbitmq.queue.name}")
     public void consumer(String message) throws JsonProcessingException {
         log.info("Consuming message: {}", message);
         var orderEventDTO = objectMapper.readValue(message, OrderEventDTO.class);
-        orderRequestService.processOrder(orderEventDTO);
+        processOrder.processOrder(orderEventDTO);
     }
 }
