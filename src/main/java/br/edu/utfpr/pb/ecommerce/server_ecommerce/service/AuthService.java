@@ -2,9 +2,11 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.AuthenticatedUserNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.UserNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.IncorrectPasswordException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.security.dto.AuthenticationResponseDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.security.dto.ChangePasswordRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.security.dto.SecurityUserResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -12,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -21,6 +24,7 @@ import java.util.Optional;
 public class AuthService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -52,15 +56,17 @@ public class AuthService implements UserDetailsService {
     }
 
     public AuthenticationResponseDTO validateUserToken() {
-        try {
-            User user = getAuthenticatedUser();
+        User user = getAuthenticatedUser();
+        AuthenticationResponseDTO response = new AuthenticationResponseDTO();
+        response.setUser(new SecurityUserResponseDTO(user));
+        return response;
+    }
 
-            AuthenticationResponseDTO response = new AuthenticationResponseDTO();
-            response.setUser(new SecurityUserResponseDTO(user));
-
-            return response;
-        } catch (Exception e) {
-            throw new AuthenticatedUserNotFoundException("No authenticated user found");
-        }
+    public User changePassword(ChangePasswordRequestDTO dto) {
+        if (!passwordEncoder.matches(dto.getCurrent_password(), getAuthenticatedUser().getPassword())) throw new IncorrectPasswordException("The current password is incorrect.");
+        if (!dto.getNew_password().equals(dto.getConfirm_password())) throw new IncorrectPasswordException("The confirm password does not match the new password");
+        User user = getAuthenticatedUser();
+        user.setPassword(passwordEncoder.encode(dto.getNew_password()));
+        return userRepository.save(user);
     }
 }

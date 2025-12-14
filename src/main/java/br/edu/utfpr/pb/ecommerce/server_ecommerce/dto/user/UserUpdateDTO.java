@@ -21,10 +21,6 @@ public class UserUpdateDTO {
     @Email
     private String email;
 
-    @Size(min = 6, message = "{field.password.size}")
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$", message = "{field.password.pattern}")
-    private String password;
-
     @Pattern(regexp = "\\d{11}", message = "{field.cpf.pattern}")
     private String cpf;
 
