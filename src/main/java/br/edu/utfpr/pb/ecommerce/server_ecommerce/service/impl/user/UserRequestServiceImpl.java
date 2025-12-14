@@ -141,12 +141,6 @@ public class UserRequestServiceImpl extends CrudRequestServiceImpl<User, UserUpd
             existingUser.setEmail(dto.getEmail());
         }
 
-        if (dto.getPassword() != null) {
-            validateStringNullOrBlank(dto.getPassword());
-            existingUser.setPassword(dto.getPassword());
-            encodePassword(existingUser);
-        }
-
         if (dto.getCpf() != null) {
             validateStringNullOrBlank(dto.getCpf());
             existingUser.setCpf(dto.getCpf());
