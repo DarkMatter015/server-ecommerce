@@ -1,4 +1,4 @@
-package br.edu.utfpr.pb.ecommerce.server_ecommerce.security.dto;
+package br.edu.utfpr.pb.ecommerce.server_ecommerce.security.dto.password;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

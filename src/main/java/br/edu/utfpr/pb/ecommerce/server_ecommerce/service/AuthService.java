@@ -6,7 +6,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.IncorrectPasswo
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.security.dto.AuthenticationResponseDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.security.dto.ChangePasswordRequestDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.security.dto.password.ChangePasswordRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.security.dto.SecurityUserResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -28,9 +28,9 @@ public class AuthService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email);
-        if (user == null) throw new UsernameNotFoundException("User not found with email: " + email);
-        return user;
+        Optional<User> user = userRepository.findByEmail(email);
+        if (user.isEmpty()) throw new UsernameNotFoundException("User not found with email: " + email);
+        return user.get();
     }
 
     public static boolean isAuthenticated() {
