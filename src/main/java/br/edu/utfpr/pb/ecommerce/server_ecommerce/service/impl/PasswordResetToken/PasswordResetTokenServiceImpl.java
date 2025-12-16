@@ -1,11 +1,17 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.PasswordResetToken;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.password.IncorrectPasswordException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.password.InvalidTokenException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.PasswordResetToken;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.PasswordResetTokenRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.security.dto.password.ForgetPasswordDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.security.dto.password.ResetPasswordDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IPasswordResetToken.IPasswordResetTokenService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.MailService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,93 +22,85 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PasswordResetTokenServiceImpl implements IPasswordResetTokenService {
 
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MailService mailService;
 
-    // Defina isso no seu application.properties: app.reset.token.expiration.minutes=60
     @Value("${app.reset.token.expiration.minutes:15}")
     private int tokenExpirationMinutes;
 
-    /**
-     * Passo 1: Solicitação.
-     * Retorna Optional<String> para testes, mas em produção deve disparar um evento de e-mail.
-     * @return O token gerado (apenas para seu teste no back) ou Empty se usuário não existir.
-     */
     @Override
     @Transactional
-    public Optional<String> createPasswordResetTokenForEmail(String email) {
-        Optional<User> userOptional = userRepository.findByEmail(email);
+    public void createPasswordResetTokenForEmail(ForgetPasswordDTO dto) {
+        log.info("Processing password reset request for anonymized email.");
+        Optional<User> userOptional = userRepository.findByEmail(dto.getEmail());
 
         if (userOptional.isEmpty()) {
-            // SILENT FAILURE: Retorna empty, mas o Controller deve responder 200 OK.
-            // Isso previne que atacantes descubram quais e-mails existem no banco.
-            return Optional.empty();
+            log.warn("Password reset attempt for non-existent email: {}", dto.getEmail());
+            return;
         }
 
         User user = userOptional.get();
 
-        // LIMPEZA CRÍTICA: Remove tokens antigos deste usuário para evitar múltiplos links válidos.
-        tokenRepository.deleteAllByUser(user);
+        PasswordResetToken myToken = tokenRepository.findByUser(user)
+                .orElse(new PasswordResetToken());
 
-        // Geração e Configuração
-        String token = UUID.randomUUID().toString();
-        PasswordResetToken myToken = new PasswordResetToken();
-        myToken.setToken(token);
+        myToken.setToken(UUID.randomUUID().toString());
         myToken.setUser(user);
         myToken.setExpiryDate(tokenExpirationMinutes);
 
         tokenRepository.save(myToken);
 
-        // TODO: Aqui você chamaria emailService.sendResetLink(email, token);
-        return Optional.of(token);
+        mailService.sendResetPasswordEmail(user, myToken);
+        log.info("Recovery token generated and sent for user ID: {}", user.getId());
     }
 
-    /**
-     * Passo 2: Validação (Ao clicar no link).
-     */
     @Override
     @Transactional(readOnly = true)
-    public boolean validatePasswordResetToken(String token) {
-        Optional<PasswordResetToken> passTokenOpt = tokenRepository.findByToken(token);
-
-        if (passTokenOpt.isEmpty()) {
-            return false;
-        }
-
-        PasswordResetToken passToken = passTokenOpt.get();
-
-        return !passToken.isTokenExpired();
+    public void validatePasswordResetToken(String token) {
+        getValidTokenOrThrow(token);
     }
 
-    /**
-     * Passo 3: Alteração da Senha.
-     */
     @Override
     @Transactional
-    public void changeUserPassword(String token, String newPassword) {
-        Optional<PasswordResetToken> passTokenOpt = tokenRepository.findByToken(token);
-
-        if (passTokenOpt.isEmpty()) {
-            throw new IllegalArgumentException("Token inválido.");
+    public void changeUserPassword(ResetPasswordDTO dto) {
+        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+            throw new IncorrectPasswordException("Passwords do not match.");
         }
 
-        PasswordResetToken passToken = passTokenOpt.get();
-
-        // Double-check na expiração (caso o usuário demore entre validar e enviar o form)
-        if (passToken.isTokenExpired()) {
-            throw new IllegalArgumentException("Token expirado.");
-        }
-
+        PasswordResetToken passToken = getValidTokenOrThrow(dto.getToken());
         User user = passToken.getUser();
 
-        // Criptografia obrigatória
-        user.setPassword(passwordEncoder.encode(newPassword));
+        if (passwordEncoder.matches(dto.getNewPassword(), user.getPassword())) {
+            throw new IncorrectPasswordException("The new password cannot be the same as the current one.");
+        }
+
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
         userRepository.save(user);
 
-        // IMPORTANTE: Invalida o token imediatamente após o uso (One-Time Use)
         tokenRepository.delete(passToken);
+        log.info("Password changed successfully for user ID: {}", user.getId());
+    }
+
+    private PasswordResetToken getValidTokenOrThrow(String token) {
+        if (token == null || token.isBlank())
+            throw new InvalidTokenException("Invalid Token.");
+
+        PasswordResetToken passToken = tokenRepository.findByToken(token)
+                .orElseThrow(() -> {
+                    log.warn("Attempted to use a non-existent token: {}", token);
+                    return new InvalidTokenException("Invalid Token");
+                });
+
+        if (passToken.isTokenExpired()) {
+            log.warn("Attempted to use an expired token. User ID: {}", passToken.getUser().getId());
+            throw new InvalidTokenException("Expired Token");
+        }
+
+        return passToken;
     }
 }

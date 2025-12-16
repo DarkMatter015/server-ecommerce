@@ -87,8 +87,8 @@ public class WebSecurity {
 
             authorize
                     // ROTAS PÚBLICAS (permitAll)
-                    .requestMatchers(HttpMethod.POST, "/users", "/shipment/products", "/forget-password").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/products/**", "/categories/**", "/payments/**", "/cep/validate/", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/users", "/shipment/products", "/auth/forgot-password", "/auth/reset-password").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/products/**", "/categories/**", "/payments/**", "/cep/validate/", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/auth/validate-reset-token").permitAll()
                     .requestMatchers("/error/**").permitAll()
 
                     // ROTAS DE ADMIN

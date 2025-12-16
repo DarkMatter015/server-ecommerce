@@ -8,5 +8,5 @@ import java.util.Optional;
 public interface UserRepository extends BaseRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
-    User findByCpf(String cpf);
+    Optional<User> findByCpf(String cpf);
 }

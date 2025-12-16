@@ -12,10 +12,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ResetPasswordRequestDTO {
-
+public class ChangePasswordDTO {
     @NotBlank
-    private String token;
+    private String currentPassword;
 
     @NotBlank
     @Size(min = 6, message = "{field.password.size}")
@@ -23,5 +22,5 @@ public class ResetPasswordRequestDTO {
     private String newPassword;
 
     @NotBlank
-    private String confirm_password;
+    private String confirmPassword;
 }

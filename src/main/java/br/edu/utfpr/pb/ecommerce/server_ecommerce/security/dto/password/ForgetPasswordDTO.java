@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ForgetPasswordRequestDTO {
+public class ForgetPasswordDTO {
 
     @NotBlank
     @Email

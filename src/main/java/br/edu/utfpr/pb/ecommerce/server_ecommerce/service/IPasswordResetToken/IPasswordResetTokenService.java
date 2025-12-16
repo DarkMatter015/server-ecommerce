@@ -1,9 +1,10 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IPasswordResetToken;
 
-import java.util.Optional;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.security.dto.password.ForgetPasswordDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.security.dto.password.ResetPasswordDTO;
 
 public interface IPasswordResetTokenService {
-    Optional<String> createPasswordResetTokenForEmail(String email);
-    boolean validatePasswordResetToken(String token);
-    void changeUserPassword(String token, String newPassword);
+    void createPasswordResetTokenForEmail(ForgetPasswordDTO dto);
+    void validatePasswordResetToken(String token);
+    void changeUserPassword(ResetPasswordDTO dto);
 }

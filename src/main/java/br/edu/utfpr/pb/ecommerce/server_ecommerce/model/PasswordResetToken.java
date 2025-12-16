@@ -2,6 +2,7 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -20,6 +21,7 @@ public class PasswordResetToken {
     private Long id;
 
     @NotNull
+    @Size(min = 36, max = 36)
     private String token;
 
     @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)

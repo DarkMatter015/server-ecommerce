@@ -2,13 +2,16 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.user;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserUpdateDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.BusinessException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.RoleNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.UserNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.password.IncorrectPasswordException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Role;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.AddressRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.RoleRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.security.dto.password.ChangePasswordDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IUser.IUserRequestService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudRequestServiceImpl;
@@ -18,12 +21,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.AuthValidation.isAdmin;
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.AuthValidation.isAuthenticatedAndAdmin;
-import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.*;
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.validateStringNullOrBlank;
 
 
 @Service
@@ -36,10 +40,10 @@ public class UserRequestServiceImpl extends CrudRequestServiceImpl<User, UserUpd
     private final RoleRepository roleRepository;
     private final AddressRepository addressRepository;
 
-    public UserRequestServiceImpl(UserRepository userRepository, UserResponseServiceImpl userResponseService, UserResponseServiceImpl userResponseService1, AuthService authService, RoleRepository roleRepository, AddressRepository addressRepository) {
+    public UserRequestServiceImpl(UserRepository userRepository, UserResponseServiceImpl userResponseService, AuthService authService, RoleRepository roleRepository, AddressRepository addressRepository) {
         super(userRepository, userResponseService);
         this.userRepository = userRepository;
-        this.userResponseService = userResponseService1;
+        this.userResponseService = userResponseService;
         this.authService = authService;
         this.roleRepository = roleRepository;
         this.addressRepository = addressRepository;
@@ -80,6 +84,8 @@ public class UserRequestServiceImpl extends CrudRequestServiceImpl<User, UserUpd
         user.setDisplayName(userRequestDTO.getDisplayName());
         user.setEmail(userRequestDTO.getEmail());
         user.setPassword(bCryptPasswordEncoder.encode(userRequestDTO.getPassword()));
+        Optional<User> optionalUser = userRepository.findByCpf(userRequestDTO.getCpf());
+        if (optionalUser.isPresent()) throw new BusinessException("CPF already in use.");
         user.setCpf(userRequestDTO.getCpf());
 
         if (!isAuthenticatedAndAdmin(authService)) {
@@ -177,5 +183,13 @@ public class UserRequestServiceImpl extends CrudRequestServiceImpl<User, UserUpd
             addressRepository.softDeleteByUserId(user.getId());
             userRepository.softDeleteById(user.getId());
         });
+    }
+
+    public void changePassword(ChangePasswordDTO dto) {
+        if (!bCryptPasswordEncoder.matches(dto.getCurrentPassword(), authService.getAuthenticatedUser().getPassword())) throw new IncorrectPasswordException("The current password is incorrect.");
+        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) throw new IncorrectPasswordException("The confirm password does not match the new password");
+        User user = authService.getAuthenticatedUser();
+        user.setPassword(bCryptPasswordEncoder.encode(dto.getNewPassword()));
+        userRepository.save(user);
     }
 }
