@@ -3,10 +3,6 @@ name: Java API CI
 permissions:
   contents: read
 
-env:
-  EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-  EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
-
 on:
   push:
     branches: 
@@ -18,8 +14,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    environment:
-      name: testing
 
     services:
       rabbitmq:
