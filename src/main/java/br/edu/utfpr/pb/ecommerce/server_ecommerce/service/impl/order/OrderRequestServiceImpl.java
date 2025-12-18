@@ -95,7 +95,7 @@ public class OrderRequestServiceImpl extends CrudRequestServiceImpl<Order, Order
         return orderRepository.save(order);
     }
 
-    private Map<Long, Product> findAndValidateProducts(List<OrderItemRequestDTO> orderItems) {
+    private Ma<Long, Product> findAndValidateProducts(List<OrderItemRequestDTO> orderItems) {
         Set<Long> productIds = orderItems.stream()
                 .map(OrderItemRequestDTO::getProductId)
                 .collect(Collectors.toSet());
