@@ -46,7 +46,6 @@ public class Order extends BaseEntity implements Ownable {
     @Embedded
     private EmbeddedAddress address;
 
-    @NotNull
     @Embedded
     private EmbeddedShipmentDTO shipment;
 

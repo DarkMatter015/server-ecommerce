@@ -5,29 +5,17 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.base.BaseRepository
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.ICRUD.ICrudRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.beans.PropertyDescriptor;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
+
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.getNullPropertyNames;
 
 @RequiredArgsConstructor
 public abstract class CrudRequestServiceImpl<T extends BaseEntity, UD, ID extends Serializable> implements ICrudRequestService<T, UD, ID> {
 
     private final BaseRepository<T, ID> repository;
     private final CrudResponseServiceImpl<T, ID> crudResponseService;
-
-    @Override
-    @Transactional
-    public T activate(ID id) {
-        T entity = crudResponseService.findById(id);
-        if (entity.isActive()) return entity;
-        entity.setDeletedAt(null);
-        return repository.save(entity);
-    }
 
     /**
      * Copia as propriedades não-nulas do DTO para a Entidade.
@@ -38,22 +26,13 @@ public abstract class CrudRequestServiceImpl<T extends BaseEntity, UD, ID extend
         BeanUtils.copyProperties(sourceDTO, targetEntity, getNullPropertyNames(sourceDTO));
     }
 
-    private String[] getNullPropertyNames(Object source) {
-        final BeanWrapper src = new BeanWrapperImpl(source);
-        PropertyDescriptor[] pds = src.getPropertyDescriptors();
-
-        Set<String> emptyNames = new HashSet<>();
-        for (PropertyDescriptor pd : pds) {
-            Object srcValue = src.getPropertyValue(pd.getName());
-            if (srcValue == null) emptyNames.add(pd.getName());
-            if (srcValue instanceof String && ((String) srcValue).trim().isBlank()) emptyNames.add(pd.getName());
-        }
-
-        // Campos que não devem ser sobrescritos (redundancia)
-        emptyNames.add("id");
-
-        String[] result = new String[emptyNames.size()];
-        return emptyNames.toArray(result);
+    @Override
+    @Transactional
+    public T activate(ID id) {
+        T entity = crudResponseService.findById(id);
+        if (entity.isActive()) return entity;
+        entity.setDeletedAt(null);
+        return repository.save(entity);
     }
     
     @Override
