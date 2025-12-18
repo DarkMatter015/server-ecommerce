@@ -1,6 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.BaseIntegrationTest;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.AbstractIntegrationTest;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.dto.AddressCEP;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.service.CepService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.request.ShipmentRequestDTO;
@@ -28,7 +28,9 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 
-public class OrderControllerTest extends BaseIntegrationTest {
+import org.springframework.test.context.jdbc.Sql;
+
+public class OrderControllerIntegrationTest extends AbstractIntegrationTest {
 
     private static final String API_URL = "/orders";
 
