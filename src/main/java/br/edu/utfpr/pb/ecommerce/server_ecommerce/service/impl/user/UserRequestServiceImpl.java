@@ -11,7 +11,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.AddressRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.RoleRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.security.dto.password.ChangePasswordDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.password.ChangePasswordDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IUser.IUserRequestService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudRequestServiceImpl;

@@ -46,7 +46,7 @@ public class Product extends BaseEntity {
 
     public void decreaseQuantity(Integer decreaseQuantity){
         if (decreaseQuantity > this.quantityAvailableInStock)
-            throw new InvalidQuantityException("Quantity greater than that available in the product stock.");
+            throw new InvalidQuantityException("Quantity greater than that available in the product stock. Quantity available in stock: " + this.quantityAvailableInStock + ".");
         this.quantityAvailableInStock -= decreaseQuantity;
     }
 

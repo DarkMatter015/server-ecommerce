@@ -12,10 +12,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class EmbeddedAddress {
 
-    @Column(name = "address_street", nullable = false, length = 255)
+    @Column(name = "address_street", length = 255)
     private String street;
 
-    @Column(name = "address_number", nullable = false)
+    @Column(name = "address_number")
     private String number;
 
     @Column(name = "address_complement")
@@ -24,12 +24,12 @@ public class EmbeddedAddress {
     @Column(name = "address_neighborhood")
     private String neighborhood;
 
-    @Column(name = "address_city", nullable = false, length = 255)
+    @Column(name = "address_city", length = 255)
     private String city;
 
-    @Column(name = "address_state", nullable = false, length = 255)
+    @Column(name = "address_state", length = 255)
     private String state;
 
-    @Column(name = "address_cep", nullable = false, length = 8)
+    @Column(name = "address_cep", length = 8)
     private String cep;
 }

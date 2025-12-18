@@ -44,7 +44,7 @@ public class OrderControllerTest extends BaseIntegrationTest {
         // 1. Configurar o Mock do Frete
         // Quando o service chamar o calculo, retornamos um frete falso válido
         ShipmentResponseDTO mockShipment = new ShipmentResponseDTO(
-                123L, // ID que vamos mandar no JSON
+                1L, // ID que vamos mandar no JSON
                 "SEDEX Mock",
                 (BigDecimal.valueOf(20.00)),
                 (BigDecimal.valueOf(20.00)),
@@ -65,9 +65,9 @@ public class OrderControllerTest extends BaseIntegrationTest {
 //        // 2. Cria o DTO de requisição do pedido
         AddressRequestDTO addressDTO = new AddressRequestDTO("12", null, "85501000");
         OrderRequestDTO newOrder = OrderRequestDTO.builder()
-                .paymentId(1L) // PIX do test-data.sql
+                .paymentId(1L)
                 .address(addressDTO)
-                .shipmentId(1L) // ID do frete (simulando a escolha do usuário)
+                .shipmentId(1L)
                 .orderItems(List.of(
                         OrderItemRequestDTO.builder().productId(1L).quantity(1).build() // Fender do test-data.sql
                 ))
@@ -88,7 +88,9 @@ public class OrderControllerTest extends BaseIntegrationTest {
         Assertions.assertNotNull(response.getBody());
         assertThat(response.getBody().getId()).isNotNull();
         assertThat(response.getBody().getOrderItems()).hasSize(1);
-        assertThat(response.getBody().getAddress().getStreet()).isEqualTo("Avenida Tupi"); // Verifica se o endereço do mock foi usado
-        assertThat(response.getBody().getStatus()).isEqualTo("PENDENTE"); // Verifica se o endereço do mock foi usado
+        assertThat(response.getBody().getAddress().getStreet()).isEqualTo("Avenida Tupi");
+        assertThat(response.getBody().getShipment().id()).isEqualTo(1L);
+        assertThat(response.getBody().getShipment().name()).isEqualTo(null);
+        assertThat(response.getBody().getStatus()).isEqualTo("PROCESSANDO");
     }
 }

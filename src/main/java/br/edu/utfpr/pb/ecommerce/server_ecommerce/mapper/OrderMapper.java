@@ -2,7 +2,7 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.dto.AddressCEP;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.service.CepService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderEventDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.dto.order.OrderEventDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRequestDTO;
@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.MapperUtils.map;
-import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.validateQuantityOfProducts;
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.validateQuantityOfProduct;
 
 @Component
 @RequiredArgsConstructor
@@ -55,7 +55,7 @@ public class OrderMapper {
 
                     OrderItem item = new OrderItem();
                     item.setProduct(product);
-                    validateQuantityOfProducts(itemDTO.getQuantity(), product);
+                    validateQuantityOfProduct(itemDTO.getQuantity(), product);
                     item.setQuantity(itemDTO.getQuantity());
                     product.decreaseQuantity(itemDTO.getQuantity());
 

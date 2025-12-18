@@ -13,7 +13,7 @@ import java.util.Set;
 public final class ValidationUtils {
     private ValidationUtils() {}
 
-    public static void validateQuantityOfProducts(Integer quantity, Product product) {
+    public static void validateQuantityOfProduct(Integer quantity, Product product) {
         if (quantity == null || quantity > product.getQuantityAvailableInStock())
             throw new InvalidQuantityException("Quantity greater than that available in the product stock. Quantity available in stock: "
                     + product.getQuantityAvailableInStock());

@@ -18,7 +18,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudRequestS
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.validateQuantityOfProducts;
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.validateQuantityOfProduct;
 
 @Service
 public class OrderItemsRequestServiceImpl extends CrudRequestServiceImpl<OrderItem, OrderItemUpdateDTO, Long> implements IOrderItemsRequestService {
@@ -53,7 +53,7 @@ public class OrderItemsRequestServiceImpl extends CrudRequestServiceImpl<OrderIt
             if (updateDTO.getQuantity() > item.getQuantity()) {
                 Integer decreaseQuantity = updateDTO.getQuantity() - item.getQuantity();
 
-                validateQuantityOfProducts(decreaseQuantity, item.getProduct());
+                validateQuantityOfProduct(decreaseQuantity, item.getProduct());
                 item.setQuantity(updateDTO.getQuantity());
                 item.getProduct().decreaseQuantity(decreaseQuantity);
             }
@@ -81,7 +81,7 @@ public class OrderItemsRequestServiceImpl extends CrudRequestServiceImpl<OrderIt
         item.setOrder(order);
         item.setProduct(product);
 
-        validateQuantityOfProducts(dto.getQuantity(), product);
+        validateQuantityOfProduct(dto.getQuantity(), product);
         item.setQuantity(dto.getQuantity());
         product.decreaseQuantity(dto.getQuantity());
 

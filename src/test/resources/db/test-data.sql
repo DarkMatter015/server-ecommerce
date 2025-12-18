@@ -14,7 +14,8 @@ INSERT INTO tb_category (id, name) VALUES (1, 'Guitarras');
 INSERT INTO tb_payment (id, name) VALUES (1, 'PIX');
 INSERT INTO tb_product (id, name, price, quantity_available_in_stock, category_id) VALUES (1, 'Fender Stratocaster', 8990.00, 10, 1);
 INSERT INTO tb_address (id, user_id, street, number, city, state, neighborhood, cep) VALUES (1, 2, 'Rua dos Testes', '123', 'Test City', 'TS', 'Test Neighborhood', '85501000');
-INSERT INTO tb_order_status (id, name) VALUES (1, 'PENDENTE');
+INSERT INTO tb_order_status (id, name) VALUES (1, 'PROCESSANDO');
+INSERT INTO tb_order_status (id, name) VALUES (2, 'PENDENTE');
 
 -- ==================================================================================
 -- REINICIA AS SEQUENCES DO H2 PARA EVITAR CONFLITOS DE CHAVE PRIMÁRIA
