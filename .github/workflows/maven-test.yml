@@ -18,6 +18,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    environment:
+      name: testing
 
     services:
       rabbitmq:
