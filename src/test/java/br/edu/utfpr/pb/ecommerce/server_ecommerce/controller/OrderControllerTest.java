@@ -8,14 +8,15 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.resp
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.response.PackageResponse;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.response.ShipmentResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.service.MelhorEnvioService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.publisher.order.OrderPublisher;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRequestDTO;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,10 +32,12 @@ public class OrderControllerTest extends BaseIntegrationTest {
 
     private static final String API_URL = "/orders";
 
-    @Mock
+    @MockitoBean
     private CepService cepService;
-    @Mock
+    @MockitoBean
     private MelhorEnvioService melhorEnvioService;
+    @MockitoBean
+    private OrderPublisher orderPublisher;
 
     @Test
     public void postOrder_whenUserAuthenticated_thenCreateOrder() {
@@ -81,16 +84,50 @@ public class OrderControllerTest extends BaseIntegrationTest {
                 OrderResponseDTO.class
         );
 
-        System.out.println(response.getBody());
-
         // 4. Valida a resposta
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         Assertions.assertNotNull(response.getBody());
         assertThat(response.getBody().getId()).isNotNull();
         assertThat(response.getBody().getOrderItems()).hasSize(1);
-        assertThat(response.getBody().getAddress().getStreet()).isEqualTo("Avenida Tupi");
+        assertThat(response.getBody().getAddress().getStreet()).isEqualTo("Rua Teste");
         assertThat(response.getBody().getShipment().id()).isEqualTo(1L);
         assertThat(response.getBody().getShipment().name()).isEqualTo(null);
         assertThat(response.getBody().getStatus()).isEqualTo("PROCESSANDO");
+    }
+
+    @Test
+    public void postOrder_whenStockIsInsufficient_thenReturnsBadRequest() {
+        String userToken = authenticateAsUser();
+
+        // 1. Configurar o Mock do Frete e CEP
+        ShipmentResponseDTO mockShipment = new ShipmentResponseDTO(
+                1L, "SEDEX Mock", BigDecimal.valueOf(20.00), BigDecimal.valueOf(20.00), BigDecimal.valueOf(0.00) , "BRL", 3, new ArrayList<>(), new CompanyResponse(1L, "Correios", "url"), null
+        );
+        AddressCEP mockAddressCep = new AddressCEP("85501000", "PR", "Pato Branco", "Centro", "Rua Teste");
+        Mockito.when(cepService.getAddressByCEP("85501000")).thenReturn(mockAddressCep);
+        Mockito.when(melhorEnvioService.calculateShipmentByProducts(any(ShipmentRequestDTO.class)))
+                .thenReturn(List.of(mockShipment));
+
+        // 2. Cria pedido com quantidade maior que o estoque (10)
+        AddressRequestDTO addressDTO = new AddressRequestDTO("12", null, "85501000");
+        OrderRequestDTO newOrder = OrderRequestDTO.builder()
+                .paymentId(1L)
+                .address(addressDTO)
+                .shipmentId(1L)
+                .orderItems(List.of(
+                        OrderItemRequestDTO.builder().productId(1L).quantity(999).build()
+                ))
+                .build();
+
+        // 3. Executa a requisição
+        ResponseEntity<OrderResponseDTO> response = testRestTemplate.exchange(
+                API_URL,
+                HttpMethod.POST,
+                getRequestEntity(newOrder, userToken),
+                OrderResponseDTO.class
+        );
+
+        // 4. Valida se retornou 400 Bad Request
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 }
