@@ -3,6 +3,10 @@ name: Java API CI
 permissions:
   contents: read
 
+env:
+  EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+  EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+
 on:
   push:
     branches: 
