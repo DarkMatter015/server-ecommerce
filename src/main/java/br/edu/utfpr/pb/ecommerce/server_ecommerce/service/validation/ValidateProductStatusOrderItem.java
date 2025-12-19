@@ -1,0 +1,21 @@
+package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.validation;
+
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderItemDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.BusinessException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
+import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+import java.util.Map;
+
+@RequiredArgsConstructor
+public class ValidateProductStatusOrderItem implements IValidationOrderItem {
+
+    @Override
+    public void validate(List<OrderItemDTO> orderItemDTOS, Map<Long, Product> productMap) {
+        for (OrderItemDTO item : orderItemDTOS) {
+            Product product = productMap.get(item.getProductId());
+            if (!product.isActive()) throw new BusinessException("Product with id " + product.getId() + " is not active.");
+        }
+    }
+}

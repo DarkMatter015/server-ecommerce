@@ -41,7 +41,6 @@ public class OrderItemsRequestServiceImpl extends CrudRequestServiceImpl<OrderIt
                 .orElseThrow(() -> new OrderItemNotFoundException("Order item not found or you don't have permission to access it."));
     }
 
-
     @Override
     @Transactional
     public OrderItem update(Long id, OrderItemUpdateDTO updateDTO) {
@@ -56,13 +55,13 @@ public class OrderItemsRequestServiceImpl extends CrudRequestServiceImpl<OrderIt
                 validateQuantityOfProduct(decreaseQuantity, item.getProduct());
                 item.setQuantity(updateDTO.getQuantity());
                 item.getProduct().decreaseQuantity(decreaseQuantity);
-            }
-            else if (updateDTO.getQuantity() < item.getQuantity()) {
+                productRepository.save(item.getProduct());
+            } else if (updateDTO.getQuantity() < item.getQuantity()) {
                 item.getProduct().increaseQuantity(item.getQuantity() - updateDTO.getQuantity());
                 item.setQuantity(updateDTO.getQuantity());
+                productRepository.save(item.getProduct());
             }
         }
-
 
         return orderItemsRepository.save(item);
     }
@@ -87,6 +86,7 @@ public class OrderItemsRequestServiceImpl extends CrudRequestServiceImpl<OrderIt
 
         order.addItem(item);
 
+        productRepository.save(product);
         return orderItemsRepository.save(item);
     }
 
@@ -95,7 +95,6 @@ public class OrderItemsRequestServiceImpl extends CrudRequestServiceImpl<OrderIt
     public void deleteById(Long id) {
         User user = authService.getAuthenticatedUser();
         OrderItem item = findAndValidateOrderItem(id, user);
-
         orderItemsRepository.delete(item);
     }
 }

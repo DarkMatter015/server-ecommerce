@@ -31,13 +31,11 @@ public class OrderItemMapper {
 
         dto.setTotalPrice(item.getTotalPrice());
 
-        if (item.getOrder() != null) {
+        if (item.getOrder() != null)
             dto.setOrderId(item.getOrder().getId());
-        }
 
-        if (item.getProduct() != null) {
+        if (item.getProduct() != null)
             dto.setProduct(map(item.getProduct(), ProductResponseDTO.class, modelMapper));
-        }
 
         return dto;
     }
@@ -50,7 +48,11 @@ public class OrderItemMapper {
 
     public List<OrderItemRequestDTO> toRequestDTOList(List<OrderItem> items) {
         return items.stream()
-                .map(item -> new OrderItemRequestDTO(null, item.getProduct().getId(), item.getQuantity()))
+                .map(item -> new OrderItemRequestDTO(
+                        null,
+                        item.getProduct().getId(),
+                        item.getQuantity())
+                )
                 .collect(Collectors.toList());
     }
 }

@@ -1,17 +1,19 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.dto.AddressCEP;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.service.CepService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.dto.order.OrderEventDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressRequestDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderItemDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderResponseDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.payment.PaymentResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipmentDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.PaymentNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.ProductNotFoundException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.*;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.dto.order.OrderEventDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.OrderItem;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Payment;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.EmbeddedAddress;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.PaymentRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
@@ -19,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,37 +35,30 @@ public class OrderMapper {
 
     private final OrderItemMapper orderItemMapper;
     private final ModelMapper modelMapper;
-    private final CepService cepService;
-    private final AddressMapper addressMapper;
     private final PaymentRepository paymentRepository;
     private final ProductRepository productRepository;
 
-    private List<OrderItem> getOrderItems(Order order, List<OrderItemRequestDTO> orderItems) {
-        List<Long> productIds = orderItems.stream()
-                .map(OrderItemRequestDTO::getProductId)
-                .distinct()
-                .toList();
+    private List<OrderItem> getOrderItems(Order order, List<OrderItemDTO> orderItems) {
+        List<Long> productIds = orderItems.stream().map(OrderItemDTO::getProductId).distinct().toList();
 
         Map<Long, Product> productMap = productRepository.findAllById(productIds).stream()
                 .collect(Collectors.toMap(Product::getId, product -> product));
 
-        return orderItems.stream()
-                .map(itemDTO -> {
-                    Product product = productMap.get(itemDTO.getProductId());
-                    if (product == null) {
-                        throw new ProductNotFoundException("Product not found with id: " + itemDTO.getProductId());
-                    }
+        return orderItems.stream().map(itemDTO -> {
+            Product product = productMap.get(itemDTO.getProductId());
+            if (product == null)
+                throw new ProductNotFoundException("Product not found with id: " + itemDTO.getProductId());
 
-                    OrderItem item = new OrderItem();
-                    item.setProduct(product);
-                    validateQuantityOfProduct(itemDTO.getQuantity(), product);
-                    item.setQuantity(itemDTO.getQuantity());
-                    product.decreaseQuantity(itemDTO.getQuantity());
+            OrderItem item = new OrderItem();
+            item.setProduct(product);
+            validateQuantityOfProduct(itemDTO.getQuantity(), product);
+            item.setQuantity(itemDTO.getQuantity());
+            product.decreaseQuantity(itemDTO.getQuantity());
 
-                    item.setOrder(order);
+            item.setOrder(order);
 
-                    return item;
-                }).toList();
+            return item;
+        }).toList();
     }
 
     public OrderResponseDTO toDTO(Order order) {
@@ -85,22 +81,27 @@ public class OrderMapper {
     public Order toEntity(OrderRequestDTO dto) {
         Order order = new Order();
 
-        AddressCEP addressCEP = cepService.getAddressByCEP(dto.getAddress().getCep());
-        EmbeddedAddress embeddedAddress = addressMapper.toEmbeddedAddress(addressCEP, dto.getAddress());
+        EmbeddedAddress embeddedAddress = map(dto.getAddress(), EmbeddedAddress.class, modelMapper);
         order.setAddress(embeddedAddress);
 
         List<OrderItem> itens = getOrderItems(order, dto.getOrderItems());
 
         order.setOrderItems(itens);
 
-        Payment payment = paymentRepository.findById(dto.getPaymentId())
-                .orElseThrow(() -> new PaymentNotFoundException("Payment not found with this id: " + dto.getPaymentId()));
+        Payment payment = paymentRepository.findById(dto.getPaymentId()).orElseThrow(
+                () -> new PaymentNotFoundException("Payment not found with this id: " + dto.getPaymentId()));
 
         order.setPayment(payment);
 
         EmbeddedShipmentDTO shipmentDTO = new EmbeddedShipmentDTO(
-                dto.getShipmentId(), null, null, null, null, null, null, null
-        );
+                dto.getShipmentId(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
         order.setShipment(shipmentDTO);
 
         return order;
@@ -111,11 +112,11 @@ public class OrderMapper {
                 .orderId(order.getId())
                 .date(order.getData().toLocalDate())
                 .payment(order.getPayment())
-                .orderItems(new java.util.HashSet<>(orderItemMapper.toRequestDTOList(order.getOrderItems())))
-                .address(addressMapper.toRequestDTO(order.getAddress()))
+                .orderItems(new HashSet<>(orderItemMapper.toRequestDTOList(order.getOrderItems())))
+                .address(map(order.getAddress(), AddressRequestDTO.class, modelMapper))
                 .shipmentId(order.getShipment().id())
                 .userCpf(cpf)
                 .build();
     }
-    
+
 }

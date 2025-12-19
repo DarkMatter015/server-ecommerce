@@ -13,5 +13,4 @@ public class OrderItemsResponseServiceImpl extends CrudResponseServiceImpl<Order
     public OrderItemsResponseServiceImpl(OrderItemsRepository orderItemsRepository, AuthService authService) {
         super(orderItemsRepository, authService);
     }
-
 }

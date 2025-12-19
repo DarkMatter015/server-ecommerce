@@ -12,6 +12,5 @@ public class OrderResponseServiceImpl extends CrudResponseServiceImpl<Order, Lon
 
     public OrderResponseServiceImpl(OrderRepository orderRepository, AuthService authService) {
         super(orderRepository, authService);
-
     }
 }

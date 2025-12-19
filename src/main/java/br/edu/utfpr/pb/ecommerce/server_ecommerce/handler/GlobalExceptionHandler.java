@@ -69,7 +69,7 @@ public class GlobalExceptionHandler {
                 : HttpStatus.BAD_REQUEST.value();
 
         ApiErrorDTO error = new ApiErrorDTO(
-                "Error to call External API (MelhorEnvio)",
+                "Error to call External API",
                 status,
                 request.getServletPath(),
                 Map.of("detail", exception.getMessage())

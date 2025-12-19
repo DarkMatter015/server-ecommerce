@@ -1,7 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressRequestDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRequestDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -18,7 +17,8 @@ import java.util.List;
 public class OrderRequestDTO {
 
     @NotNull
-    private List<OrderItemRequestDTO> orderItems;
+    @Valid
+    private List<OrderItemDTO> orderItems;
 
     @NotNull
     @Valid
