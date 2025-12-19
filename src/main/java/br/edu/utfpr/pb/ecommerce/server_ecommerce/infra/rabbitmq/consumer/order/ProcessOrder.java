@@ -1,33 +1,39 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.consumer.order;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.dto.AddressCEP;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.service.CepService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.request.PostalCodeRequest;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.request.ShipmentProductRequest;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.request.ShipmentRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.response.ShipmentResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.service.MelhorEnvioService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.dto.order.OrderEventDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.BusinessException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.OrderNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.OrderStatusNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.ProductNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.dto.order.OrderEventDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ProductMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ShipmentMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.EmbeddedAddress;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderStatusRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.MapperUtils.map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -40,8 +46,9 @@ public class ProcessOrder {
     private final OrderRepository orderRepository;
     private final ShipmentMapper shipmentMapper;
     private final MelhorEnvioService melhorEnvioService;
+    private final CepService cepService;
     private final ProductRepository productRepository;
-
+    private final ModelMapper modelMapper;
 
     @Transactional
     public void processOrder(OrderEventDTO orderEventDTO) {
@@ -54,7 +61,9 @@ public class ProcessOrder {
 
         try {
             log.info("Validating Order Event: {}", orderEventDTO);
-            validateOrder(order, orderEventDTO);
+            Map<Product, Integer> productQuantityMap = validateOrder(orderEventDTO);
+            validateAddress(order, orderEventDTO);
+            validateShipment(order, orderEventDTO, productQuantityMap);
 
             order.setStatus(orderStatusRepository.findByName("PENDENTE").orElseThrow(() -> new OrderStatusNotFoundException("Error: Order status is not found.")));
             orderRepository.save(order);
@@ -65,7 +74,7 @@ public class ProcessOrder {
         }
     }
 
-    private void validateOrder(Order order, OrderEventDTO orderEventDTO) {
+    private Map<Product, Integer> validateOrder(OrderEventDTO orderEventDTO) {
         Map<Long, Integer> quantityByIdMap = orderEventDTO.orderItems().stream()
                 .collect(Collectors.toMap(OrderItemRequestDTO::getProductId, OrderItemRequestDTO::getQuantity));
 
@@ -85,6 +94,10 @@ public class ProcessOrder {
             throw new ProductNotFoundException("One or more products were not found.");
         }
 
+        return productQuantityMap;
+    }
+
+    private void validateShipment(Order order, OrderEventDTO orderEventDTO, Map<Product, Integer> productQuantityMap) {
         ShipmentRequestDTO shipmentRequestDTO = new ShipmentRequestDTO();
         shipmentRequestDTO.setTo(new PostalCodeRequest(orderEventDTO.address().getCep()));
 
@@ -99,5 +112,10 @@ public class ProcessOrder {
                 .orElseThrow(() -> new BusinessException("The selected shipping method is no longer available or is invalid for this order."));
 
         order.setShipment(shipmentMapper.toEmbedded(selectedShipment));
+    }
+
+    private void validateAddress(Order order, OrderEventDTO orderEventDTO) {
+        AddressCEP addressCEP = cepService.getAddressByCEP(orderEventDTO.address().getCep());
+        order.setAddress(map(addressCEP, EmbeddedAddress.class, modelMapper));
     }
 }

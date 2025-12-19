@@ -1,6 +1,5 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.model;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.InvalidQuantityException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
@@ -11,6 +10,8 @@ import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 
 import java.math.BigDecimal;
+
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.validateQuantityOfProduct;
 
 @Entity
 @Table(name = "tb_product")
@@ -45,8 +46,7 @@ public class Product extends BaseEntity {
     private Category category;
 
     public void decreaseQuantity(Integer decreaseQuantity){
-        if (decreaseQuantity > this.quantityAvailableInStock)
-            throw new InvalidQuantityException("Quantity greater than that available in the product stock. Quantity available in stock: " + this.quantityAvailableInStock + ".");
+        validateQuantityOfProduct(decreaseQuantity, this);
         this.quantityAvailableInStock -= decreaseQuantity;
     }
 

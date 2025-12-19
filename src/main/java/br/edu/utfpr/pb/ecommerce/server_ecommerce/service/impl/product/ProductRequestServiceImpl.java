@@ -34,7 +34,8 @@ public class ProductRequestServiceImpl extends CrudRequestServiceImpl<Product, P
         Product product = productResponseService.findById(id);
         if (product.isActive()) return product;
         Category category = categoryResponseService.findById(product.getCategory().getId());
-        if (!category.isActive()) throw new BusinessException("Activate the category first. Category: " + category.getName() + ", ID: " + category.getId());
+        if (!category.isActive())
+            throw new BusinessException("Activate the category first. Category: " + category.getName() + ", ID: " + category.getId());
         product.setDeletedAt(null);
         return productRepository.save(product);
     }
@@ -42,20 +43,19 @@ public class ProductRequestServiceImpl extends CrudRequestServiceImpl<Product, P
     @Override
     @Transactional
     public Product update(Long id, ProductUpdateDTO updateDTO) {
-        Product existingProduct = productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found."));
+        Product existingProduct = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("Product not found."));
 
         if (updateDTO.getName() != null) {
             validateStringNullOrBlank(updateDTO.getName());
             existingProduct.setName(updateDTO.getName());
         }
 
-        if (updateDTO.getDescription() != null){
+        if (updateDTO.getDescription() != null) {
             validateStringNullOrBlank(updateDTO.getDescription());
             existingProduct.setDescription(updateDTO.getDescription());
         }
 
-        if (updateDTO.getPrice() != null){
+        if (updateDTO.getPrice() != null) {
             existingProduct.setPrice(updateDTO.getPrice());
         }
 
@@ -64,13 +64,13 @@ public class ProductRequestServiceImpl extends CrudRequestServiceImpl<Product, P
             existingProduct.setUrlImage(updateDTO.getUrlImage());
         }
 
-        if (updateDTO.getCategoryId() != null){
+        if (updateDTO.getCategoryId() != null) {
             Category category = categoryResponseService.findById(updateDTO.getCategoryId());
 
             existingProduct.setCategory(category);
         }
 
-        if (updateDTO.getQuantityAvailableInStock() != null){
+        if (updateDTO.getQuantityAvailableInStock() != null) {
             existingProduct.setQuantityAvailableInStock(updateDTO.getQuantityAvailableInStock());
         }
 
