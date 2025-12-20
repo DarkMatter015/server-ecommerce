@@ -5,12 +5,16 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRespons
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.OrderItemMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.OrderItem;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IOrderItems.IOrderItemsResponseService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("orderItems")
+@SecurityRequirement(name = "bearer-key")
+@Tag(name = "OrderItem Read", description = "Endpoints for reading order items")
 public class ReadOrderItemsController extends ReadController<OrderItem, OrderItemResponseDTO, Long> {
     private final OrderItemMapper orderItemMapper;
 
