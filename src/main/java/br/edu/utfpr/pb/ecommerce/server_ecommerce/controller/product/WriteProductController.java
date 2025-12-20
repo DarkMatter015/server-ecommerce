@@ -7,12 +7,14 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.product.ProductUpdateDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ProductMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IProduct.IProductRequestService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("products")
+@Tag(name = "Product Write", description = "Endpoints for writing products")
 public class WriteProductController extends WriteController<Product, ProductRequestDTO, ProductResponseDTO, ProductUpdateDTO, Long> {
 
     private final ProductMapper productMapper;

@@ -6,6 +6,10 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRespons
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemUpdateDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.OrderItem;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.orderItem.OrderItemsRequestServiceImpl;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +21,7 @@ import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ControllerUtils.cr
 
 @RestController
 @RequestMapping("orderItems")
+@Tag(name = "OrderItem Write", description = "Endpoints for writing order items")
 public class WriteOrderItemsController extends WriteController<OrderItem, OrderItemRequestDTO, OrderItemResponseDTO, OrderItemUpdateDTO, Long> {
     private final OrderItemsRequestServiceImpl orderItemsRequestService;
 
@@ -25,6 +30,11 @@ public class WriteOrderItemsController extends WriteController<OrderItem, OrderI
         this.orderItemsRequestService = orderItemsRequestService;
     }
 
+    @Operation(summary = "Create order item", description = "Creates a new order item")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Order item created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid data")
+    })
     @Override
     public ResponseEntity<OrderItemResponseDTO> create(@RequestBody @Valid OrderItemRequestDTO dto) {
         OrderItem savedItem = orderItemsRequestService.createOrderItem(dto);

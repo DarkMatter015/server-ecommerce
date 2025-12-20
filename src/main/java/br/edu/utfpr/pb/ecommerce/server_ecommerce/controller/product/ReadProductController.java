@@ -1,9 +1,14 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.product;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.ReadController;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.product.ProductResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.product.ProductResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IProduct.IProductResponseService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.ReadController;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("products")
+@Tag(name = "Product Read", description = "Endpoints for reading products")
 public class ReadProductController extends ReadController<Product, ProductResponseDTO, Long> {
 
     private final IProductResponseService productResponseService;
@@ -25,9 +31,13 @@ public class ReadProductController extends ReadController<Product, ProductRespon
         this.productResponseService = productResponseService1;
     }
 
+    @Operation(summary = "Filter products", description = "Returns a paginated list of products filtered by name and category")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully filtered products")
+    })
     @GetMapping("/filter")
-    public ResponseEntity<Page<ProductResponseDTO>> findAllByCategory(@RequestParam(required = false) String name,
-                                                                      @RequestParam(required = false) String category,
+    public ResponseEntity<Page<ProductResponseDTO>> findAllByCategory(@Parameter(description = "Product name") @RequestParam(required = false) String name,
+                                                                      @Parameter(description = "Category name") @RequestParam(required = false) String category,
                                                                       @PageableDefault(size = 10) Pageable pageable) {
         return ResponseEntity.ok(productResponseService.findByCriteria(name, category, pageable).map(this::convertToDto));
     }
