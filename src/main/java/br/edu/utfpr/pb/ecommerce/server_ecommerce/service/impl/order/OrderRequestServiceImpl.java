@@ -15,7 +15,8 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IOrder.IOrderRequestService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudRequestServiceImpl;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.validation.IValidationOrderItem;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.validation.order.IValidationOrder;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.validation.orderItem.IValidationOrderItem;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -39,8 +40,9 @@ public class OrderRequestServiceImpl extends CrudRequestServiceImpl<Order, Order
     private final OrderStatusRepository orderStatusRepository;
     private final ProductRepository productRepository;
     private final List<IValidationOrderItem> iValidationOrderItems;
+    private final List<IValidationOrder> iValidationOrders;
 
-    public OrderRequestServiceImpl(OrderRepository orderRepository, OrderResponseServiceImpl orderResponseService, AuthService authService, ModelMapper modelMapper, OrderMapper orderMapper, OrderPublisher orderPublisher, OrderStatusRepository orderStatusRepository, ProductRepository productRepository, List<IValidationOrderItem> iValidationOrderItems) {
+    public OrderRequestServiceImpl(OrderRepository orderRepository, OrderResponseServiceImpl orderResponseService, AuthService authService, ModelMapper modelMapper, OrderMapper orderMapper, OrderPublisher orderPublisher, OrderStatusRepository orderStatusRepository, ProductRepository productRepository, List<IValidationOrderItem> iValidationOrderItems, List<IValidationOrder> iValidationOrders) {
         super(orderRepository, orderResponseService);
         this.orderRepository = orderRepository;
         this.authService = authService;
@@ -50,6 +52,7 @@ public class OrderRequestServiceImpl extends CrudRequestServiceImpl<Order, Order
         this.orderStatusRepository = orderStatusRepository;
         this.productRepository = productRepository;
         this.iValidationOrderItems = iValidationOrderItems;
+        this.iValidationOrders = iValidationOrders;
     }
 
     private void validateOrderOwnership(Order order) {
@@ -83,6 +86,7 @@ public class OrderRequestServiceImpl extends CrudRequestServiceImpl<Order, Order
     }
 
     private Order create(OrderRequestDTO request, User user) {
+        iValidationOrders.forEach(v -> v.validate(request));
         Map<Long, Product> productMap = getAndValidateProducts(request.getOrderItems(), productRepository);
         iValidationOrderItems.forEach(validation -> validation.validate(request.getOrderItems(), productMap));
         Order order = orderMapper.toEntity(request);

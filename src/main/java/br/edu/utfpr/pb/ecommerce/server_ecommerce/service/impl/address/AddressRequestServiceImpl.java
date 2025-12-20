@@ -1,7 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.address;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.dto.AddressCEP;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.exception.CepNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.service.CepService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressUpdateDTO;
@@ -69,12 +68,7 @@ public class AddressRequestServiceImpl extends CrudRequestServiceImpl<Address, A
     @Transactional
     public Address createAddress(AddressRequestDTO addressDTO) {
 
-        AddressCEP cepData;
-        try {
-            cepData = cepService.getAddressByCEP(addressDTO.getCep());
-        } catch (Exception e) {
-            throw new CepNotFoundException("CEP not found or invalid.");
-        }
+        AddressCEP cepData = cepService.getAddressByCEP(addressDTO.getCep());
 
         Address address = map(cepData, Address.class, modelMapper);
         address.setNumber(addressDTO.getNumber());
