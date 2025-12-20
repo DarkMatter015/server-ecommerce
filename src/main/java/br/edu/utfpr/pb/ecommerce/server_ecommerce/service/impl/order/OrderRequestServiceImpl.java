@@ -2,7 +2,6 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.order;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderUpdateDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.OrderNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.OrderStatusNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.publisher.order.OrderPublisher;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.OrderMapper;
@@ -26,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.MapperUtils.map;
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.findAndValidateOrder;
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.getAndValidateProducts;
 
 @Service
@@ -52,16 +52,18 @@ public class OrderRequestServiceImpl extends CrudRequestServiceImpl<Order, Order
         this.iValidationOrderItems = iValidationOrderItems;
     }
 
-    private Order findAndValidateOrder(Long id, User user) {
-        return orderRepository.findByIdAndUser(id, user)
-                .orElseThrow(() -> new OrderNotFoundException("Order not found."));
+    private void validateOrderOwnership(Order order) {
+        User user = authService.getAuthenticatedUser();
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("You don't have permission to modify this order!");
+        }
     }
 
     @Override
     @Transactional
     public Order update(Long id, OrderUpdateDTO updateDTO) {
         User user = authService.getAuthenticatedUser();
-        Order order = findAndValidateOrder(id, user);
+        Order order = findAndValidateOrder(id, user, orderRepository);
 
         if (updateDTO.getAddress() != null) {
             EmbeddedAddress newAddress = map(updateDTO.getAddress(), EmbeddedAddress.class, modelMapper);
@@ -94,19 +96,14 @@ public class OrderRequestServiceImpl extends CrudRequestServiceImpl<Order, Order
     @Transactional
     public void deleteById(Long id) {
         User user = authService.getAuthenticatedUser();
-        findAndValidateOrder(id, user);
+        findAndValidateOrder(id, user, orderRepository);
         super.deleteById(id);
     }
 
     @Override
     @Transactional
     public void delete(Iterable<? extends Order> iterable) {
-        User user = authService.getAuthenticatedUser();
-        iterable.forEach(order -> {
-            if (!order.getUser().getId().equals(user.getId())) {
-                throw new AccessDeniedException("You don't have permission to modify this order!");
-            }
-        });
+        iterable.forEach(this::validateOrderOwnership);
         super.delete(iterable);
     }
 }

@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ControllerUtils.createUri;
 
@@ -30,7 +29,7 @@ public class WriteUserController extends WriteController<User, UserRequestDTO, U
     }
 
     @Override
-    public ResponseEntity<UserResponseDTO> create(@RequestBody @Valid UserRequestDTO userRequestDTO, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<UserResponseDTO> create(@RequestBody @Valid UserRequestDTO userRequestDTO) {
         User savedUser = iUserRequestService.createUser(userRequestDTO);
         return ResponseEntity.created(createUri(savedUser)).body(convertToResponseDto(savedUser));
     }

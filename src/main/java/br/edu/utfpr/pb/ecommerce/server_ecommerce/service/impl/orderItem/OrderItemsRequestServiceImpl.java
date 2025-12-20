@@ -3,7 +3,6 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.orderItem;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemUpdateDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.OrderItemNotFoundException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.OrderNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.ProductNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.OrderItem;
@@ -18,6 +17,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudRequestS
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.findAndValidateOrder;
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.validateQuantityOfProduct;
 
 @Service
@@ -70,8 +70,7 @@ public class OrderItemsRequestServiceImpl extends CrudRequestServiceImpl<OrderIt
     @Transactional
     public OrderItem createOrderItem(OrderItemRequestDTO dto) {
         User user = authService.getAuthenticatedUser();
-        Order order = orderRepository.findByIdAndUser(dto.getOrderId(), user)
-                .orElseThrow(() -> new OrderNotFoundException("Order not found."));
+        Order order = findAndValidateOrder(dto.getOrderId(), user, orderRepository);
 
         Product product = productRepository.findById(dto.getProductId())
                 .orElseThrow(() -> new ProductNotFoundException("Product not found."));

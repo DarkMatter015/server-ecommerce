@@ -1,10 +1,14 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderItemDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.OrderNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.ProductNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.InvalidQuantityException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.InvalidStringException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -66,5 +70,10 @@ public final class ValidationUtils {
 
         return products.stream()
                 .collect(Collectors.toMap(Product::getId, Function.identity()));
+    }
+
+    public static Order findAndValidateOrder(Long id, User user, OrderRepository orderRepository) {
+        return orderRepository.findByIdAndUser(id, user)
+                .orElseThrow(() -> new OrderNotFoundException("Order not found."));
     }
 }

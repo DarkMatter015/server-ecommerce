@@ -11,7 +11,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ControllerUtils.createUri;
 
@@ -24,7 +23,7 @@ public class WriteOrderController {
     private final OrderMapper orderMapper;
 
     @PostMapping
-    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody @Valid OrderRequestDTO orderDTO, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody @Valid OrderRequestDTO orderDTO) {
         Order savedOrder = orderRequestService.createOrder(orderDTO);
         return ResponseEntity.created(createUri(savedOrder)).body(orderMapper.toDTO(savedOrder));
     }
@@ -32,7 +31,6 @@ public class WriteOrderController {
     @PatchMapping("{id}")
     public ResponseEntity<OrderResponseDTO> updateOrder(@PathVariable Long id, @RequestBody @Valid OrderUpdateDTO updateDTO) {
         Order order = orderRequestService.update(id, updateDTO);
-
         return ResponseEntity.ok(orderMapper.toDTO(order));
     }
 }

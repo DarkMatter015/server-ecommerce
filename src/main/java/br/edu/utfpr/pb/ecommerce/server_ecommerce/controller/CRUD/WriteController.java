@@ -7,11 +7,11 @@ import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.Serializable;
 import java.net.URI;
+
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ControllerUtils.createUri;
 
 // T = class type (User, Category...), D = DTO type (Request), RD = DTO type (Response), UD = DTO type (Update), ID = primary key attribute of the class
 @SecurityRequirement(name = "bearer-key")
@@ -44,14 +44,11 @@ public abstract class WriteController<T extends BaseEntity, D, RD, UD, ID extend
     }
 
     @PostMapping
-    public ResponseEntity<RD> create(@RequestBody @Valid D entityDto, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<RD> create(@RequestBody @Valid D entityDto) {
         T entity = convertToEntity(entityDto);
         T savedEntity = service.save(entity);
 
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(savedEntity.getId())
-                .toUri();
+        URI uri = createUri(savedEntity);
 
         RD responseDto = convertToResponseDto(savedEntity);
         return ResponseEntity.created(uri).body(responseDto);
