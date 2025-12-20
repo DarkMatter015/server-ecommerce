@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +28,7 @@ public class ShipmentController {
             @ApiResponse(responseCode = "500", description = "Internal server error or external API error")
     })
     @PostMapping("/products")
-    public ResponseEntity<List<ShipmentResponseDTO>> calculateShipmentByProducts(@RequestBody ShipmentRequestDTO shipmentRequestDto) {
+    public ResponseEntity<List<ShipmentResponseDTO>> calculateShipmentByProducts(@RequestBody @Valid ShipmentRequestDTO shipmentRequestDto) {
         List<ShipmentResponseDTO> responses = melhorEnvioService.calculateShipmentByProducts(shipmentRequestDto);
         return ResponseEntity.ok(responses);
     }

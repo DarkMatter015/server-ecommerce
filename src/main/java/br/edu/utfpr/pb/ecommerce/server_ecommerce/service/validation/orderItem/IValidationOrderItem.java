@@ -1,4 +1,4 @@
-package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.validation;
+package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.validation.orderItem;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderItemDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
