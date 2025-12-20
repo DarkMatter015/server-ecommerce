@@ -8,15 +8,12 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.OrderItem;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.orderItem.OrderItemsRequestServiceImpl;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ControllerUtils.createUri;
 
 @RestController
 @RequestMapping("orderItems")
@@ -29,15 +26,9 @@ public class WriteOrderItemsController extends WriteController<OrderItem, OrderI
     }
 
     @Override
-    public ResponseEntity<OrderItemResponseDTO> create(@RequestBody @Valid OrderItemRequestDTO dto, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<OrderItemResponseDTO> create(@RequestBody @Valid OrderItemRequestDTO dto) {
         OrderItem savedItem = orderItemsRequestService.createOrderItem(dto);
-
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(savedItem.getId())
-                .toUri();
-
-        return ResponseEntity.created(uri).body(convertToResponseDto(savedItem));
+        return ResponseEntity.created(createUri(savedItem)).body(convertToResponseDto(savedItem));
     }
 
 }

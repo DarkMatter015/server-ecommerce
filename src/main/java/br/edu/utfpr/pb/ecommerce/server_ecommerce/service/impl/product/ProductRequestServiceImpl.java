@@ -2,7 +2,6 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.product;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.product.ProductUpdateDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.BusinessException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.ProductNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Category;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
@@ -11,8 +10,6 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudRequestS
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.category.CategoryResponseServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.validateStringNullOrBlank;
 
 @Service
 public class ProductRequestServiceImpl extends CrudRequestServiceImpl<Product, ProductUpdateDTO, Long> implements IProductRequestService {
@@ -43,35 +40,12 @@ public class ProductRequestServiceImpl extends CrudRequestServiceImpl<Product, P
     @Override
     @Transactional
     public Product update(Long id, ProductUpdateDTO updateDTO) {
-        Product existingProduct = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("Product not found."));
-
-        if (updateDTO.getName() != null) {
-            validateStringNullOrBlank(updateDTO.getName());
-            existingProduct.setName(updateDTO.getName());
-        }
-
-        if (updateDTO.getDescription() != null) {
-            validateStringNullOrBlank(updateDTO.getDescription());
-            existingProduct.setDescription(updateDTO.getDescription());
-        }
-
-        if (updateDTO.getPrice() != null) {
-            existingProduct.setPrice(updateDTO.getPrice());
-        }
-
-        if (updateDTO.getUrlImage() != null) {
-            validateStringNullOrBlank(updateDTO.getUrlImage());
-            existingProduct.setUrlImage(updateDTO.getUrlImage());
-        }
+        Product existingProduct = productResponseService.findById(id);
+        applyPartialUpdate(updateDTO, existingProduct);
 
         if (updateDTO.getCategoryId() != null) {
             Category category = categoryResponseService.findById(updateDTO.getCategoryId());
-
             existingProduct.setCategory(category);
-        }
-
-        if (updateDTO.getQuantityAvailableInStock() != null) {
-            existingProduct.setQuantityAvailableInStock(updateDTO.getQuantityAvailableInStock());
         }
 
         return productRepository.save(existingProduct);

@@ -32,10 +32,10 @@ public class AddressRequestServiceImpl extends CrudRequestServiceImpl<Address, A
     private final ModelMapper modelMapper;
     private final CepService cepService;
 
-    public AddressRequestServiceImpl(AddressRepository addressRepository, AddressResponseServiceImpl addressResponseService, AddressResponseServiceImpl addressResponseService1, UserResponseServiceImpl userResponseService, AuthService authService, ModelMapper modelMapper, CepService cepService) {
+    public AddressRequestServiceImpl(AddressRepository addressRepository, AddressResponseServiceImpl addressResponseService, UserResponseServiceImpl userResponseService, AuthService authService, ModelMapper modelMapper, CepService cepService) {
         super(addressRepository, addressResponseService);
         this.addressRepository = addressRepository;
-        this.addressResponseService = addressResponseService1;
+        this.addressResponseService = addressResponseService;
         this.userResponseService = userResponseService;
         this.authService = authService;
         this.modelMapper = modelMapper;
@@ -49,7 +49,7 @@ public class AddressRequestServiceImpl extends CrudRequestServiceImpl<Address, A
         }
     }
 
-    protected void findAndValidateAddress(Long id, User user) {
+    private void findAndValidateAddress(Long id, User user) {
         addressRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new AddressNotFoundException("Address not found."));
     }
@@ -80,7 +80,6 @@ public class AddressRequestServiceImpl extends CrudRequestServiceImpl<Address, A
         address.setNumber(addressDTO.getNumber());
         address.setComplement(addressDTO.getComplement());
         User user = authService.getAuthenticatedUser();
-
         address.setUser(user);
 
         return super.save(address);
@@ -119,12 +118,7 @@ public class AddressRequestServiceImpl extends CrudRequestServiceImpl<Address, A
     @Override
     @Transactional
     public void delete(Iterable<? extends Address> iterable) {
-        User user = authService.getAuthenticatedUser();
-        iterable.forEach(address -> {
-            if (!address.getUser().getId().equals(user.getId())) {
-                throw new AccessDeniedException("You don't have permission to modify this address!");
-            }
-        });
+        iterable.forEach(this::validateAddressOwnership);
         super.delete(iterable);
     }
 }

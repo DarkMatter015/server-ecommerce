@@ -6,12 +6,12 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.BusinessException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.RoleNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.UserNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.password.IncorrectPasswordException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.password.ChangePasswordDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Role;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.AddressRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.RoleRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.password.ChangePasswordDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IUser.IUserRequestService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudRequestServiceImpl;
@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.AuthValidation.isAdmin;
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.AuthValidation.isAuthenticatedAndAdmin;
-import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.validateStringNullOrBlank;
 
 
 @Service
@@ -65,6 +64,19 @@ public class UserRequestServiceImpl extends CrudRequestServiceImpl<User, UserUpd
             throw new AccessDeniedException("You don't have permission to modify this user.");
 
         return existingUser;
+    }
+
+    private Set<Role> validateUpdateRoleUser(User authenticatedUser, UserUpdateDTO dto) {
+        if (dto.getRoles() != null && dto.getRoles().isEmpty()) throw new BusinessException("The user must contain at least one role.");
+        if (!isAdmin(authenticatedUser) && dto.getRoles() != null) {
+            throw new AccessDeniedException("You don't have permission to update this user roles.");
+        } else if (isAdmin(authenticatedUser) && dto.getRoles() != null) {
+            return dto.getRoles().stream()
+                    .map(roleName -> roleRepository.findByName(roleName)
+                            .orElseThrow(() -> new RoleNotFoundException("Role is not found: " + roleName)))
+                    .collect(Collectors.toSet());
+        }
+        return null;
     }
 
     @Override
@@ -137,30 +149,9 @@ public class UserRequestServiceImpl extends CrudRequestServiceImpl<User, UserUpd
         User authenticatedUser = authService.getAuthenticatedUser();
         User existingUser = findAndValidateUser(id,  authenticatedUser);
 
-        if (dto.getDisplayName() != null) {
-            validateStringNullOrBlank(dto.getDisplayName());
-            existingUser.setDisplayName(dto.getDisplayName());
-        }
-
-        if (dto.getEmail() != null) {
-            validateStringNullOrBlank(dto.getEmail());
-            existingUser.setEmail(dto.getEmail());
-        }
-
-        if (dto.getCpf() != null) {
-            validateStringNullOrBlank(dto.getCpf());
-            existingUser.setCpf(dto.getCpf());
-        }
-
-        if (!isAdmin(authenticatedUser) && dto.getRoles() != null) {
-            throw new AccessDeniedException("You don't have permission to update this user roles.");
-        } else if (isAdmin(authenticatedUser) && dto.getRoles() != null) {
-            Set<Role> roles = dto.getRoles().stream()
-                    .map(roleName -> roleRepository.findByName(roleName)
-                            .orElseThrow(() -> new RoleNotFoundException("Role is not found: " + roleName)))
-                    .collect(Collectors.toSet());
-            existingUser.setRoles(roles);
-        }
+        applyPartialUpdate(dto, existingUser);
+        Set<Role> roles = validateUpdateRoleUser(authenticatedUser, dto);
+        if (roles != null) existingUser.setRoles(roles);
 
         return userRepository.save(existingUser);
     }

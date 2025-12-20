@@ -16,11 +16,11 @@ public class CategoryRequestServiceImpl extends CrudRequestServiceImpl<Category,
     private final CategoryResponseServiceImpl categoryResponseService;
     private final ProductRepository productRepository;
 
-    public CategoryRequestServiceImpl(CategoryRepository categoryRepository, ProductRepository productRepository, CategoryResponseServiceImpl categoryResponseService, CategoryResponseServiceImpl categoryResponseService1) {
+    public CategoryRequestServiceImpl(CategoryRepository categoryRepository, ProductRepository productRepository, CategoryResponseServiceImpl categoryResponseService) {
         super(categoryRepository, categoryResponseService);
         this.categoryRepository = categoryRepository;
         this.productRepository = productRepository;
-        this.categoryResponseService = categoryResponseService1;
+        this.categoryResponseService = categoryResponseService;
     }
 
     @Override
