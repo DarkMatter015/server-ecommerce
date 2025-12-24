@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
+//    ORDER
     @Value("${order.queue.name}")
     private String orderQueueName;
 
@@ -29,6 +30,7 @@ public class RabbitMQConfig {
     @Value("${order.dlk.key}")
     private String orderDlrkKey;
 
+//    EMAIL
     @Value("${email.queue.name}")
     private String emailQueueName;
 
@@ -40,6 +42,19 @@ public class RabbitMQConfig {
 
     @Value("${email.dlk.key}")
     private String emailDlrkKey;
+
+    //    PRODUCT_STOCK_UPDATED
+    @Value("${productStockUpdated.queue.name}")
+    private String productStockUpdatedQueueName;
+
+    @Value("${productStockUpdated.dlx.name}")
+    private String productStockUpdatedDlxName;
+
+    @Value("${productStockUpdated.dlq.name}")
+    private String productStockUpdatedDlqName;
+
+    @Value("${productStockUpdated.dlk.key}")
+    private String productStockUpdatedDlrkKey;
 
 //    ORDER
     @Bean
@@ -86,6 +101,30 @@ public class RabbitMQConfig {
         return QueueBuilder.durable(emailQueueName)
                 .withArgument("x-dead-letter-exchange", emailDlxName)
                 .withArgument("x-dead-letter-routing-key", emailDlrkKey)
+                .build();
+    }
+
+    //    PRODUCT_STOCK_UPDATED
+    @Bean
+    public Queue productStockUpdatedDlq() {
+        return QueueBuilder.durable(productStockUpdatedDlqName).build();
+    }
+
+    @Bean
+    public DirectExchange productStockUpdatedDlx() {
+        return new DirectExchange(productStockUpdatedDlxName);
+    }
+
+    @Bean
+    public Binding bindproductStockUpdatedDlq() {
+        return BindingBuilder.bind(productStockUpdatedDlq()).to(productStockUpdatedDlx()).with(productStockUpdatedDlrkKey);
+    }
+
+    @Bean
+    public Queue productStockUpdatedQueue() {
+        return QueueBuilder.durable(productStockUpdatedQueueName)
+                .withArgument("x-dead-letter-exchange", productStockUpdatedDlxName)
+                .withArgument("x-dead-letter-routing-key", productStockUpdatedDlrkKey)
                 .build();
     }
 

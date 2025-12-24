@@ -1,6 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.model;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseEntity;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseSoftDeleteEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -21,7 +21,7 @@ import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.Validat
 @NoArgsConstructor
 @Builder
 @SQLDelete(sql = "UPDATE tb_product SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
-public class Product extends BaseEntity {
+public class Product extends BaseSoftDeleteEntity {
 
     @NotBlank
     @Size(min = 2, max = 255)

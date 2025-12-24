@@ -3,7 +3,7 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.order;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderUpdateDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.OrderStatusNotFoundException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.publisher.order.OrderPublisher;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.order.OrderPublisher;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.OrderMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
@@ -13,8 +13,8 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderStatusRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IOrder.IOrderRequestService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudRequestServiceImpl;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.order.IOrder.IOrderRequestService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.BaseSoftDeleteRequestServiceImpl;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.validation.order.IValidationOrder;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.validation.orderItem.IValidationOrderItem;
 import org.modelmapper.ModelMapper;
@@ -30,7 +30,7 @@ import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.Validat
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.getAndValidateProducts;
 
 @Service
-public class OrderRequestServiceImpl extends CrudRequestServiceImpl<Order, OrderUpdateDTO, Long> implements IOrderRequestService {
+public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Order, OrderUpdateDTO> implements IOrderRequestService {
 
     private final OrderRepository orderRepository;
     private final AuthService authService;

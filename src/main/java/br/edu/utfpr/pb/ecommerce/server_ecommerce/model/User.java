@@ -1,6 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.model;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseEntity;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseSoftDeleteEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @Builder
 @SQLDelete(sql = "UPDATE tb_user SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
-public class User extends BaseEntity implements UserDetails {
+public class User extends BaseSoftDeleteEntity implements UserDetails {
 
     @NotBlank
     @Size(min = 3, max = 255, message = "{field.displayname.size}")
@@ -83,6 +83,6 @@ public class User extends BaseEntity implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return super.isActive();
     }
 }

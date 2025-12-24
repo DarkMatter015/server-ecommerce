@@ -1,12 +1,13 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.filter;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.JwtProperties;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.AuthenticationResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.LoginRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.SecurityUserResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.exception.JsonAuthenticationException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.alertProduct.IAlertProduct.IAlertProductRequestService;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,16 +33,18 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private final AuthService authService;
     private final ObjectMapper objectMapper;
     private final JwtProperties jwtProperties;
+    private final IAlertProductRequestService alertProductRequestService;
 
     public JWTAuthenticationFilter(AuthenticationManager authenticationManager,
                                    AuthService authService,
                                    ObjectMapper objectMapper,
                                    JwtProperties jwtProperties,
-                                   AuthenticationFailureHandler authenticationFailureHandler) {
+                                   AuthenticationFailureHandler authenticationFailureHandler, IAlertProductRequestService alertProductRequestService) {
         super(authenticationManager);
         this.authService = authService;
         this.objectMapper = objectMapper;
         this.jwtProperties = jwtProperties;
+        this.alertProductRequestService = alertProductRequestService;
 
         this.setAuthenticationFailureHandler(authenticationFailureHandler);
         this.setFilterProcessesUrl("/auth/login");
@@ -71,6 +74,9 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             Authentication authResult) throws IOException, ServletException {
 
         User user = (User) authService.loadUserByUsername(authResult.getName());
+
+        alertProductRequestService.syncOrphanAlerts(user);
+
         // o método create() da classe JWT é utilizado para criação de um novo token JWT
         String token = JWT.create()
                 // o objeto authResult possui os dados do usuário autenticado, nesse caso o método getId() retorna o id do usuário foi autenticado no método attemptAuthentication.

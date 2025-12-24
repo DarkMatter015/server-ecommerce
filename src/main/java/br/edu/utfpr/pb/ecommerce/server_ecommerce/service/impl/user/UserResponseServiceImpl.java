@@ -4,8 +4,8 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.UserNotFoun
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IUser.IUserResponseService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudResponseServiceImpl;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.user.IUser.IUserResponseService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.BaseSoftDeleteResponseServiceImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +18,7 @@ import java.util.List;
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.AuthValidation.isAuthenticatedAndAdmin;
 
 @Service
-public class UserResponseServiceImpl extends CrudResponseServiceImpl<User, Long> implements IUserResponseService {
+public class UserResponseServiceImpl extends BaseSoftDeleteResponseServiceImpl<User, Long> implements IUserResponseService {
 
     private final UserRepository userRepository;
     private final AuthService authService;

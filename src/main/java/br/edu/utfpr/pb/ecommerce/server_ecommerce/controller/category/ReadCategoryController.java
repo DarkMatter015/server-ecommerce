@@ -1,9 +1,9 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.category;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.ReadController;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.BaseSoftDeleteReadController;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.category.CategoryResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Category;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.iCategory.ICategoryResponseService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.category.ICategory.ICategoryResponseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("categories")
 @Tag(name = "Category Read", description = "Endpoints for reading categories")
-public class ReadCategoryController extends ReadController<Category, CategoryResponseDTO, Long> {
+public class ReadCategoryController extends BaseSoftDeleteReadController<Category, CategoryResponseDTO> {
 
     private final ICategoryResponseService categoryResponseService;
 

@@ -1,6 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.model;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseEntity;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseSoftDeleteEntity;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.interfaces.Ownable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Builder
 @SQLDelete(sql = "UPDATE tb_order_item SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
-public class OrderItem extends BaseEntity implements Ownable {
+public class OrderItem extends BaseSoftDeleteEntity implements Ownable {
 
     @NotNull
     @ManyToOne

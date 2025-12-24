@@ -10,8 +10,8 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Address;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.AddressRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IAddress.IAddressRequestService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudRequestServiceImpl;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.address.IAddress.IAddressRequestService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.BaseSoftDeleteRequestServiceImpl;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.user.UserResponseServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.access.AccessDeniedException;
@@ -22,7 +22,7 @@ import java.util.stream.StreamSupport;
 
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.MapperUtils.map;
 @Service
-public class AddressRequestServiceImpl extends CrudRequestServiceImpl<Address, AddressUpdateDTO, Long> implements IAddressRequestService {
+public class AddressRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Address, AddressUpdateDTO> implements IAddressRequestService {
 
     private final AddressRepository addressRepository;
     private final AddressResponseServiceImpl addressResponseService;

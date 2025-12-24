@@ -9,7 +9,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.payment.PaymentResponseDTO
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipmentDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.PaymentNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.ProductNotFoundException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.dto.order.OrderEventDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.order.OrderEventDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.OrderItem;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Payment;

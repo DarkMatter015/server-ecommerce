@@ -2,10 +2,8 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.baseDTO.BaseResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.role.RoleResponseDTO;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
@@ -13,6 +11,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@SuperBuilder
 public class UserResponseDTO extends BaseResponseDTO {
 
     private String displayName;

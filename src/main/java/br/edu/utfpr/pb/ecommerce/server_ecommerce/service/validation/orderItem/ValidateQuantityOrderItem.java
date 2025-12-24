@@ -3,12 +3,14 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.validation.orderItem;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderItemDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.validateQuantityOfProduct;
 
+@Component
 @RequiredArgsConstructor
 public class ValidateQuantityOrderItem implements IValidationOrderItem {
 

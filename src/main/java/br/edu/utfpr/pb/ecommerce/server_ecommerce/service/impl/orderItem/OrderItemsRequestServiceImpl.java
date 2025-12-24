@@ -12,8 +12,8 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderItemsRepositor
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IOrderItems.IOrderItemsRequestService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudRequestServiceImpl;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.orderItem.IOrderItems.IOrderItemsRequestService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.BaseSoftDeleteRequestServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +21,7 @@ import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.Validat
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.validateQuantityOfProduct;
 
 @Service
-public class OrderItemsRequestServiceImpl extends CrudRequestServiceImpl<OrderItem, OrderItemUpdateDTO, Long> implements IOrderItemsRequestService {
+public class OrderItemsRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<OrderItem, OrderItemUpdateDTO> implements IOrderItemsRequestService {
 
     private final OrderItemsRepository orderItemsRepository;
     private final ProductRepository productRepository;

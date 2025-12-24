@@ -4,13 +4,13 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.category.CategoryUpdateDTO
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Category;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.CategoryRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.iCategory.ICategoryRequestService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudRequestServiceImpl;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.category.ICategory.ICategoryRequestService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.BaseSoftDeleteRequestServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class CategoryRequestServiceImpl extends CrudRequestServiceImpl<Category, CategoryUpdateDTO, Long> implements ICategoryRequestService {
+public class CategoryRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Category, CategoryUpdateDTO> implements ICategoryRequestService {
 
     private final CategoryRepository categoryRepository;
     private final CategoryResponseServiceImpl categoryResponseService;

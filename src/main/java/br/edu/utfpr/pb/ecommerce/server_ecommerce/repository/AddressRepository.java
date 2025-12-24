@@ -2,14 +2,14 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.repository;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Address;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.base.BaseRepository;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.base.BaseSoftDeleteRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface AddressRepository extends BaseRepository<Address,Long> {
+public interface AddressRepository extends BaseSoftDeleteRepository<Address,Long> {
     Optional<Address> findByIdAndUser(Long id, User user);
 
     @Modifying

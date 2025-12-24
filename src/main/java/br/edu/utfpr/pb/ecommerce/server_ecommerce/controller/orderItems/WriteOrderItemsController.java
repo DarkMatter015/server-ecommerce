@@ -1,6 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.orderItems;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.WriteController;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.BaseSoftDeleteWriteController;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemUpdateDTO;
@@ -22,7 +22,7 @@ import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ControllerUtils.cr
 @RestController
 @RequestMapping("orderItems")
 @Tag(name = "OrderItem Write", description = "Endpoints for writing order items")
-public class WriteOrderItemsController extends WriteController<OrderItem, OrderItemRequestDTO, OrderItemResponseDTO, OrderItemUpdateDTO, Long> {
+public class WriteOrderItemsController extends BaseSoftDeleteWriteController<OrderItem, OrderItemRequestDTO, OrderItemResponseDTO, OrderItemUpdateDTO> {
     private final OrderItemsRequestServiceImpl orderItemsRequestService;
 
     public WriteOrderItemsController(OrderItemsRequestServiceImpl orderItemsRequestService, ModelMapper modelMapper) {
