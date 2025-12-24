@@ -3,8 +3,8 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.category;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Category;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.CategoryRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.iCategory.ICategoryResponseService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.CrudResponseServiceImpl;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.category.ICategory.ICategoryResponseService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.BaseSoftDeleteResponseServiceImpl;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.specification.CategorySpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,7 +12,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CategoryResponseServiceImpl extends CrudResponseServiceImpl<Category, Long> implements ICategoryResponseService {
+public class CategoryResponseServiceImpl extends BaseSoftDeleteResponseServiceImpl<Category, Long> implements ICategoryResponseService {
 
     private final CategoryRepository categoryRepository;
 

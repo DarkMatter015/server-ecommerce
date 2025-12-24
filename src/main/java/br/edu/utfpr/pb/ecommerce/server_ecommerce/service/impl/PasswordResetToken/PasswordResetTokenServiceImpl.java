@@ -8,8 +8,8 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.PasswordResetTokenR
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.password.ForgetPasswordDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.password.ResetPasswordDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IPasswordResetToken.IPasswordResetTokenService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.MailService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.PasswordResetToken.IPasswordResetToken.IPasswordResetTokenService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +28,7 @@ public class PasswordResetTokenServiceImpl implements IPasswordResetTokenService
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
-    private final MailService mailService;
+    private final EmailService emailService;
 
     @Value("${app.reset.token.expiration.minutes:15}")
     private int tokenExpirationMinutes;
@@ -55,7 +55,7 @@ public class PasswordResetTokenServiceImpl implements IPasswordResetTokenService
 
         tokenRepository.save(myToken);
 
-        mailService.sendResetPasswordEmail(user, myToken);
+        emailService.sendResetPasswordEmail(user, myToken);
         log.info("Recovery token generated and sent for user ID: {}", user.getId());
     }
 

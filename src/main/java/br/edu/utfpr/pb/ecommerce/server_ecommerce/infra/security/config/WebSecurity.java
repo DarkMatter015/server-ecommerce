@@ -5,7 +5,9 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.filter.JWTAuthe
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.filter.JWTAuthorizationFilter;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.handler.CustomAuthenticationFailureHandler;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.alertProduct.IAlertProduct.IAlertProductRequestService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +32,7 @@ import java.util.List;
 
 @EnableWebSecurity
 @Configuration
+@RequiredArgsConstructor
 public class WebSecurity {
     // Service responsável por buscar um usuário no banco de dados por meio do método loadByUsername()
     private final AuthService authService;
@@ -40,16 +43,7 @@ public class WebSecurity {
     private final JwtProperties jwtProperties;
     private final Environment env;
     private final PasswordEncoder passwordEncoder;
-
-    public WebSecurity(AuthService authService, AuthenticationEntryPoint authenticationEntryPoint, CustomAuthenticationFailureHandler customAuthenticationFailureHandler, ObjectMapper objectMapper, JwtProperties jwtProperties, Environment env, PasswordEncoder passwordEncoder) {
-        this.authService = authService;
-        this.authenticationEntryPoint = authenticationEntryPoint;
-        this.customAuthenticationFailureHandler = customAuthenticationFailureHandler;
-        this.objectMapper = objectMapper;
-        this.jwtProperties = jwtProperties;
-        this.env = env;
-        this.passwordEncoder = passwordEncoder;
-    }
+    private final IAlertProductRequestService alertProductRequestService;
 
     @Bean
     @SneakyThrows
@@ -81,34 +75,34 @@ public class WebSecurity {
 
         // configura a authorização das requisições
         http.authorizeHttpRequests((authorize) -> {
-            if (isDev) {
-                authorize.requestMatchers("/h2-console/**").permitAll();
-            }
+                    if (isDev) {
+                        authorize.requestMatchers("/h2-console/**").permitAll();
+                    }
 
-            authorize
-                    // ROTAS PÚBLICAS (permitAll)
-                    .requestMatchers(HttpMethod.POST, "/users", "/shipment/products", "/auth/forgot-password", "/auth/reset-password").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/products/**", "/categories/**", "/payments/**", "/cep/validate/", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/auth/validate-reset-token").permitAll()
-                    .requestMatchers("/error/**").permitAll()
+                    authorize
+                            // ROTAS PÚBLICAS (permitAll)
+                            .requestMatchers(HttpMethod.POST, "/users", "/shipment/products", "/auth/forgot-password", "/auth/reset-password", "/alerts").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/products/**", "/categories/**", "/payments/**", "/cep/validate/", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/auth/validate-reset-token").permitAll()
+                            .requestMatchers("/error/**").permitAll()
 
-                    // ROTAS DE ADMIN
-                    // Apenas ADMIN pode gerenciar (criar, editar, deletar) produtos, categorias e pagamentos
-                    .requestMatchers("/products/**", "/categories/**", "/payments/**").hasAnyAuthority("ADMIN");
+                            // ROTAS DE ADMIN
+                            // Apenas ADMIN pode gerenciar (criar, editar, deletar) produtos, categorias e pagamentos
+                            .requestMatchers("/products/**", "/categories/**", "/payments/**").hasAnyAuthority("ADMIN");
 
                     // ROTAS AUTENTICADAS (USER ou ADMIN)
                     // Qualquer usuário autenticado pode acessar as demais rotas
                     // A lógica de negócio nos services já garante que um usuário só acesse seus próprios dados (pedidos, endereços, etc.)
-            authorize.anyRequest().authenticated();
-            }
+                    authorize.anyRequest().authenticated();
+                }
         );
         http.authenticationManager(authenticationManager)
                 //Filtro da Autenticação - sobrescreve o método padrão do Spring Security para Autenticação.
-                .addFilter(new JWTAuthenticationFilter(authenticationManager, authService, objectMapper, jwtProperties, customAuthenticationFailureHandler))
+                .addFilter(new JWTAuthenticationFilter(authenticationManager, authService, objectMapper, jwtProperties, customAuthenticationFailureHandler, alertProductRequestService))
                 //Filtro da Autorização - - sobrescreve o método padrão do Spring Security para Autorização.
                 .addFilter(new JWTAuthorizationFilter(authenticationManager, jwtProperties))
                 //Como será criada uma API REST e todas as requisições que necessitam de autenticação/autorização serão realizadas com o envio do token JWT do usuário, não será necessário fazer controle de sessão no *back-end*.
                 .sessionManagement(
-                        sessionManagement -> 
+                        sessionManagement ->
                                 sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
         return http.build();

@@ -4,10 +4,12 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderItemDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.BusinessException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
+@Component
 @RequiredArgsConstructor
 public class ValidateProductStatusOrderItem implements IValidationOrderItem {
 

@@ -1,9 +1,9 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.product;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.BaseSoftDeleteReadController;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.product.ProductResponseDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IProduct.IProductResponseService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.ReadController;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.product.IProduct.IProductResponseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("products")
 @Tag(name = "Product Read", description = "Endpoints for reading products")
-public class ReadProductController extends ReadController<Product, ProductResponseDTO, Long> {
+public class ReadProductController extends BaseSoftDeleteReadController<Product, ProductResponseDTO> {
 
     private final IProductResponseService productResponseService;
 

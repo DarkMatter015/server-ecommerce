@@ -1,11 +1,11 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.user;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.WriteController;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.BaseSoftDeleteWriteController;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserUpdateDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IUser.IUserRequestService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.user.IUser.IUserRequestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -25,7 +25,7 @@ import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ControllerUtils.cr
 @RestController
 @RequestMapping("users")
 @Tag(name = "User Write", description = "Endpoints for writing users")
-public class WriteUserController extends WriteController<User, UserRequestDTO, UserResponseDTO, UserUpdateDTO, Long> {
+public class WriteUserController extends BaseSoftDeleteWriteController<User, UserRequestDTO, UserResponseDTO, UserUpdateDTO> {
 
     private final IUserRequestService iUserRequestService;
 

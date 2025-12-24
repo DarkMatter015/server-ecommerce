@@ -1,11 +1,11 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.address;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.WriteController;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.BaseSoftDeleteWriteController;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressUpdateDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Address;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IAddress.IAddressRequestService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.address.IAddress.IAddressRequestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -22,7 +22,7 @@ import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ControllerUtils.cr
 @RestController
 @RequestMapping("addresses")
 @Tag(name = "Address Write", description = "Endpoints for writing addresses")
-public class WriteAddressController extends WriteController<Address, AddressRequestDTO, AddressResponseDTO, AddressUpdateDTO, Long> {
+public class WriteAddressController extends BaseSoftDeleteWriteController<Address, AddressRequestDTO, AddressResponseDTO, AddressUpdateDTO> {
     private final IAddressRequestService  addressRequestService;
 
     public WriteAddressController(IAddressRequestService addressRequestService, ModelMapper modelMapper) {

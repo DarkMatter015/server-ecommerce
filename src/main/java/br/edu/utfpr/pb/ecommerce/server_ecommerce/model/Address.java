@@ -1,6 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.model;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseEntity;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseSoftDeleteEntity;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.interfaces.Ownable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -18,7 +18,7 @@ import org.hibernate.annotations.SQLDelete;
 @NoArgsConstructor
 @Builder
 @SQLDelete(sql = "UPDATE tb_address SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
-public class Address extends BaseEntity implements Ownable {
+public class Address extends BaseSoftDeleteEntity implements Ownable {
 
     @NotNull
     @ManyToOne

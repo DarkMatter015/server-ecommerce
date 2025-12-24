@@ -1,6 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.model;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseEntity;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseSoftDeleteEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -13,7 +13,7 @@ import org.hibernate.annotations.SQLDelete;
 @NoArgsConstructor
 @AllArgsConstructor
 @SQLDelete(sql = "UPDATE tb_order_status SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
-public class OrderStatus extends BaseEntity {
+public class OrderStatus extends BaseSoftDeleteEntity {
 
     @Column(nullable = false, unique = true)
     private String name;

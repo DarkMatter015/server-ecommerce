@@ -6,8 +6,8 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.password.Ch
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.password.ForgetPasswordDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.password.ResetPasswordDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IPasswordResetToken.IPasswordResetTokenService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.IUser.IUserRequestService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.PasswordResetToken.IPasswordResetToken.IPasswordResetTokenService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.user.IUser.IUserRequestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
