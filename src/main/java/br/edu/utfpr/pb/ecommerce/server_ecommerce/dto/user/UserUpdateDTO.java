@@ -1,7 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,9 +19,6 @@ public class UserUpdateDTO {
     @Size(min = 4, max = 255)
     @Email
     private String email;
-
-    @Pattern(regexp = "\\d{11}", message = "{field.cpf.pattern}")
-    private String cpf;
 
     private Set<String> roles;
 }
