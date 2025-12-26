@@ -2,9 +2,9 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.user;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserUpdateDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.BusinessException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.RoleNotFoundException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.UserNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.BusinessException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.password.IncorrectPasswordException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.password.ChangePasswordDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Role;
@@ -15,7 +15,6 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.user.IUser.IUserRequestService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.BaseSoftDeleteRequestServiceImpl;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,25 +54,25 @@ public class UserRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Use
 
     private User findAndValidateUser(Long id, User authenticatedUser) {
         User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found."));
+                .orElseThrow(() -> new ResourceNotFoundException(User.class, id));
 
         if (isAdmin(authenticatedUser))
             return existingUser;
 
         if (!existingUser.getId().equals(authenticatedUser.getId()))
-            throw new AccessDeniedException("You don't have permission to modify this user.");
+            throw new BusinessException(ErrorCode.USER_PERMISSION_MODIFY_DENIED);
 
         return existingUser;
     }
 
     private Set<Role> validateUpdateRoleUser(User authenticatedUser, UserUpdateDTO dto) {
-        if (dto.getRoles() != null && dto.getRoles().isEmpty()) throw new BusinessException("The user must contain at least one role.");
+        if (dto.getRoles() != null && dto.getRoles().isEmpty()) throw new BusinessException(ErrorCode.USER_ROLE_REQUIRED);
         if (!isAdmin(authenticatedUser) && dto.getRoles() != null) {
-            throw new AccessDeniedException("You don't have permission to update this user roles.");
+            throw new BusinessException(ErrorCode.USER_PERMISSION_ROLES_UPDATE_DENIED);
         } else if (isAdmin(authenticatedUser) && dto.getRoles() != null) {
             return dto.getRoles().stream()
                     .map(roleName -> roleRepository.findByName(roleName)
-                            .orElseThrow(() -> new RoleNotFoundException("Role is not found: " + roleName)))
+                            .orElseThrow(() -> new ResourceNotFoundException(Role.class, roleName)))
                     .collect(Collectors.toSet());
         }
         return null;
@@ -97,23 +96,23 @@ public class UserRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Use
         user.setEmail(userRequestDTO.getEmail());
         user.setPassword(bCryptPasswordEncoder.encode(userRequestDTO.getPassword()));
         Optional<User> optionalUser = userRepository.findByCpf(userRequestDTO.getCpf());
-        if (optionalUser.isPresent()) throw new BusinessException("CPF already in use.");
+        if (optionalUser.isPresent()) throw new BusinessException(ErrorCode.USER_CPF_IN_USE);
         user.setCpf(userRequestDTO.getCpf());
 
         if (!isAuthenticatedAndAdmin(authService)) {
             if (userRequestDTO.getRoles() != null && !userRequestDTO.getRoles().equals(Collections.singleton("USER"))) {
-                throw new AccessDeniedException("You don't have permission to create this user with roles.");
+                throw new BusinessException(ErrorCode.USER_PERMISSION_CREATE_ROLES_DENIED);
             }
-            Role userRole = roleRepository.findByName("USER").orElseThrow(() -> new RoleNotFoundException("Error: Role is not found."));
+            Role userRole = roleRepository.findByName("USER").orElseThrow(() -> new ResourceNotFoundException(Role.class, "USER"));
             user.setRoles(Collections.singleton(userRole));
         } else {
             if (userRequestDTO.getRoles() == null) {
-                Role userRole = roleRepository.findByName("USER").orElseThrow(() -> new RoleNotFoundException("Error: Role is not found."));
+                Role userRole = roleRepository.findByName("USER").orElseThrow(() -> new ResourceNotFoundException(Role.class, "USER"));
                 user.setRoles(Collections.singleton(userRole));
             } else {
                 Set<Role> roles = userRequestDTO.getRoles().stream()
                         .map(roleName -> roleRepository.findByName(roleName)
-                                .orElseThrow(() -> new RoleNotFoundException("Error: Role is not found.")))
+                                .orElseThrow(() -> new ResourceNotFoundException(Role.class, roleName)))
                         .collect(Collectors.toSet());
                 user.setRoles(roles);
             }
@@ -177,8 +176,10 @@ public class UserRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Use
     }
 
     public void changePassword(ChangePasswordDTO dto) {
-        if (!bCryptPasswordEncoder.matches(dto.getCurrentPassword(), authService.getAuthenticatedUser().getPassword())) throw new IncorrectPasswordException("The current password is incorrect.");
-        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) throw new IncorrectPasswordException("The confirm password does not match the new password");
+        String currentPassword = authService.getAuthenticatedUser().getPassword();
+        if (!bCryptPasswordEncoder.matches(dto.getCurrentPassword(), currentPassword)) throw new IncorrectPasswordException(ErrorCode.USER_PASSWORD_CURRENT_INCORRECT);
+        if (bCryptPasswordEncoder.matches(dto.getNewPassword(), currentPassword)) throw new IncorrectPasswordException(ErrorCode.PASSWORD_SAME);
+        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) throw new IncorrectPasswordException(ErrorCode.USER_PASSWORD_CONFIRM_MISMATCH);
         User user = authService.getAuthenticatedUser();
         user.setPassword(bCryptPasswordEncoder.encode(dto.getNewPassword()));
         userRepository.save(user);

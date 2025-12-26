@@ -2,10 +2,13 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.order;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderUpdateDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.OrderStatusNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.BusinessException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.order.OrderPublisher;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.OrderMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.OrderStatus;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.EmbeddedAddress;
@@ -18,7 +21,6 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.BaseSoftDele
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.validation.order.IValidationOrder;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.validation.orderItem.IValidationOrderItem;
 import org.modelmapper.ModelMapper;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,7 +60,7 @@ public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Or
     private void validateOrderOwnership(Order order) {
         User user = authService.getAuthenticatedUser();
         if (!order.getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException("You don't have permission to modify this order!");
+            throw new BusinessException(ErrorCode.ORDER_PERMISSION_MODIFY_DENIED);
         }
     }
 
@@ -91,7 +93,7 @@ public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Or
         iValidationOrderItems.forEach(validation -> validation.validate(request.getOrderItems(), productMap));
         Order order = orderMapper.toEntity(request);
         order.setUser(user);
-        order.setStatus(orderStatusRepository.findByName("PROCESSANDO").orElseThrow(() -> new OrderStatusNotFoundException("Error: Order status is not found.")));
+        order.setStatus(orderStatusRepository.findByName("PROCESSANDO").orElseThrow(() -> new ResourceNotFoundException(OrderStatus.class, "PROCESSANDO")));
 
         return orderRepository.save(order);
     }

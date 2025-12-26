@@ -23,7 +23,7 @@ public class LocaleConfig {
     @Bean
     public MessageSource messageSource() {
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-        messageSource.setBasename("classpath:ValidationMessages");
+        messageSource.setBasenames("classpath:ValidationMessages", "classpath:messages");
         messageSource.setDefaultEncoding("UTF-8");
         messageSource.setFallbackToSystemLocale(false);
         return messageSource;

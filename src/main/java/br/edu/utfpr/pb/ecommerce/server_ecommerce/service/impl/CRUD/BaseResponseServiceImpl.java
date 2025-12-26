@@ -1,11 +1,11 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.interfaces.Ownable;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.base.BaseRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.ICRUD.IBaseResponseService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.specification.BaseSpecification;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -120,7 +120,7 @@ public abstract class BaseResponseServiceImpl<T, ID extends Serializable> implem
         Specification<T> finalSpec = (contextSpec == null) ? idSpec : idSpec.and(contextSpec);
 
         return this.repository.findOne(finalSpec)
-                .orElseThrow(() -> new EntityNotFoundException("Entity not found with ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(entityClass, id));
     }
 
     @Override

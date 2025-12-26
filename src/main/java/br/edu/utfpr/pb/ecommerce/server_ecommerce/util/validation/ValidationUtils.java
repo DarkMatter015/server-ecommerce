@@ -1,10 +1,9 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderItemDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.OrderNotFoundException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.ProductNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.InvalidQuantityException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.InvalidStringException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
@@ -26,13 +25,7 @@ public final class ValidationUtils {
 
     public static void validateQuantityOfProduct(Integer quantity, Product product) {
         if (quantity == null || quantity > product.getQuantityAvailableInStock())
-            throw new InvalidQuantityException("Quantity greater than that available in stock. " + product.getId() + " - " + product.getName() +
-                    " - Stock: " + product.getQuantityAvailableInStock());
-    }
-
-    public static void validateStringNullOrBlank(String fieldName) {
-        if (fieldName == null || fieldName.isBlank())
-            throw new InvalidStringException("String cannot be null or blank.");
+            throw new InvalidQuantityException(ErrorCode.PRODUCT_QUANTITY_INVALID, product.getId(), product.getName(), product.getQuantityAvailableInStock());
     }
 
     public static String[] getNullPropertyNames(Object source) {
@@ -65,7 +58,7 @@ public final class ValidationUtils {
                     .map(Product::getId)
                     .collect(Collectors.toSet());
             productIds.removeAll(foundProductIds);
-            throw new ProductNotFoundException("Products not found with ids: " + productIds);
+            throw new ResourceNotFoundException(Product.class, productIds);
         }
 
         return products.stream()
@@ -74,6 +67,6 @@ public final class ValidationUtils {
 
     public static Order findAndValidateOrder(Long id, User user, OrderRepository orderRepository) {
         return orderRepository.findByIdAndUser(id, user)
-                .orElseThrow(() -> new OrderNotFoundException("Order not found."));
+                .orElseThrow(() -> new ResourceNotFoundException(Order.class, id));
     }
 }

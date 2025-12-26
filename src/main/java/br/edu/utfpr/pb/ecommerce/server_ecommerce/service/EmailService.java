@@ -1,6 +1,7 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.EmailException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.EmailException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.email.EmailEventDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.email.EmailPublisher;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.productStockUpdated.ProductStockUpdatedEventDTO;
@@ -48,7 +49,7 @@ public class EmailService {
 
             emailPublisher.send(new EmailEventDTO(user.getEmail(), subject, content));
         } catch (Exception e) {
-            throw new EmailException("Error sending e-mail.", e);
+            throw new EmailException(ErrorCode.EMAIL_ERROR_SEND, e.getMessage());
         }
     }
 

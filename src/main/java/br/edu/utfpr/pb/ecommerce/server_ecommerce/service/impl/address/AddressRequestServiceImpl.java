@@ -4,8 +4,9 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.dto.AddressCE
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.service.CepService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressUpdateDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.BusinessException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.AddressNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.BusinessException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Address;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.AddressRepository;
@@ -14,7 +15,6 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.address.IAddress.
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.BaseSoftDeleteRequestServiceImpl;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.user.UserResponseServiceImpl;
 import org.modelmapper.ModelMapper;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,13 +44,13 @@ public class AddressRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<
     private void validateAddressOwnership(Address address) {
         User user = authService.getAuthenticatedUser();
         if (!address.getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException("You don't have permission to modify this address!");
+            throw new BusinessException(ErrorCode.ADDRESS_PERMISSION_MODIFY_DENIED);
         }
     }
 
     private void findAndValidateAddress(Long id, User user) {
         addressRepository.findByIdAndUser(id, user)
-                .orElseThrow(() -> new AddressNotFoundException("Address not found."));
+                .orElseThrow(() -> new ResourceNotFoundException(Address.class, id));
     }
 
     @Override
@@ -59,7 +59,7 @@ public class AddressRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<
         Address address = addressResponseService.findById(id);
         if (address.isActive()) return address;
         User user = userResponseService.findById(address.getUser().getId());
-        if (!user.isActive()) throw new BusinessException("Activate the user first. User: " + user.getEmail() + ", ID: " + user.getId());
+        if (!user.isActive()) throw new BusinessException(ErrorCode.ADDRESS_USER_ACTIVATE_REQUIRED, user.getEmail(), user.getId());
         address.setDeletedAt(null);
         return addressRepository.save(address);
     }

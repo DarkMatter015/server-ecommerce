@@ -5,6 +5,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.requ
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.request.ShipmentRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.response.ShipmentResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.exception.ShipmentException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,9 +32,7 @@ public class MelhorEnvioService {
                     .limit(4)
                     .toList();
         } catch (FeignException e) {
-            if (e.status() == 422)
-                throw new ShipmentException("Some data are invalid in body requisition.");
-            throw new ShipmentException(e.getMessage());
+            throw new ShipmentException(ErrorCode.SHIPMENT_DATA_INVALID);
         }
     }
 }

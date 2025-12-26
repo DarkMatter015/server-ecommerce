@@ -1,10 +1,10 @@
-package br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.exception;
+package br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.BaseException;
 
-public class CepException extends BaseException {
-    public CepException(ErrorCode code, Object... args) {
+public class BusinessException extends BaseException {
+    public BusinessException(ErrorCode code, Object... args) {
         super(code, args);
     }
 }

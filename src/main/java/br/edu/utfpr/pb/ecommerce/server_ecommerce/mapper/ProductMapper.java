@@ -2,7 +2,7 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.request.ShipmentProductRequest;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.product.ProductRequestDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.CategoryNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Category;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.CategoryRepository;
@@ -34,7 +34,7 @@ public class ProductMapper {
         product.setQuantityAvailableInStock(dto.getQuantityAvailableInStock());
 
         Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(Category.class, dto.getCategoryId()));
 
         product.setCategory(category);
 

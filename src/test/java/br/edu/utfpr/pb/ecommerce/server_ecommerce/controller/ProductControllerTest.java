@@ -3,7 +3,7 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.BaseIntegrationTest;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.product.ProductRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.product.ProductResponseDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.CategoryNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Category;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.CategoryRepository;
@@ -47,7 +47,7 @@ public class ProductControllerTest extends BaseIntegrationTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
             Assertions.assertNotNull(response.getBody());
             assertThat(response.getBody().getName()).isEqualTo("New Test Product");
-        } else throw new CategoryNotFoundException("Category not found with ID 1");
+        } else throw new ResourceNotFoundException(Category.class, 1);
     }
 
     @Test
@@ -65,6 +65,6 @@ public class ProductControllerTest extends BaseIntegrationTest {
             );
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
-        } else throw new CategoryNotFoundException("Category not found with ID 1");
+        } else throw new ResourceNotFoundException(Category.class, 1);
     }
 }

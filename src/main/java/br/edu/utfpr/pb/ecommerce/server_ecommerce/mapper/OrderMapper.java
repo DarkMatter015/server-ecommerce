@@ -7,8 +7,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.payment.PaymentResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipmentDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.PaymentNotFoundException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.ProductNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.order.OrderEventDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.OrderItem;
@@ -47,7 +46,7 @@ public class OrderMapper {
         return orderItems.stream().map(itemDTO -> {
             Product product = productMap.get(itemDTO.getProductId());
             if (product == null)
-                throw new ProductNotFoundException("Product not found with id: " + itemDTO.getProductId());
+                throw new ResourceNotFoundException(Product.class, itemDTO.getProductId());
 
             OrderItem item = new OrderItem();
             item.setProduct(product);
@@ -89,7 +88,7 @@ public class OrderMapper {
         order.setOrderItems(itens);
 
         Payment payment = paymentRepository.findById(dto.getPaymentId()).orElseThrow(
-                () -> new PaymentNotFoundException("Payment not found with this id: " + dto.getPaymentId()));
+                () -> new ResourceNotFoundException(Payment.class, dto.getPaymentId()));
 
         order.setPayment(payment);
 
