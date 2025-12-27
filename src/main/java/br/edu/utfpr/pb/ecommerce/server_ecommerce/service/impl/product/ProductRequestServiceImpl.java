@@ -1,7 +1,8 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.product;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.product.ProductUpdateDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.BusinessException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.BusinessException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.productStockUpdated.ProductStockUpdatedEventDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.productStockUpdated.ProductStockUpdatedPublisher;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Category;
@@ -36,7 +37,7 @@ public class ProductRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<
         if (product.isActive()) return product;
         Category category = categoryResponseService.findById(product.getCategory().getId());
         if (!category.isActive())
-            throw new BusinessException("Activate the category first. Category: " + category.getName() + ", ID: " + category.getId());
+            throw new BusinessException(ErrorCode.CATEGORY_ACTIVATE_REQUIRED, category.getName(), category.getId());
         product.setDeletedAt(null);
         return productRepository.save(product);
     }

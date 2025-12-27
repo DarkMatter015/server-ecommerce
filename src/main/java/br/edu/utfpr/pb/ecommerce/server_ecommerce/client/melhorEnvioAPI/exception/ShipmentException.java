@@ -1,9 +1,10 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.exception;
 
-import feign.FeignException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.BaseException;
 
-public class ShipmentException extends FeignException {
-    public ShipmentException(String message) {
-        super(400, message);
+public class ShipmentException extends BaseException {
+    public ShipmentException(ErrorCode code, Object... args) {
+        super(code, args);
     }
 }

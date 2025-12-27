@@ -2,8 +2,7 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.orderItem;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemUpdateDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.OrderItemNotFoundException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.ProductNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.OrderItem;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
@@ -12,8 +11,8 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderItemsRepositor
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.orderItem.IOrderItems.IOrderItemsRequestService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.BaseSoftDeleteRequestServiceImpl;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.orderItem.IOrderItems.IOrderItemsRequestService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,7 +37,7 @@ public class OrderItemsRequestServiceImpl extends BaseSoftDeleteRequestServiceIm
 
     private OrderItem findAndValidateOrderItem(Long id, User user) {
         return orderItemsRepository.findByIdAndOrder_User_Id(id, user.getId())
-                .orElseThrow(() -> new OrderItemNotFoundException("Order item not found or you don't have permission to access it."));
+                .orElseThrow(() -> new ResourceNotFoundException(OrderItem.class, id));
     }
 
     @Override
@@ -73,7 +72,7 @@ public class OrderItemsRequestServiceImpl extends BaseSoftDeleteRequestServiceIm
         Order order = findAndValidateOrder(dto.getOrderId(), user, orderRepository);
 
         Product product = productRepository.findById(dto.getProductId())
-                .orElseThrow(() -> new ProductNotFoundException("Product not found."));
+                .orElseThrow(() -> new ResourceNotFoundException(Product.class, dto.getProductId()));
 
         OrderItem item = new OrderItem();
         item.setOrder(order);

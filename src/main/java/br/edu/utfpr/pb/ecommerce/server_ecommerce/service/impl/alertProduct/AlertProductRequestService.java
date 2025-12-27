@@ -2,7 +2,8 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.alertProduct;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.alertProduct.AlertProductRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.alertProduct.AlertProductResponseDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.BusinessException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.BusinessException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.AlertProductMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.AlertProduct;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
@@ -59,7 +60,7 @@ public class AlertProductRequestService extends BaseRequestServiceImpl<AlertProd
         );
 
         if (exists)
-            throw new BusinessException("You already have a pending alert for this product.");
+            throw new BusinessException(ErrorCode.ALERT_PRODUCT_PENDING_EXISTS);
 
         AlertProduct alert = super.save(alertProductMapper.toEntity(request, product, user));
 

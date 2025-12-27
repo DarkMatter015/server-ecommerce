@@ -8,13 +8,13 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.requ
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.response.ShipmentResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.service.MelhorEnvioService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRequestDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.BusinessException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.OrderNotFoundException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.OrderStatusNotFoundException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.ProductNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.BusinessException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ProductMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ShipmentMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.OrderStatus;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.EmbeddedAddress;
@@ -56,7 +56,7 @@ public class ProcessOrder {
         Order order = orderRepository.findByUserAndId(user, orderEventDTO.orderId());
 
         if (order == null)
-            throw new OrderNotFoundException("Order not found.");
+            throw new ResourceNotFoundException(Order.class, orderEventDTO.orderId());
 
         try {
             log.info("Validating Order Event: {}", orderEventDTO);
@@ -64,11 +64,11 @@ public class ProcessOrder {
             validateAddress(order, orderEventDTO);
             validateShipment(order, orderEventDTO, productQuantityMap);
 
-            order.setStatus(orderStatusRepository.findByName("PENDENTE").orElseThrow(() -> new OrderStatusNotFoundException("Error: Order status is not found.")));
+            order.setStatus(orderStatusRepository.findByName("PENDENTE").orElseThrow(() -> new ResourceNotFoundException(OrderStatus.class, "PENDENTE")));
             orderRepository.save(order);
         } catch (Exception e) {
             log.error("Error processing Order with ID: {}", order.getId(), e);
-            order.setStatus(orderStatusRepository.findByName("CANCELADO").orElseThrow(() -> new OrderStatusNotFoundException("Error: Order status is not found.")));
+            order.setStatus(orderStatusRepository.findByName("CANCELADO").orElseThrow(() -> new ResourceNotFoundException(OrderStatus.class, "CANCELADO")));
             orderRepository.save(order);
         }
     }
@@ -80,7 +80,7 @@ public class ProcessOrder {
         List<Product> products = productRepository.findAllById(quantityByIdMap.keySet());
 
         if (products.size() != quantityByIdMap.size()) {
-            throw new ProductNotFoundException("Product discrepancy: One or more IDs do not exist.");
+            throw new BusinessException(ErrorCode.PRODUCT_DISCREPANCY);
         }
 
         Map<Product, Integer> productQuantityMap = products.stream()
@@ -90,7 +90,7 @@ public class ProcessOrder {
                 ));
 
         if (products.size() != productQuantityMap.size()) {
-            throw new ProductNotFoundException("One or more products were not found.");
+            throw new ResourceNotFoundException(Product.class, productQuantityMap.keySet());
         }
 
         return productQuantityMap;
@@ -108,7 +108,7 @@ public class ProcessOrder {
         ShipmentResponseDTO selectedShipment = shipmentOptions.stream()
                 .filter(s -> s.id().equals(orderEventDTO.shipmentId()))
                 .findFirst()
-                .orElseThrow(() -> new BusinessException("The selected shipping method is no longer available or is invalid for this order."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.SHIPMENT_INVALID));
 
         order.setShipment(shipmentMapper.toEmbedded(selectedShipment));
     }

@@ -1,7 +1,8 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.AuthenticatedUserNotFoundException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.UserNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.AuthUserNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundWithException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.AuthenticationResponseDTO;
@@ -35,19 +36,19 @@ public class AuthService implements UserDetailsService {
     }
 
     public User getAuthenticatedUser() {
-        if (!isAuthenticated()) throw new AuthenticatedUserNotFoundException("No authenticated user found");
+        if (!isAuthenticated()) throw new AuthUserNotFoundException(ErrorCode.AUTHENTICATED_USER_NOT_FOUND);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String id = authentication.getName();
         Optional<User> user = userRepository.findById(Long.valueOf(id));
-        if (user.isEmpty()) throw new AuthenticatedUserNotFoundException("Authenticated user not found!");
+        if (user.isEmpty()) throw new AuthUserNotFoundException(ErrorCode.AUTHENTICATED_USER_NOT_FOUND);
 
         return user.get();
     }
 
     public User loadUserByCpf(String cpf) {
         Optional<User> user = userRepository.findByCpf(cpf);
-        if (user.isEmpty()) throw new UserNotFoundException("User not found with cpf: " + cpf);
+        if (user.isEmpty()) throw new ResourceNotFoundWithException("cpf", cpf);
         return user.get();
     }
 

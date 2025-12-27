@@ -1,12 +1,15 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.handler;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.BaseException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.handler.dto.ApiErrorDTO;
 import feign.FeignException;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
+import org.springframework.context.NoSuchMessageException;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,62 +20,73 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiErrorDTO handleException(Exception exception,
-                                    HttpServletRequest request) {
+    private final MessageSource messageSource;
 
-        return new ApiErrorDTO(
-                exception.getMessage(),
-                HttpStatus.BAD_REQUEST.value(),
-                request.getServletPath());
+    private String getLocalizedMessage(String key, Object[] args) {
+        try {
+            return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
+        } catch (NoSuchMessageException e) {
+            return key;
+        }
     }
 
-    @ExceptionHandler(EntityNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ApiErrorDTO handleEntityNotFoundException(EntityNotFoundException exception,
-                                       HttpServletRequest request) {
+    @ExceptionHandler(BaseException.class)
+    public ResponseEntity<ApiErrorDTO> handleBaseException(BaseException exception,
+                                                           HttpServletRequest request) {
+        String message = getLocalizedMessage(exception.getCode().getMessageKey(), exception.getArgs());
+        int status = exception.getCode().getStatus();
+
+        ApiErrorDTO error = new ApiErrorDTO(message, status, request.getServletPath());
+        return ResponseEntity.status(status).body(error);
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ApiErrorDTO handleGenericException(Exception ex, HttpServletRequest request) {
+        ex.printStackTrace();
+
+        String message = getLocalizedMessage("error.internal.server", null);
 
         return new ApiErrorDTO(
-                exception.getMessage(),
-                HttpStatus.NOT_FOUND.value(),
-                request.getServletPath());
+                message,
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                request.getServletPath()
+        );
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiErrorDTO handleExceptionArguments(MethodArgumentNotValidException exception,
+    public ApiErrorDTO handleValidationArguments(MethodArgumentNotValidException ex,
                                              HttpServletRequest request) {
-
-        BindingResult result = exception.getBindingResult();
         Map<String, String> errors = new HashMap<>();
-        for (FieldError fieldError : result.getFieldErrors()) {
-            errors.put( fieldError.getField(),
-                    fieldError.getDefaultMessage());
+
+        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
+            String message = messageSource.getMessage(fieldError, LocaleContextHolder.getLocale());
+            errors.put(fieldError.getField(), message);
         }
 
+        String message = getLocalizedMessage("fields.not.valid", null);
         return new ApiErrorDTO(
-                "Fields not valid",
+                message,
                 HttpStatus.BAD_REQUEST.value(),
                 request.getServletPath(),
                 errors);
     }
 
     @ExceptionHandler(FeignException.class)
-    public ResponseEntity<ApiErrorDTO> handleFeignException(FeignException exception,
+    public ResponseEntity<ApiErrorDTO> handleFeignException(FeignException ex,
                                                          HttpServletRequest request) {
+        int status = ex.status() != -1 ? ex.status() : HttpStatus.INTERNAL_SERVER_ERROR.value();
 
-        int status = exception.status() != -1
-                ? exception.status()
-                : HttpStatus.BAD_REQUEST.value();
+        String message = getLocalizedMessage("external.integration.error", null);
 
         ApiErrorDTO error = new ApiErrorDTO(
-                "Error to call External API",
+                message,
                 status,
-                request.getServletPath(),
-                Map.of("detail", exception.getMessage())
+                request.getServletPath()
         );
 
         return ResponseEntity.status(status).body(error);

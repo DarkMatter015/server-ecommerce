@@ -1,5 +1,7 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.BusinessException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.interfaces.Identifiable;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.base.BaseRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.ICRUD.IBaseRequestService;
@@ -79,7 +81,7 @@ public abstract class BaseRequestServiceImpl<T extends Identifiable<ID>, UD, ID 
             // Se o tamanho diminuiu, significa que o usuário tentou
             // atualizar algo que não é dele.
             if (toUpdate.size() < idsToCheck.size()) {
-                 throw new SecurityException("You dont have permission to update all this entities");
+                 throw new BusinessException(ErrorCode.SECURITY_PERMISSION_DENIED);
             }
         }
 

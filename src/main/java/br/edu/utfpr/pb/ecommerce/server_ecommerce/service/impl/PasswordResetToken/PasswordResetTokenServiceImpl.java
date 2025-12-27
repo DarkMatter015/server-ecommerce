@@ -1,5 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.PasswordResetToken;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.password.IncorrectPasswordException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.password.InvalidTokenException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.PasswordResetToken;
@@ -69,14 +70,14 @@ public class PasswordResetTokenServiceImpl implements IPasswordResetTokenService
     @Transactional
     public void changeUserPassword(ResetPasswordDTO dto) {
         if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
-            throw new IncorrectPasswordException("Passwords do not match.");
+            throw new IncorrectPasswordException(ErrorCode.PASSWORD_MISMATCH);
         }
 
         PasswordResetToken passToken = getValidTokenOrThrow(dto.getToken());
         User user = passToken.getUser();
 
         if (passwordEncoder.matches(dto.getNewPassword(), user.getPassword())) {
-            throw new IncorrectPasswordException("The new password cannot be the same as the current one.");
+            throw new IncorrectPasswordException(ErrorCode.PASSWORD_SAME);
         }
 
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
@@ -88,17 +89,17 @@ public class PasswordResetTokenServiceImpl implements IPasswordResetTokenService
 
     private PasswordResetToken getValidTokenOrThrow(String token) {
         if (token == null || token.isBlank())
-            throw new InvalidTokenException("Invalid Token.");
+            throw new InvalidTokenException(ErrorCode.TOKEN_INVALID);
 
         PasswordResetToken passToken = tokenRepository.findByToken(token)
                 .orElseThrow(() -> {
                     log.warn("Attempted to use a non-existent token: {}", token);
-                    return new InvalidTokenException("Invalid Token");
+                    return new InvalidTokenException(ErrorCode.TOKEN_INVALID);
                 });
 
         if (passToken.isTokenExpired()) {
             log.warn("Attempted to use an expired token. User ID: {}", passToken.getUser().getId());
-            throw new InvalidTokenException("Expired Token");
+            throw new InvalidTokenException(ErrorCode.TOKEN_EXPIRED);
         }
 
         return passToken;

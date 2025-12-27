@@ -1,6 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.user;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.notFound.UserNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
@@ -59,11 +59,11 @@ public class UserResponseServiceImpl extends BaseSoftDeleteResponseServiceImpl<U
     }
 
     @Override
-    public User findById(Long aLong) {
+    public User findById(Long id) {
         User authenticatedUser = authService.getAuthenticatedUser();
-        if (!isAuthenticatedAndAdmin(authService) && !authenticatedUser.getId().equals(aLong))
-            throw new UserNotFoundException("User not found.");
+        if (!isAuthenticatedAndAdmin(authService) && !authenticatedUser.getId().equals(id))
+            throw new ResourceNotFoundException(User.class, id);
 
-        return userRepository.findById(aLong).orElseThrow(() -> new UserNotFoundException("User not found with this id: " + aLong));
+        return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(User.class, id));
     }
 }
