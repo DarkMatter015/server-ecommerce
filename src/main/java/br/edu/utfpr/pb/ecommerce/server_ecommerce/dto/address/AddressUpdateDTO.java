@@ -16,6 +16,5 @@ public class AddressUpdateDTO extends BaseUpdateDTO {
     @Size(min = 1, max = 3)
     private String number;
 
-    @Size(min = 3, max = 50)
     private String complement;
 }
