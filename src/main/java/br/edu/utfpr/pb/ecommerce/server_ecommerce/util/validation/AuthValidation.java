@@ -13,7 +13,7 @@ public final class AuthValidation {
         if (authentication == null) return false;
 
         return authentication.getAuthorities().stream()
-                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"));
     }
 
     public static boolean isAuthenticatedAndAdmin() {
