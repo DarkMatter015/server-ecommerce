@@ -1,12 +1,8 @@
-package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD;
+package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.base;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.base.iBaseController.IBaseWriteController;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseIdEntity;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.ICRUD.IBaseRequestService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +14,7 @@ import java.net.URI;
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ControllerUtils.createUri;
 
 // T = class type (User, Category...), D = DTO type (Request), RD = DTO type (Response), UD = DTO type (Update), ID = primary key attribute of the class
-@SecurityRequirement(name = "bearer-key")
-public abstract class BaseWriteController<T extends BaseIdEntity, D, RD, UD, ID extends Serializable> {
+public abstract class BaseWriteController<T extends BaseIdEntity, D, RD, UD, ID extends Serializable> implements IBaseWriteController<D, RD, UD, ID> {
 
     private final IBaseRequestService<T, UD, ID> service;
     protected final ModelMapper modelMapper; // 'protected' to be used by 'hooks'
@@ -47,11 +42,7 @@ public abstract class BaseWriteController<T extends BaseIdEntity, D, RD, UD, ID 
         return modelMapper.map(entity, this.typeDtoResponseClass);
     }
 
-    @Operation(summary = "Create entity", description = "Creates a new entity")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Entity created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid data")
-    })
+    @Override
     @PostMapping
     public ResponseEntity<RD> create(@RequestBody @Valid D entityDto) {
         T entity = convertToEntity(entityDto);
@@ -63,14 +54,9 @@ public abstract class BaseWriteController<T extends BaseIdEntity, D, RD, UD, ID 
         return ResponseEntity.created(uri).body(responseDto);
     }
 
-    @Operation(summary = "Update entity", description = "Updates an existing entity")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Entity updated successfully"),
-            @ApiResponse(responseCode = "404", description = "Entity not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid data")
-    })
+    @Override
     @PatchMapping("{id}")
-    public ResponseEntity<RD> update(@Parameter(description = "Entity ID") @PathVariable ID id, @RequestBody @Valid UD entityDto) {
+    public ResponseEntity<RD> update(@PathVariable ID id, @RequestBody @Valid UD entityDto) {
 
         T updatedEntity = this.service.update(id, entityDto);
 
@@ -79,13 +65,9 @@ public abstract class BaseWriteController<T extends BaseIdEntity, D, RD, UD, ID 
         return ResponseEntity.ok(responseDto);
     }
 
-    @Operation(summary = "Delete entity", description = "Removes an entity by ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Entity removed successfully"),
-            @ApiResponse(responseCode = "404", description = "Entity not found")
-    })
+    @Override
     @DeleteMapping("{id}")
-    public ResponseEntity<Void> delete(@Parameter(description = "Entity ID") @PathVariable ID id) {
+    public ResponseEntity<Void> delete(@PathVariable ID id) {
         this.service.deleteById(id);
         return ResponseEntity.noContent().build();
     }

@@ -1,5 +1,6 @@
-package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD;
+package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.softDeleteController;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.base.BaseReadController;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseSoftDeleteEntity;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.ICRUD.IBaseSoftDeleteResponseService;
 import org.modelmapper.ModelMapper;

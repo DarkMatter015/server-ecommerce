@@ -1,9 +1,9 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.alertProduct;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.alertProduct.iAlertProductController.IWriteAlertProductController;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.alertProduct.AlertProductRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.alertProduct.AlertProductResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.alertProduct.IAlertProduct.IAlertProductRequestService;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,29 +14,32 @@ import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.ControllerUtils.cr
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("alerts")
-@Tag(name = "Alerts Write", description = "Endpoints for writing alerts of available products")
-public class WriteAlertProductController {
+public class WriteAlertProductController implements IWriteAlertProductController {
 
     private final IAlertProductRequestService alertProductRequestService;
 
+    @Override
     @PostMapping
     public ResponseEntity<AlertProductResponseDTO> createAlert(@RequestBody @Valid AlertProductRequestDTO dto) {
         AlertProductResponseDTO alert = alertProductRequestService.createAlert(dto);
         return ResponseEntity.created(createUri(alert)).body(alert);
     }
 
+    @Override
     @DeleteMapping("/{id}/cancel")
     public ResponseEntity<AlertProductResponseDTO> cancelAlert(@PathVariable Long id) {
         AlertProductResponseDTO alert = alertProductRequestService.cancelAlert(id);
         return ResponseEntity.ok(alert);
     }
 
+    @Override
     @DeleteMapping("/{id}")
     public ResponseEntity<AlertProductResponseDTO> deleteAlert(@PathVariable Long id) {
         alertProductRequestService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
+    @Override
     @PostMapping("/{id}/activate")
     public ResponseEntity<AlertProductResponseDTO> activateAlert(@PathVariable Long id) {
         AlertProductResponseDTO alert = alertProductRequestService.activateAlert(id);

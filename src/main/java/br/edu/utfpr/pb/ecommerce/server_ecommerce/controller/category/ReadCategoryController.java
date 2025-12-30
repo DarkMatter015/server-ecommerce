@@ -1,14 +1,10 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.category;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.BaseSoftDeleteReadController;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.softDeleteController.BaseSoftDeleteReadController;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.category.iCategoryController.IReadCategoryController;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.category.CategoryResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Category;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.category.ICategory.ICategoryResponseService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,8 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("categories")
-@Tag(name = "Category Read", description = "Endpoints for reading categories")
-public class ReadCategoryController extends BaseSoftDeleteReadController<Category, CategoryResponseDTO> {
+public class ReadCategoryController extends BaseSoftDeleteReadController<Category, CategoryResponseDTO> implements IReadCategoryController {
 
     private final ICategoryResponseService categoryResponseService;
 
@@ -31,12 +26,9 @@ public class ReadCategoryController extends BaseSoftDeleteReadController<Categor
         this.categoryResponseService = categoryResponseService1;
     }
 
-    @Operation(summary = "Filter categories", description = "Returns a paginated list of categories filtered by name")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully filtered categories")
-    })
+    @Override
     @GetMapping("/filter")
-    public ResponseEntity<Page<CategoryResponseDTO>> findAllByCategory(@Parameter(description = "Category name") @RequestParam(required = false) String name,
+    public ResponseEntity<Page<CategoryResponseDTO>> findAllByCategory(@RequestParam(required = false) String name,
                                                                       @PageableDefault(size = 10) Pageable pageable) {
         return ResponseEntity.ok(categoryResponseService.findByCriteria(name, pageable).map(this::convertToDto));
     }
