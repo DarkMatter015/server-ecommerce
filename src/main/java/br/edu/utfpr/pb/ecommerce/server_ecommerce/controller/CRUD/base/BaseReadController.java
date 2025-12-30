@@ -1,11 +1,8 @@
-package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD;
+package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.base;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.base.iBaseController.IBaseReadController;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseIdEntity;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.ICRUD.IBaseResponseService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,7 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 // T = class type (User, Category...), RD = DTO type (Response), ID = primary key attribute of the class
-public abstract class BaseReadController<T extends BaseIdEntity, RD, ID extends Serializable> {
+public abstract class BaseReadController<T extends BaseIdEntity, RD, ID extends Serializable> implements IBaseReadController<RD, ID> {
 
     private final IBaseResponseService<T, ID> service;
     protected final ModelMapper modelMapper; // 'protected' to be used by 'hooks'
@@ -38,24 +35,18 @@ public abstract class BaseReadController<T extends BaseIdEntity, RD, ID extends 
         return this.modelMapper.map(entity, this.typeDtoClass);
     }
 
-    @Operation(summary = "List all", description = "Returns a list of all entities")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully listed entities")
-    })
+    @Override
     @GetMapping //http://ip-api:port/request-mapping
     public ResponseEntity<List<RD>> findAll() {
         return ResponseEntity.ok(this.service.findAll().stream().map(this::convertToDto).collect(Collectors.toList()));
     }
 
-    @Operation(summary = "List all paginated", description = "Returns a paginated list of entities")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully listed entities")
-    })
+    @Override
     @GetMapping("page") //http://ip-api:port/request-mapping/page?page=1&size=5
-    public ResponseEntity<Page<RD>> findAll(@Parameter(description = "Page number (0..N)") @RequestParam int page,
-                                           @Parameter(description = "Page size") @RequestParam int size,
-                                           @Parameter(description = "Sort field") @RequestParam(required = false) String order,
-                                           @Parameter(description = "Sort ascending (true) or descending (false)") @RequestParam(required = false) Boolean asc) {
+    public ResponseEntity<Page<RD>> findAll(@RequestParam int page,
+                                           @RequestParam int size,
+                                           @RequestParam(required = false) String order,
+                                           @RequestParam(required = false) Boolean asc) {
         PageRequest pageRequest = PageRequest.of(page, size);
         if (order != null && asc != null) {
             pageRequest = PageRequest.of(page, size, asc ? Sort.Direction.ASC : Sort.Direction.DESC, order);
@@ -63,13 +54,9 @@ public abstract class BaseReadController<T extends BaseIdEntity, RD, ID extends 
         return ResponseEntity.ok(this.service.findAll(pageRequest).map(this::convertToDto));
     }
 
-    @Operation(summary = "Get entity by ID", description = "Returns a specific entity by its ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully found entity"),
-            @ApiResponse(responseCode = "404", description = "Entity not found")
-    })
+    @Override
     @GetMapping("{id}")
-    public ResponseEntity<RD> findOne(@Parameter(description = "Entity ID") @PathVariable ID id) {
+    public ResponseEntity<RD> findOne(@PathVariable ID id) {
         T entity = this.service.findById(id);
         if (entity != null) {
             return ResponseEntity.ok(convertToDto(entity));
@@ -78,19 +65,13 @@ public abstract class BaseReadController<T extends BaseIdEntity, RD, ID extends 
         }
     }
 
-    @Operation(summary = "Check existence", description = "Checks if an entity exists by ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Verification successful")
-    })
+    @Override
     @GetMapping("exists/{id}")
-    public ResponseEntity<Boolean> exists(@Parameter(description = "Entity ID") @PathVariable ID id) {
+    public ResponseEntity<Boolean> exists(@PathVariable ID id) {
         return ResponseEntity.ok(this.service.exists(id));
     }
 
-    @Operation(summary = "Count entities", description = "Returns the total number of entities")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Count successful")
-    })
+    @Override
     @GetMapping("count")
     public ResponseEntity<Long> count() {
         return ResponseEntity.ok(this.service.count());
