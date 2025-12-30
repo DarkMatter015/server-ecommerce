@@ -95,4 +95,13 @@ public class OrderItemsRequestServiceImpl extends BaseSoftDeleteRequestServiceIm
         OrderItem item = findAndValidateOrderItem(id, user);
         orderItemsRepository.delete(item);
     }
+
+    @Override
+    @Transactional
+    public void softDeleteById(Long id) {
+        User user = authService.getAuthenticatedUser();
+        OrderItem orderItem = findAndValidateOrderItem(id, user);
+        if (!orderItem.isActive()) return;
+        orderItemsRepository.softDeleteById(id);
+    }
 }

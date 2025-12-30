@@ -6,6 +6,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseSoftDeleteEntit
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.ICRUD.IBaseSoftDeleteRequestService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -20,9 +21,17 @@ public abstract class BaseSoftDeleteWriteController<T extends BaseSoftDeleteEnti
         this.service = service;
     }
 
+    @Override
     @PostMapping("activate/{id}")
     public ResponseEntity<RD> activate(@PathVariable Long id) {
         T entity = this.service.activate(id);
         return ResponseEntity.ok(convertToResponseDto(entity));
+    }
+
+    @Override
+    @DeleteMapping("inactivate/{id}")
+    public ResponseEntity<Void> softDeleteById(@PathVariable Long id) {
+        this.service.softDeleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

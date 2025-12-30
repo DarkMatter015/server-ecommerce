@@ -35,12 +35,12 @@ public abstract class BaseResponseServiceImpl<T, ID extends Serializable> implem
 
     protected Specification<T> buildContextSpecification() {
         // REGRA 1: ADMIN vê tudo (sem filtro)
-        if (isAuthenticatedAndAdmin(authService))
+        if (isAuthenticatedAndAdmin())
             return null;
 
         // REGRA 2: Dono vê seus registros (ativos e inativos)
         if (Ownable.class.isAssignableFrom(entityClass))
-            return BaseSpecification.isOwnedBy(authService.getAuthenticatedUser().getId());
+            return BaseSpecification.isOwnedBy(authService.getAuthenticatedUserId());
 
         // REGRA 3: Hook para comportamento específico (Abstrato)
         return getDefaultVisibilitySpecification();

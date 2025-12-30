@@ -56,7 +56,7 @@ public class CategoryControllerTest extends BaseIntegrationTest {
 
         // Categoria 1 ('Guitarras') existe no test-data.sql
         ResponseEntity<Void> response = testRestTemplate.exchange(
-                API_URL + "/1",
+                API_URL + "/inactivate/1",
                 HttpMethod.DELETE,
                 getRequestEntity(adminToken),
                 Void.class

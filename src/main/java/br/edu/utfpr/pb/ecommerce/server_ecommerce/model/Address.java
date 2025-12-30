@@ -2,13 +2,15 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.model;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseSoftDeleteEntity;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.interfaces.Ownable;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.annotations.SQLDelete;
 
 @Entity
 @Table(name = "tb_address")
@@ -17,7 +19,6 @@ import org.hibernate.annotations.SQLDelete;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@SQLDelete(sql = "UPDATE tb_address SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 public class Address extends BaseSoftDeleteEntity implements Ownable {
 
     @NotNull

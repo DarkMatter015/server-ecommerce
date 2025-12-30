@@ -30,9 +30,13 @@ public class AuthService implements UserDetailsService {
         return user.get();
     }
 
+    private static boolean validateAuthenticatedUser(Authentication authentication) {
+        return !(authentication == null || !authentication.isAuthenticated() || authentication.getName().contains("anonymous"));
+    }
+
     public static boolean isAuthenticated() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return !(authentication == null || !authentication.isAuthenticated() || authentication.getName().contains("anonymous"));
+        return validateAuthenticatedUser(authentication);
     }
 
     public User getAuthenticatedUser() {
@@ -57,5 +61,17 @@ public class AuthService implements UserDetailsService {
         AuthenticationResponseDTO response = new AuthenticationResponseDTO();
         response.setUser(new SecurityUserResponseDTO(user));
         return response;
+    }
+
+    public Long getAuthenticatedUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!validateAuthenticatedUser(authentication))
+            throw new AuthUserNotFoundException(ErrorCode.AUTHENTICATED_USER_NOT_FOUND);
+
+        try {
+            return Long.valueOf(authentication.getName());
+        } catch (NumberFormatException e) {
+            throw new AuthUserNotFoundException(ErrorCode.AUTHENTICATED_USER_NOT_FOUND);
+        }
     }
 }

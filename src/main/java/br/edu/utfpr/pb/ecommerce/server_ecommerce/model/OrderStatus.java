@@ -1,9 +1,10 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.model;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseSoftDeleteEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.*;
-import org.hibernate.annotations.SQLDelete;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -12,7 +13,6 @@ import org.hibernate.annotations.SQLDelete;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@SQLDelete(sql = "UPDATE tb_order_status SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 public class OrderStatus extends BaseSoftDeleteEntity {
 
     @Column(nullable = false, unique = true)

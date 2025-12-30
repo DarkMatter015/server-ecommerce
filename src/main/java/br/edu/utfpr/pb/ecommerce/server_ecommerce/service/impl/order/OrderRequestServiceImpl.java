@@ -108,6 +108,15 @@ public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Or
 
     @Override
     @Transactional
+    public void softDeleteById(Long id) {
+        User user = authService.getAuthenticatedUser();
+        Order order = findAndValidateOrder(id, user, orderRepository);
+        if (!order.isActive()) return;
+        orderRepository.softDeleteById(id);
+    }
+
+    @Override
+    @Transactional
     public void delete(Iterable<? extends Order> iterable) {
         iterable.forEach(this::validateOrderOwnership);
         super.delete(iterable);

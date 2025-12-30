@@ -5,4 +5,5 @@ import java.io.Serializable;
 public interface IBaseSoftDeleteRequestService<T, UD, ID extends Serializable> extends IBaseRequestService<T, UD, ID> {
 
     T activate(ID id);
+    void softDeleteById(ID id);
 }

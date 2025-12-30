@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
-import org.hibernate.annotations.SQLDelete;
 
 import java.math.BigDecimal;
 
@@ -17,7 +16,6 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@SQLDelete(sql = "UPDATE tb_order_item SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 public class OrderItem extends BaseSoftDeleteEntity implements Ownable {
 
     @NotNull
