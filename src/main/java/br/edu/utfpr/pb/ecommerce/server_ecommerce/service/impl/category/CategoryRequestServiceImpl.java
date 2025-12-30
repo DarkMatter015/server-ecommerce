@@ -36,6 +36,16 @@ public class CategoryRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl
     @Override
     @Transactional
     public void deleteById(Long id) {
+        categoryResponseService.findById(id);
+        productRepository.deleteAllByCategory_Id(id);
+        categoryRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public void softDeleteById(Long id) {
+        Category category = categoryResponseService.findById(id);
+        if (!category.isActive()) return;
         productRepository.softDeleteByCategoryId(id);
         categoryRepository.softDeleteById(id);
     }

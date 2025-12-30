@@ -16,6 +16,8 @@ public interface AddressRepository extends BaseSoftDeleteRepository<Address,Long
     @Query("UPDATE Address a SET a.deletedAt = CURRENT_TIMESTAMP WHERE a.user.id = :userId")
     void softDeleteByUserId(@Param("userId") Long userId);
 
+    void deleteAllByUser_Id(Long userId);
+
     @Modifying
     @Query("UPDATE Address a SET a.deletedAt = NULL WHERE a.user.id = :userId")
     void activateByUserId(@Param("userId") Long userId);

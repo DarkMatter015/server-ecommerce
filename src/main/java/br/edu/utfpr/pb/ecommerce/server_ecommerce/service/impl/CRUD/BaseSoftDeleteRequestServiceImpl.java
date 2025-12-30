@@ -25,4 +25,12 @@ public abstract class BaseSoftDeleteRequestServiceImpl<T extends BaseSoftDeleteE
         entity.setDeletedAt(null);
         return repository.save(entity);
     }
+
+    @Override
+    @Transactional
+    public void softDeleteById(Long id) {
+        T entity = crudResponseService.findById(id);
+        if (!entity.isActive()) return;
+        repository.softDeleteById(id);
+    }
 }

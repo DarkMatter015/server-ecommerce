@@ -7,7 +7,6 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.interfaces.Ownable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.hibernate.annotations.SQLDelete;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -20,7 +19,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@SQLDelete(sql = "UPDATE tb_order SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 public class Order extends BaseSoftDeleteEntity implements Ownable {
 
 

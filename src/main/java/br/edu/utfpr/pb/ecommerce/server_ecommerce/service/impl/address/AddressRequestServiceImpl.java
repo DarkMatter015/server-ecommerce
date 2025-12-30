@@ -48,8 +48,8 @@ public class AddressRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<
         }
     }
 
-    private void findAndValidateAddress(Long id, User user) {
-        addressRepository.findByIdAndUser(id, user)
+    private Address findAndValidateAddress(Long id, User user) {
+        return addressRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new ResourceNotFoundException(Address.class, id));
     }
 
@@ -107,6 +107,15 @@ public class AddressRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<
         User user = authService.getAuthenticatedUser();
         findAndValidateAddress(id, user);
         super.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public void softDeleteById(Long id) {
+        User user = authService.getAuthenticatedUser();
+        Address address = findAndValidateAddress(id, user);
+        if (!address.isActive()) return;
+        addressRepository.softDeleteById(id);
     }
 
     @Override

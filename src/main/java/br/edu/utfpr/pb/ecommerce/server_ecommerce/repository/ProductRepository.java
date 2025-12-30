@@ -13,6 +13,8 @@ public interface ProductRepository extends BaseSoftDeleteRepository<Product, Lon
     @Query("UPDATE Product p SET p.deletedAt = CURRENT_TIMESTAMP WHERE p.category.id = :categoryId")
     void softDeleteByCategoryId(@Param("categoryId") Long categoryId);
 
+    void deleteAllByCategory_Id(Long categoryId);
+
     @Modifying
     @Query("UPDATE Product p SET p.deletedAt = NULL WHERE p.category.id = :categoryId")
     void activateByCategoryId(@Param("categoryId") Long categoryId);

@@ -31,7 +31,7 @@ public class UserResponseServiceImpl extends BaseSoftDeleteResponseServiceImpl<U
 
     @Override
     public List<User> findAll() {
-        if (isAuthenticatedAndAdmin(authService))
+        if (isAuthenticatedAndAdmin())
             return userRepository.findAll();
 
         User authenticatedUser = authService.getAuthenticatedUser();
@@ -40,7 +40,7 @@ public class UserResponseServiceImpl extends BaseSoftDeleteResponseServiceImpl<U
 
     @Override
     public List<User> findAll(Sort sort) {
-        if (isAuthenticatedAndAdmin(authService))
+        if (isAuthenticatedAndAdmin())
             return userRepository.findAll(sort);
 
         User authenticatedUser = authService.getAuthenticatedUser();
@@ -49,7 +49,7 @@ public class UserResponseServiceImpl extends BaseSoftDeleteResponseServiceImpl<U
 
     @Override
     public Page<User> findAll(Pageable pageable) {
-        if (isAuthenticatedAndAdmin(authService)) {
+        if (isAuthenticatedAndAdmin()) {
             return userRepository.findAll(pageable);
         }
 
@@ -61,7 +61,7 @@ public class UserResponseServiceImpl extends BaseSoftDeleteResponseServiceImpl<U
     @Override
     public User findById(Long id) {
         User authenticatedUser = authService.getAuthenticatedUser();
-        if (!isAuthenticatedAndAdmin(authService) && !authenticatedUser.getId().equals(id))
+        if (!isAuthenticatedAndAdmin() && !authenticatedUser.getId().equals(id))
             throw new ResourceNotFoundException(User.class, id);
 
         return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(User.class, id));

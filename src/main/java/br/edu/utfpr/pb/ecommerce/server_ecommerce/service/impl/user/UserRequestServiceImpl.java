@@ -52,24 +52,24 @@ public class UserRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Use
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
     }
 
-    private User findAndValidateUser(Long id, User authenticatedUser) {
+    private User findAndValidateUser(Long id) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(User.class, id));
 
-        if (isAdmin(authenticatedUser))
+        if (isAdmin())
             return existingUser;
 
-        if (!existingUser.getId().equals(authenticatedUser.getId()))
+        if (!existingUser.getId().equals(authService.getAuthenticatedUserId()))
             throw new BusinessException(ErrorCode.USER_PERMISSION_MODIFY_DENIED);
 
         return existingUser;
     }
 
-    private Set<Role> validateUpdateRoleUser(User authenticatedUser, UserUpdateDTO dto) {
+    private Set<Role> validateUpdateRoleUser(UserUpdateDTO dto) {
         if (dto.getRoles() != null && dto.getRoles().isEmpty()) throw new BusinessException(ErrorCode.USER_ROLE_REQUIRED);
-        if (!isAdmin(authenticatedUser) && dto.getRoles() != null) {
+        if (!isAdmin() && dto.getRoles() != null) {
             throw new BusinessException(ErrorCode.USER_PERMISSION_ROLES_UPDATE_DENIED);
-        } else if (isAdmin(authenticatedUser) && dto.getRoles() != null) {
+        } else if (isAdmin() && dto.getRoles() != null) {
             return dto.getRoles().stream()
                     .map(roleName -> roleRepository.findByName(roleName)
                             .orElseThrow(() -> new ResourceNotFoundException(Role.class, roleName)))
@@ -99,7 +99,7 @@ public class UserRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Use
         if (optionalUser.isPresent()) throw new BusinessException(ErrorCode.USER_CPF_IN_USE);
         user.setCpf(userRequestDTO.getCpf());
 
-        if (!isAuthenticatedAndAdmin(authService)) {
+        if (!isAuthenticatedAndAdmin()) {
             if (userRequestDTO.getRoles() != null && !userRequestDTO.getRoles().equals(Collections.singleton("USER"))) {
                 throw new BusinessException(ErrorCode.USER_PERMISSION_CREATE_ROLES_DENIED);
             }
@@ -145,11 +145,10 @@ public class UserRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Use
     @Override
     @Transactional
     public User update(Long id, UserUpdateDTO dto) {
-        User authenticatedUser = authService.getAuthenticatedUser();
-        User existingUser = findAndValidateUser(id,  authenticatedUser);
+        User existingUser = findAndValidateUser(id);
 
         applyPartialUpdate(dto, existingUser);
-        Set<Role> roles = validateUpdateRoleUser(authenticatedUser, dto);
+        Set<Role> roles = validateUpdateRoleUser(dto);
         if (roles != null) existingUser.setRoles(roles);
 
         return userRepository.save(existingUser);
@@ -158,8 +157,16 @@ public class UserRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Use
     @Override
     @Transactional
     public void deleteById(Long id) {
-        User authenticatedUser = authService.getAuthenticatedUser();
-        findAndValidateUser(id, authenticatedUser);
+        findAndValidateUser(id);
+        addressRepository.deleteAllByUser_Id(id);
+        userRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public void softDeleteById(Long id) {
+        User user = findAndValidateUser(id);
+        if (!user.isActive()) return;
         addressRepository.softDeleteByUserId(id);
         userRepository.softDeleteById(id);
     }
@@ -167,14 +174,15 @@ public class UserRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Use
     @Override
     @Transactional
     public void delete(Iterable<? extends User> iterable) {
-        User authenticatedUser = authService.getAuthenticatedUser();
         iterable.forEach(user -> {
-            findAndValidateUser(user.getId(), authenticatedUser);
-            addressRepository.softDeleteByUserId(user.getId());
-            userRepository.softDeleteById(user.getId());
+            findAndValidateUser(user.getId());
+            addressRepository.deleteAllByUser_Id(user.getId());
+            userRepository.deleteById(user.getId());
         });
     }
 
+    @Override
+    @Transactional
     public void changePassword(ChangePasswordDTO dto) {
         String currentPassword = authService.getAuthenticatedUser().getPassword();
         if (!bCryptPasswordEncoder.matches(dto.getCurrentPassword(), currentPassword)) throw new IncorrectPasswordException(ErrorCode.USER_PASSWORD_CURRENT_INCORRECT);
