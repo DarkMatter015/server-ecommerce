@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.MapperUtils.map;
@@ -53,11 +54,12 @@ public class ProcessOrder {
     public void processOrder(OrderEventDTO orderEventDTO) {
         log.info("Processing Order Event: {}", orderEventDTO);
         User user = authService.loadUserByCpf(orderEventDTO.userCpf());
-        Order order = orderRepository.findByUserAndId(user, orderEventDTO.orderId());
+        Optional<Order> optOrder = orderRepository.findByIdAndUser(orderEventDTO.orderId(), user);
 
-        if (order == null)
+        if (optOrder.isEmpty())
             throw new ResourceNotFoundException(Order.class, orderEventDTO.orderId());
 
+        Order order = optOrder.get();
         try {
             log.info("Validating Order Event: {}", orderEventDTO);
             Map<Product, Integer> productQuantityMap = validateOrder(orderEventDTO);
