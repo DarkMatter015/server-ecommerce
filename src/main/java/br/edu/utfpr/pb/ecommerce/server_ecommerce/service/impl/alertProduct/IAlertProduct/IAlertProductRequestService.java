@@ -4,6 +4,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.alertProduct.AlertProductR
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.alertProduct.AlertProductResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.AlertProduct;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.AlertProductStatus;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.ICRUD.IBaseRequestService;
 
 public interface IAlertProductRequestService extends IBaseRequestService<AlertProduct, AlertProductRequestDTO, Long> {
@@ -11,4 +12,5 @@ public interface IAlertProductRequestService extends IBaseRequestService<AlertPr
     AlertProductResponseDTO cancelAlert(Long id);
     AlertProductResponseDTO activateAlert(Long id);
     void syncOrphanAlerts(User user);
+    void updateAlertStatus(Long alertId, AlertProductStatus status);
 }

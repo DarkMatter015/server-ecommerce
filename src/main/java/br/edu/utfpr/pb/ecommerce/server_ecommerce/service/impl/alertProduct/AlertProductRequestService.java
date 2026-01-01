@@ -96,8 +96,17 @@ public class AlertProductRequestService extends BaseRequestServiceImpl<AlertProd
         return alertProductMapper.toDTO(savedAlert);
     }
 
+    @Override
     @Transactional
     public void syncOrphanAlerts(User user) {
+        log.info("SYNC orphan alerts to User email: {}", user.getEmail());
         alertProductRepository.linkOrphanAlertsToUser(user.getEmail(), user);
+    }
+
+    @Override
+    @Transactional
+    public void updateAlertStatus(Long alertId, AlertProductStatus status) {
+        log.info("Updating Alert Status to '{}'.", status);
+        alertProductRepository.updateAlertStatus(alertId, status);
     }
 }

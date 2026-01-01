@@ -1,23 +1,18 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.QueueBuilder;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@Slf4j
 public class RabbitMQConfig {
 
-//    ORDER
+    //    ORDER
     @Value("${order.queue.name}")
     private String orderQueueName;
 
@@ -30,7 +25,7 @@ public class RabbitMQConfig {
     @Value("${order.dlk.key}")
     private String orderDlrkKey;
 
-//    EMAIL
+    //    EMAIL
     @Value("${email.queue.name}")
     private String emailQueueName;
 
@@ -43,20 +38,26 @@ public class RabbitMQConfig {
     @Value("${email.dlk.key}")
     private String emailDlrkKey;
 
+    @Value("${email.wait.queue}")
+    private String emailWaitQueueName;
+
     //    PRODUCT_STOCK_UPDATED
-    @Value("${productStockUpdated.queue.name}")
-    private String productStockUpdatedQueueName;
+    @Value("${alertProduct.queue.name}")
+    private String alertProductQueueName;
 
-    @Value("${productStockUpdated.dlx.name}")
-    private String productStockUpdatedDlxName;
+    @Value("${alertProduct.dlx.name}")
+    private String alertProductDlxName;
 
-    @Value("${productStockUpdated.dlq.name}")
-    private String productStockUpdatedDlqName;
+    @Value("${alertProduct.dlq.name}")
+    private String alertProductDlqName;
 
-    @Value("${productStockUpdated.dlk.key}")
-    private String productStockUpdatedDlrkKey;
+    @Value("${alertProduct.dlk.key}")
+    private String alertProductDlrkKey;
 
-//    ORDER
+    @Value("${email.wait.time}")
+    private int waitTime;
+
+    //    ORDER
     @Bean
     public Queue orderDlq() {
         return QueueBuilder.durable(orderDlqName).build();
@@ -80,7 +81,7 @@ public class RabbitMQConfig {
                 .build();
     }
 
-//    EMAIL
+    //    EMAIL
     @Bean
     public Queue emailDlq() {
         return QueueBuilder.durable(emailDlqName).build();
@@ -104,41 +105,42 @@ public class RabbitMQConfig {
                 .build();
     }
 
-    //    PRODUCT_STOCK_UPDATED
     @Bean
-    public Queue productStockUpdatedDlq() {
-        return QueueBuilder.durable(productStockUpdatedDlqName).build();
+    public Queue emailWaitQueue() {
+        log.info("Creating waiting queue with TTL of: {} ms", waitTime);
+        return QueueBuilder.durable(emailWaitQueueName)
+                .withArgument("x-dead-letter-exchange", "")
+                .withArgument("x-dead-letter-routing-key", emailQueueName)
+                .withArgument("x-message-ttl", waitTime)
+                .build();
+    }
+
+    //    alertProduct
+    @Bean
+    public Queue alertProductDlq() {
+        return QueueBuilder.durable(alertProductDlqName).build();
     }
 
     @Bean
-    public DirectExchange productStockUpdatedDlx() {
-        return new DirectExchange(productStockUpdatedDlxName);
+    public DirectExchange alertProductDlx() {
+        return new DirectExchange(alertProductDlxName);
     }
 
     @Bean
-    public Binding bindproductStockUpdatedDlq() {
-        return BindingBuilder.bind(productStockUpdatedDlq()).to(productStockUpdatedDlx()).with(productStockUpdatedDlrkKey);
+    public Binding bindAlertProductDlq() {
+        return BindingBuilder.bind(alertProductDlq()).to(alertProductDlx()).with(alertProductDlrkKey);
     }
 
     @Bean
-    public Queue productStockUpdatedQueue() {
-        return QueueBuilder.durable(productStockUpdatedQueueName)
-                .withArgument("x-dead-letter-exchange", productStockUpdatedDlxName)
-                .withArgument("x-dead-letter-routing-key", productStockUpdatedDlrkKey)
+    public Queue alertProductQueue() {
+        return QueueBuilder.durable(alertProductQueueName)
+                .withArgument("x-dead-letter-exchange", alertProductDlxName)
+                .withArgument("x-dead-letter-routing-key", alertProductDlrkKey)
                 .build();
     }
 
     @Bean
-    public Jackson2JsonMessageConverter messageConverter() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
+    public Jackson2JsonMessageConverter messageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
-    }
-
-    @Bean
-    public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory) {
-        final RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-        rabbitTemplate.setMessageConverter(messageConverter());
-        return rabbitTemplate;
     }
 }

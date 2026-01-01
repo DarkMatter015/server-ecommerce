@@ -3,8 +3,8 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.product.ProductUpdateDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.BusinessException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.productStockUpdated.ProductStockUpdatedEventDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.productStockUpdated.ProductStockUpdatedPublisher;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.alertProduct.AlertProductUpdatedEventDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.alertProduct.AlertProductUpdatedPublisher;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Category;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
@@ -20,14 +20,14 @@ public class ProductRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<
     private final ProductRepository productRepository;
     private final ProductResponseServiceImpl productResponseService;
     private final CategoryResponseServiceImpl categoryResponseService;
-    private final ProductStockUpdatedPublisher productStockUpdatedPublisher;
+    private final AlertProductUpdatedPublisher alertProductUpdatedPublisher;
 
-    public ProductRequestServiceImpl(ProductRepository productRepository, ProductResponseServiceImpl productResponseService, CategoryResponseServiceImpl categoryResponseService, ProductStockUpdatedPublisher productStockUpdatedPublisher) {
+    public ProductRequestServiceImpl(ProductRepository productRepository, ProductResponseServiceImpl productResponseService, CategoryResponseServiceImpl categoryResponseService, AlertProductUpdatedPublisher alertProductUpdatedPublisher) {
         super(productRepository, productResponseService);
         this.productRepository = productRepository;
         this.productResponseService = productResponseService;
         this.categoryResponseService = categoryResponseService;
-        this.productStockUpdatedPublisher = productStockUpdatedPublisher;
+        this.alertProductUpdatedPublisher = alertProductUpdatedPublisher;
     }
 
     @Override
@@ -61,8 +61,8 @@ public class ProductRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<
         boolean stockBecameAvailable = (newQuantity > oldQuantity) && (newQuantity > 0);
 
         if (stockBecameAvailable)
-            productStockUpdatedPublisher.send(
-                    new ProductStockUpdatedEventDTO(savedProduct.getId(), savedProduct.getName(), newQuantity)
+            alertProductUpdatedPublisher.send(
+                    new AlertProductUpdatedEventDTO(savedProduct.getId(), savedProduct.getName(), newQuantity)
             );
 
         return savedProduct;
