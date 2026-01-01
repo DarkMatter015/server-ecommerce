@@ -6,6 +6,10 @@ import lombok.Builder;
 public record EmailEventDTO(
         String email,
         String subject,
-        String htmlContent
+        String htmlContent,
+        Long alertId
 ) {
+    public EmailEventDTO(String email, String subject, String htmlContent){
+        this(email, subject, htmlContent, null);
+    }
 }

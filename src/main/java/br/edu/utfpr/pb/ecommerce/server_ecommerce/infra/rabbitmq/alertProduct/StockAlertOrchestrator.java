@@ -1,4 +1,4 @@
-package br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.productStockUpdated;
+package br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.alertProduct;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.AlertProduct;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.AlertProductStatus;
@@ -19,7 +19,7 @@ public class StockAlertOrchestrator {
     private final AlertProductRepository alertRepository;
     private final EmailService emailService;
 
-    public void processStockAlerts(ProductStockUpdatedEventDTO event) {
+    public void processStockAlerts(AlertProductUpdatedEventDTO event) {
         String productInfo = event.productId() + " - " + event.productName();
 
         log.info("Starting process of alert stock product: {}", productInfo);
@@ -41,11 +41,11 @@ public class StockAlertOrchestrator {
 
         for (AlertProduct alert : pendingAlerts) {
             try {
-                emailService.sendAlertProductStockAvailableEmail(alert.getEmail(), event);
-                alert.setStatus(AlertProductStatus.SENT);
+                emailService.sendAlertProductStockAvailableEmail(alert.getEmail(), event, alert.getId());
+                alert.setStatus(AlertProductStatus.PROCESSING);
                 alertsToSave.add(alert);
             } catch (Exception e) {
-                log.error("Error while sending alert product stock available email to user: {}. Error: {}", productInfo, e.getMessage());
+                log.error("Error while sending alert product stock available email to user: {}. Error: {}", alert.getEmail(), e.getMessage());
             }
         }
         if (!alertsToSave.isEmpty()) {

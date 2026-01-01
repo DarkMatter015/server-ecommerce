@@ -4,7 +4,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.EmailException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.email.EmailEventDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.email.EmailPublisher;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.productStockUpdated.ProductStockUpdatedEventDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.alertProduct.AlertProductUpdatedEventDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.PasswordResetToken;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +53,7 @@ public class EmailService {
         }
     }
 
-    public void sendAlertProductStockAvailableEmail(String email, ProductStockUpdatedEventDTO product) throws Exception {
+    public void sendAlertProductStockAvailableEmail(String email, AlertProductUpdatedEventDTO product, Long alertId) throws Exception {
         String subject = "Produto %s Disponível para Compra - RiffHouse".formatted(product.productName());
         String link = frontendUrl + "/produto/" + product.productId();
 
@@ -74,6 +74,6 @@ public class EmailService {
                 </div>
                 """.formatted(email, product.productName(), link, product.stockQuantity());
 
-        emailPublisher.send(new EmailEventDTO(email, subject, content));
+        emailPublisher.send(new EmailEventDTO(email, subject, content, alertId));
     }
 }
