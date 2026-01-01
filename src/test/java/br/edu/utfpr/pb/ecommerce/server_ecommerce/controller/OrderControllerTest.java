@@ -12,13 +12,14 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderItemDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderResponseDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.order.OrderPublisher;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -31,10 +32,12 @@ public class OrderControllerTest extends BaseIntegrationTest {
 
     private static final String API_URL = "/orders";
 
-    @Mock
+    @MockitoBean
     private CepService cepService;
-    @Mock
+    @MockitoBean
     private MelhorEnvioService melhorEnvioService;
+    @MockitoBean
+    private OrderPublisher orderPublisher;
 
     @Test
     public void postOrder_whenUserAuthenticated_thenCreateOrder() {
@@ -62,7 +65,7 @@ public class OrderControllerTest extends BaseIntegrationTest {
         Mockito.when(melhorEnvioService.calculateShipmentByProducts(any(ShipmentRequestDTO.class)))
                 .thenReturn(List.of(mockShipment));
 
-//        // 2. Cria o DTO de requisição do pedido
+        // 2. Cria o DTO de requisição do pedido
         AddressRequestDTO addressDTO = new AddressRequestDTO("12", null, "85501000");
         OrderRequestDTO newOrder = OrderRequestDTO.builder()
                 .paymentId(1L)
