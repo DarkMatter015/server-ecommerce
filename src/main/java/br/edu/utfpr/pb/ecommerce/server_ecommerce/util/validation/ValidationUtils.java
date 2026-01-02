@@ -1,6 +1,5 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderItemDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.InvalidQuantityException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
@@ -8,17 +7,12 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderRepository;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
 import java.beans.PropertyDescriptor;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public final class ValidationUtils {
     private ValidationUtils() {}
@@ -44,25 +38,6 @@ public final class ValidationUtils {
 
         String[] result = new String[emptyNames.size()];
         return emptyNames.toArray(result);
-    }
-
-    public static Map<Long, Product> getAndValidateProducts(List<OrderItemDTO> orderItemDTOS, ProductRepository productRepository) {
-        Set<Long> productIds = orderItemDTOS.stream()
-                .map(OrderItemDTO::getProductId)
-                .collect(Collectors.toSet());
-
-        List<Product> products = productRepository.findAllById(productIds);
-
-        if (products.size() != productIds.size()) {
-            Set<Long> foundProductIds = products.stream()
-                    .map(Product::getId)
-                    .collect(Collectors.toSet());
-            productIds.removeAll(foundProductIds);
-            throw new ResourceNotFoundException(Product.class, productIds);
-        }
-
-        return products.stream()
-                .collect(Collectors.toMap(Product::getId, Function.identity()));
     }
 
     public static Order findAndValidateOrder(Long id, User user, OrderRepository orderRepository) {

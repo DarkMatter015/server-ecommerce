@@ -2,9 +2,10 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.payment.PaymentResponseDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipmentDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.EmbeddedAddress;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.shipment.EmbeddedShipmentDetails;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.address.EmbeddedAddress;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,6 +15,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class OrderResponseDTO {
 
     private Long id;
@@ -28,7 +30,7 @@ public class OrderResponseDTO {
 
     private PaymentResponseDTO payment;
 
-    private EmbeddedShipmentDTO shipment;
+    private EmbeddedShipmentDetails shipment;
 
     private String status;
 }

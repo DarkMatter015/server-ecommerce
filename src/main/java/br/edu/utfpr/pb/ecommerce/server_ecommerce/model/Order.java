@@ -1,8 +1,8 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.model;
 
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.shipment.EmbeddedShipmentDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.shipment.EmbeddedShipmentDetails;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.base.BaseSoftDeleteEntity;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.EmbeddedAddress;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.address.EmbeddedAddress;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.interfaces.Ownable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -45,7 +45,7 @@ public class Order extends BaseSoftDeleteEntity implements Ownable {
     private EmbeddedAddress address;
 
     @Embedded
-    private EmbeddedShipmentDTO shipment;
+    private EmbeddedShipmentDetails shipment;
 
     @ManyToOne
     @JoinColumn(name = "status_id")

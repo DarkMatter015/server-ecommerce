@@ -17,7 +17,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.OrderStatus;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.EmbeddedAddress;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.address.EmbeddedAddress;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderStatusRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
