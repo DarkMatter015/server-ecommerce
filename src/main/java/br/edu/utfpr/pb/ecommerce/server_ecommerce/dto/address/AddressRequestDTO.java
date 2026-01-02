@@ -14,6 +14,7 @@ public class AddressRequestDTO {
 
     @NotBlank
     @Positive
+    @Pattern(regexp = "\\d{1,3}")
     private String number;
 
     private String complement;

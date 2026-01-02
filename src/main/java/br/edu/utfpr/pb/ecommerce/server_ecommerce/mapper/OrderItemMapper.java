@@ -20,24 +20,14 @@ public class OrderItemMapper {
     private final ModelMapper modelMapper;
 
     public OrderItemResponseDTO toDTO(OrderItem item) {
-        if (item == null) {
-            return null;
-        }
-
-        OrderItemResponseDTO dto = new OrderItemResponseDTO();
-
-        dto.setId(item.getId());
-        dto.setQuantity(item.getQuantity());
-
-        dto.setTotalPrice(item.getTotalPrice());
-
-        if (item.getOrder() != null)
-            dto.setOrderId(item.getOrder().getId());
-
-        if (item.getProduct() != null)
-            dto.setProduct(map(item.getProduct(), ProductResponseDTO.class, modelMapper));
-
-        return dto;
+        if (item == null) return null;
+        return OrderItemResponseDTO.builder()
+                .id(item.getId())
+                .quantity(item.getQuantity())
+                .totalPrice(item.getTotalPrice())
+                .orderId(item.getOrder() != null ? item.getOrder().getId() : null)
+                .product(map(item.getProduct(), ProductResponseDTO.class, modelMapper))
+                .build();
     }
 
     public List<OrderItemResponseDTO> toDTOList(List<OrderItem> items) {
@@ -48,11 +38,11 @@ public class OrderItemMapper {
 
     public List<OrderItemRequestDTO> toRequestDTOList(List<OrderItem> items) {
         return items.stream()
-                .map(item -> new OrderItemRequestDTO(
-                        null,
-                        item.getProduct().getId(),
-                        item.getQuantity())
-                )
+                .map(item -> OrderItemRequestDTO.builder()
+                        .orderId(null)
+                        .productId(item.getProduct().getId())
+                        .quantity(item.getQuantity())
+                        .build())
                 .collect(Collectors.toList());
     }
 }

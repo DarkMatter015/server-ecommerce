@@ -10,7 +10,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class AlertProductResponseService extends BaseResponseServiceImpl<AlertProduct, Long> implements IAlertProductResponseService {
 
-    public AlertProductResponseService(AlertProductRepository repository, AuthService authService) {
+    public AlertProductResponseService(AlertProductRepository repository,
+                                       AuthService authService) {
         super(repository, authService);
     }
 }

@@ -11,7 +11,8 @@ public abstract class BaseSoftDeleteRequestServiceImpl<T extends BaseSoftDeleteE
     private final BaseSoftDeleteRepository<T, Long> repository;
     private final BaseSoftDeleteResponseServiceImpl<T, Long> crudResponseService;
 
-    public BaseSoftDeleteRequestServiceImpl(BaseSoftDeleteRepository<T, Long> baseSoftDeleteRepository, BaseSoftDeleteResponseServiceImpl<T, Long> softDeleteResponseService) {
+    public BaseSoftDeleteRequestServiceImpl(BaseSoftDeleteRepository<T, Long> baseSoftDeleteRepository,
+                                            BaseSoftDeleteResponseServiceImpl<T, Long> softDeleteResponseService) {
         super(baseSoftDeleteRepository, softDeleteResponseService);
         this.repository = baseSoftDeleteRepository;
         this.crudResponseService = softDeleteResponseService;

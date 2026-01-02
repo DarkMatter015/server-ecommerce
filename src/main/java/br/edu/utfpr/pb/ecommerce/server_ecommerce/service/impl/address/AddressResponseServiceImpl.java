@@ -10,7 +10,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class AddressResponseServiceImpl extends BaseSoftDeleteResponseServiceImpl<Address, Long> implements IAddressResponseService {
 
-    public AddressResponseServiceImpl(AddressRepository addressRepository, AuthService authService) {
+    public AddressResponseServiceImpl(AddressRepository addressRepository,
+                                      AuthService authService) {
         super(addressRepository, authService);
     }
 }

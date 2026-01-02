@@ -2,19 +2,19 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.user;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserUpdateDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.BusinessException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.password.IncorrectPasswordException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.BusinessException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.password.ChangePasswordDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Role;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.AddressRepository;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.RoleRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.user.IUser.IUserRequestService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.BaseSoftDeleteRequestServiceImpl;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.role.RoleResponseServiceImpl;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.user.IUser.IUserRequestService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,15 +35,19 @@ public class UserRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Use
     private final UserResponseServiceImpl userResponseService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final AuthService authService;
-    private final RoleRepository roleRepository;
+    private final RoleResponseServiceImpl roleResponseService;
     private final AddressRepository addressRepository;
 
-    public UserRequestServiceImpl(UserRepository userRepository, UserResponseServiceImpl userResponseService, AuthService authService, RoleRepository roleRepository, AddressRepository addressRepository) {
+    public UserRequestServiceImpl(UserRepository userRepository,
+                                  UserResponseServiceImpl userResponseService,
+                                  AuthService authService,
+                                  RoleResponseServiceImpl roleResponseService,
+                                  AddressRepository addressRepository) {
         super(userRepository, userResponseService);
         this.userRepository = userRepository;
         this.userResponseService = userResponseService;
         this.authService = authService;
-        this.roleRepository = roleRepository;
+        this.roleResponseService = roleResponseService;
         this.addressRepository = addressRepository;
         this.bCryptPasswordEncoder = new BCryptPasswordEncoder();
     }
@@ -66,13 +70,13 @@ public class UserRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Use
     }
 
     private Set<Role> validateUpdateRoleUser(UserUpdateDTO dto) {
-        if (dto.getRoles() != null && dto.getRoles().isEmpty()) throw new BusinessException(ErrorCode.USER_ROLE_REQUIRED);
+        if (dto.getRoles() != null && dto.getRoles().isEmpty())
+            throw new BusinessException(ErrorCode.USER_ROLE_REQUIRED);
         if (!isAdmin() && dto.getRoles() != null) {
             throw new BusinessException(ErrorCode.USER_PERMISSION_ROLES_UPDATE_DENIED);
         } else if (isAdmin() && dto.getRoles() != null) {
             return dto.getRoles().stream()
-                    .map(roleName -> roleRepository.findByName(roleName)
-                            .orElseThrow(() -> new ResourceNotFoundException(Role.class, roleName)))
+                    .map(roleResponseService::findByName)
                     .collect(Collectors.toSet());
         }
         return null;
@@ -103,16 +107,15 @@ public class UserRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Use
             if (userRequestDTO.getRoles() != null && !userRequestDTO.getRoles().equals(Collections.singleton("USER"))) {
                 throw new BusinessException(ErrorCode.USER_PERMISSION_CREATE_ROLES_DENIED);
             }
-            Role userRole = roleRepository.findByName("USER").orElseThrow(() -> new ResourceNotFoundException(Role.class, "USER"));
+            Role userRole = roleResponseService.findByName("USER");
             user.setRoles(Collections.singleton(userRole));
         } else {
             if (userRequestDTO.getRoles() == null) {
-                Role userRole = roleRepository.findByName("USER").orElseThrow(() -> new ResourceNotFoundException(Role.class, "USER"));
+                Role userRole = roleResponseService.findByName("USER");
                 user.setRoles(Collections.singleton(userRole));
             } else {
                 Set<Role> roles = userRequestDTO.getRoles().stream()
-                        .map(roleName -> roleRepository.findByName(roleName)
-                                .orElseThrow(() -> new ResourceNotFoundException(Role.class, roleName)))
+                        .map(roleResponseService::findByName)
                         .collect(Collectors.toSet());
                 user.setRoles(roles);
             }
@@ -185,9 +188,12 @@ public class UserRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Use
     @Transactional
     public void changePassword(ChangePasswordDTO dto) {
         String currentPassword = authService.getAuthenticatedUser().getPassword();
-        if (!bCryptPasswordEncoder.matches(dto.getCurrentPassword(), currentPassword)) throw new IncorrectPasswordException(ErrorCode.USER_PASSWORD_CURRENT_INCORRECT);
-        if (bCryptPasswordEncoder.matches(dto.getNewPassword(), currentPassword)) throw new IncorrectPasswordException(ErrorCode.PASSWORD_SAME);
-        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) throw new IncorrectPasswordException(ErrorCode.USER_PASSWORD_CONFIRM_MISMATCH);
+        if (!bCryptPasswordEncoder.matches(dto.getCurrentPassword(), currentPassword))
+            throw new IncorrectPasswordException(ErrorCode.USER_PASSWORD_CURRENT_INCORRECT);
+        if (bCryptPasswordEncoder.matches(dto.getNewPassword(), currentPassword))
+            throw new IncorrectPasswordException(ErrorCode.PASSWORD_SAME);
+        if (!dto.getNewPassword().equals(dto.getConfirmPassword()))
+            throw new IncorrectPasswordException(ErrorCode.USER_PASSWORD_CONFIRM_MISMATCH);
         User user = authService.getAuthenticatedUser();
         user.setPassword(bCryptPasswordEncoder.encode(dto.getNewPassword()));
         userRepository.save(user);

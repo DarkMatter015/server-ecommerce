@@ -5,20 +5,24 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.handler.dto.ApiErrorDTO;
 import feign.FeignException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
@@ -46,7 +50,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiErrorDTO handleGenericException(Exception ex, HttpServletRequest request) {
-        ex.printStackTrace();
+        log.error(Arrays.toString(ex.getStackTrace()));
+        log.error(ex.getMessage());
 
         String message = getLocalizedMessage("error.internal.server", null);
 
@@ -89,6 +94,21 @@ public class GlobalExceptionHandler {
                 request.getServletPath()
         );
 
+        return ResponseEntity.status(status).body(error);
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ApiErrorDTO> handleOptimisticLock(ObjectOptimisticLockingFailureException ex,
+                                                            HttpServletRequest request) {
+        log.error(ex.getMessage());
+
+        String message = getLocalizedMessage("version.conflict.error", null);
+        HttpStatus status = HttpStatus.CONFLICT;
+        ApiErrorDTO error = new ApiErrorDTO(
+                message,
+                status.value(),
+                request.getServletPath()
+        );
         return ResponseEntity.status(status).body(error);
     }
 }

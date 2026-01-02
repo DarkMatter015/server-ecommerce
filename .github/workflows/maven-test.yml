@@ -24,6 +24,7 @@ jobs:
           - UserControllerTest
           - OrderControllerTest
           - AddressControllerTest
+          - OrderConcurrencyTest
 
     steps:
     - name: Checkout do código

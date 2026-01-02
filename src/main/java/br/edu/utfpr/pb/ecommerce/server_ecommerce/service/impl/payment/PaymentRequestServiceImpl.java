@@ -11,7 +11,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class PaymentRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Payment, PaymentUpdateDTO> implements IPaymentRequestService {
 
-    public PaymentRequestServiceImpl(PaymentRepository paymentRepository, PaymentResponseServiceImpl paymentResponseService) {
+    public PaymentRequestServiceImpl(PaymentRepository paymentRepository,
+                                     PaymentResponseServiceImpl paymentResponseService) {
         super(paymentRepository, paymentResponseService);
     }
 

@@ -43,6 +43,9 @@ public class Product extends BaseSoftDeleteEntity {
     @NotNull
     private Category category;
 
+    @Version
+    private Long version;
+
     public void decreaseQuantity(Integer decreaseQuantity){
         validateQuantityOfProduct(decreaseQuantity, this);
         this.quantityAvailableInStock -= decreaseQuantity;

@@ -26,7 +26,8 @@ public abstract class BaseResponseServiceImpl<T, ID extends Serializable> implem
     private final AuthService authService;
     private final Class<T> entityClass;
 
-    public BaseResponseServiceImpl(BaseRepository<T, ID> repository, AuthService authService) {
+    public BaseResponseServiceImpl(BaseRepository<T, ID> repository,
+                                   AuthService authService) {
         this.repository = repository;
         this.authService = authService;
         this.entityClass = (Class<T>) ((ParameterizedType) getClass()

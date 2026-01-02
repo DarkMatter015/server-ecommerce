@@ -14,14 +14,13 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoun
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ProductMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ShipmentMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.OrderStatus;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.EmbeddedAddress;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.address.EmbeddedAddress;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderRepository;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderStatusRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.orderStatus.OrderStatusResponseServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -42,7 +41,7 @@ public class ProcessOrder {
 
     private final AuthService authService;
     private final ProductMapper productMapper;
-    private final OrderStatusRepository orderStatusRepository;
+    private final OrderStatusResponseServiceImpl orderStatusResponseService;
     private final OrderRepository orderRepository;
     private final ShipmentMapper shipmentMapper;
     private final MelhorEnvioService melhorEnvioService;
@@ -66,11 +65,11 @@ public class ProcessOrder {
             validateAddress(order, orderEventDTO);
             validateShipment(order, orderEventDTO, productQuantityMap);
 
-            order.setStatus(orderStatusRepository.findByName("PENDENTE").orElseThrow(() -> new ResourceNotFoundException(OrderStatus.class, "PENDENTE")));
+            order.setStatus(orderStatusResponseService.findByName("PENDENTE"));
             orderRepository.save(order);
         } catch (Exception e) {
             log.error("Error processing Order with ID: {}", order.getId(), e);
-            order.setStatus(orderStatusRepository.findByName("CANCELADO").orElseThrow(() -> new ResourceNotFoundException(OrderStatus.class, "CANCELADO")));
+            order.setStatus(orderStatusResponseService.findByName("CANCELADO"));
             orderRepository.save(order);
         }
     }
