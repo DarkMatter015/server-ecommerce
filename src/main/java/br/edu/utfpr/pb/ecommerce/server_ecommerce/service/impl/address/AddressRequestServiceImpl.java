@@ -31,7 +31,12 @@ public class AddressRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<
     private final ModelMapper modelMapper;
     private final CepService cepService;
 
-    public AddressRequestServiceImpl(AddressRepository addressRepository, AddressResponseServiceImpl addressResponseService, UserResponseServiceImpl userResponseService, AuthService authService, ModelMapper modelMapper, CepService cepService) {
+    public AddressRequestServiceImpl(AddressRepository addressRepository,
+                                     AddressResponseServiceImpl addressResponseService,
+                                     UserResponseServiceImpl userResponseService,
+                                     AuthService authService,
+                                     ModelMapper modelMapper,
+                                     CepService cepService) {
         super(addressRepository, addressResponseService);
         this.addressRepository = addressRepository;
         this.addressResponseService = addressResponseService;

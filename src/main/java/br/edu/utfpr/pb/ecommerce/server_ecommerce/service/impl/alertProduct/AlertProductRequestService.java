@@ -35,7 +35,13 @@ public class AlertProductRequestService extends BaseRequestServiceImpl<AlertProd
     private final AlertProductMapper alertProductMapper;
     private final List<IValidateAlertProduct> validateAlertProducts;
 
-    public AlertProductRequestService(AlertProductRepository repository, AlertProductResponseService crudResponseService, AuthService authService, ProductResponseServiceImpl productResponseService, IAlertProductResponseService alertProductResponseService, AlertProductMapper alertProductMapper, List<IValidateAlertProduct> validateAlertProducts) {
+    public AlertProductRequestService(AlertProductRepository repository,
+                                      AlertProductResponseService crudResponseService,
+                                      AuthService authService,
+                                      ProductResponseServiceImpl productResponseService,
+                                      IAlertProductResponseService alertProductResponseService,
+                                      AlertProductMapper alertProductMapper,
+                                      List<IValidateAlertProduct> validateAlertProducts) {
         super(repository, crudResponseService);
         this.authService = authService;
         this.productResponseService = productResponseService;

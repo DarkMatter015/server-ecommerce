@@ -10,18 +10,21 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ProductResponseServiceImpl extends BaseSoftDeleteResponseServiceImpl<Product, Long> implements IProductResponseService {
 
     private final ProductRepository productRepository;
 
-    public ProductResponseServiceImpl(ProductRepository productRepository, AuthService authService) {
+    public ProductResponseServiceImpl(ProductRepository productRepository,
+                                      AuthService authService) {
         super(productRepository, authService);
         this.productRepository = productRepository;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Product> findByCriteria(String name, String categoryName, Pageable pageable) {
         Specification<Product> spec = Specification.anyOf();
 

@@ -16,7 +16,9 @@ public class CategoryRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl
     private final CategoryResponseServiceImpl categoryResponseService;
     private final ProductRepository productRepository;
 
-    public CategoryRequestServiceImpl(CategoryRepository categoryRepository, ProductRepository productRepository, CategoryResponseServiceImpl categoryResponseService) {
+    public CategoryRequestServiceImpl(CategoryRepository categoryRepository,
+                                      ProductRepository productRepository,
+                                      CategoryResponseServiceImpl categoryResponseService) {
         super(categoryRepository, categoryResponseService);
         this.categoryRepository = categoryRepository;
         this.productRepository = productRepository;

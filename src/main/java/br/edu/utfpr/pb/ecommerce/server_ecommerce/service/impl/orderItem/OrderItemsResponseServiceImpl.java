@@ -10,7 +10,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class OrderItemsResponseServiceImpl extends BaseSoftDeleteResponseServiceImpl<OrderItem, Long> implements IOrderItemsResponseService {
 
-    public OrderItemsResponseServiceImpl(OrderItemsRepository orderItemsRepository, AuthService authService) {
+    public OrderItemsResponseServiceImpl(OrderItemsRepository orderItemsRepository,
+                                         AuthService authService) {
         super(orderItemsRepository, authService);
     }
 }

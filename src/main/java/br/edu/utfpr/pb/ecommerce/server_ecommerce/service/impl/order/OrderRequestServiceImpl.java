@@ -3,19 +3,19 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.order;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderItemDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderUpdateDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.BusinessException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.BusinessException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.order.OrderPublisher;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.OrderMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.*;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.address.EmbeddedAddress;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderRepository;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderStatusRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.order.IOrder.IOrderRequestService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.BaseSoftDeleteRequestServiceImpl;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.order.IOrder.IOrderRequestService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.orderStatus.OrderStatusResponseServiceImpl;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.payment.IPayment.IPaymentResponseService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.validation.orderItem.IValidationOrderItem;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +31,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.MapperUtils.map;
-import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.*;
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.validation.ValidationUtils.findAndValidateOrder;
 
 @Slf4j
 @Service
@@ -42,19 +42,28 @@ public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Or
     private final ModelMapper modelMapper;
     private final OrderMapper orderMapper;
     private final OrderPublisher orderPublisher;
-    private final OrderStatusRepository orderStatusRepository;
+    private final OrderStatusResponseServiceImpl orderStatusResponseService;
     private final ProductRepository productRepository;
     private final List<IValidationOrderItem> iValidationOrderItems;
     private final IPaymentResponseService paymentResponseService;
 
-    public OrderRequestServiceImpl(OrderRepository orderRepository, OrderResponseServiceImpl orderResponseService, AuthService authService, ModelMapper modelMapper, OrderMapper orderMapper, OrderPublisher orderPublisher, OrderStatusRepository orderStatusRepository, ProductRepository productRepository, List<IValidationOrderItem> iValidationOrderItems, IPaymentResponseService paymentResponseService) {
+    public OrderRequestServiceImpl(OrderRepository orderRepository,
+                                   OrderResponseServiceImpl orderResponseService,
+                                   AuthService authService,
+                                   ModelMapper modelMapper,
+                                   OrderMapper orderMapper,
+                                   OrderPublisher orderPublisher,
+                                   OrderStatusResponseServiceImpl orderStatusResponseService,
+                                   ProductRepository productRepository,
+                                   List<IValidationOrderItem> iValidationOrderItems,
+                                   IPaymentResponseService paymentResponseService) {
         super(orderRepository, orderResponseService);
         this.orderRepository = orderRepository;
         this.authService = authService;
         this.modelMapper = modelMapper;
         this.orderMapper = orderMapper;
         this.orderPublisher = orderPublisher;
-        this.orderStatusRepository = orderStatusRepository;
+        this.orderStatusResponseService = orderStatusResponseService;
         this.productRepository = productRepository;
         this.iValidationOrderItems = iValidationOrderItems;
         this.paymentResponseService = paymentResponseService;
@@ -90,16 +99,16 @@ public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Or
         return order;
     }
 
+    @Override
     @Transactional
     public Order validateAndCreateOrder(OrderRequestDTO request, User user) {
-        log.info("Starting the validation adn creation of New Order ...");
+        log.info("Starting the validation and creation of New Order ...");
         Map<Long, Product> productMap = findAndValidateProductsExistence(request.getOrderItems());
         iValidationOrderItems.forEach(validation -> validation.validate(request.getOrderItems(), productMap));
 
-        log.info("Searching and validating payment");
+        log.info("Searching payment and setting status");
         Payment payment = paymentResponseService.findById(request.getPaymentId());
-        OrderStatus processingStatus = orderStatusRepository.findByName("PROCESSANDO").orElseThrow(
-                () -> new ResourceNotFoundException(OrderStatus.class, "PROCESSANDO"));
+        OrderStatus processingStatus = orderStatusResponseService.findByName("PROCESSANDO");
 
         Order order = orderMapper.toEntity(request, payment);
         order.setUser(user);

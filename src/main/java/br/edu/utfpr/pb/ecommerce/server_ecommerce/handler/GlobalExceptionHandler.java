@@ -51,6 +51,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiErrorDTO handleGenericException(Exception ex, HttpServletRequest request) {
         log.error(Arrays.toString(ex.getStackTrace()));
+        log.error(ex.getMessage());
 
         String message = getLocalizedMessage("error.internal.server", null);
 

@@ -27,7 +27,11 @@ public class OrderItemsRequestServiceImpl extends BaseSoftDeleteRequestServiceIm
     private final OrderRepository orderRepository;
     private final AuthService authService;
 
-    public OrderItemsRequestServiceImpl(OrderItemsRepository orderItemsRepository, OrderItemsResponseServiceImpl orderItemsResponseService, ProductRepository productRepository, OrderRepository orderRepository, AuthService authService) {
+    public OrderItemsRequestServiceImpl(OrderItemsRepository orderItemsRepository,
+                                        OrderItemsResponseServiceImpl orderItemsResponseService,
+                                        ProductRepository productRepository,
+                                        OrderRepository orderRepository,
+                                        AuthService authService) {
         super(orderItemsRepository, orderItemsResponseService);
         this.orderItemsRepository = orderItemsRepository;
         this.productRepository = productRepository;

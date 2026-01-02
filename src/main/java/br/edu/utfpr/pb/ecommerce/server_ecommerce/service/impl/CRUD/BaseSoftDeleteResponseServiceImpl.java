@@ -11,7 +11,8 @@ import java.io.Serializable;
 public abstract class BaseSoftDeleteResponseServiceImpl<T extends BaseSoftDeleteEntity, ID extends Serializable>
         extends BaseResponseServiceImpl<T, ID> {
 
-    public BaseSoftDeleteResponseServiceImpl(BaseRepository<T, ID> repository, AuthService authService) {
+    public BaseSoftDeleteResponseServiceImpl(BaseRepository<T, ID> repository,
+                                             AuthService authService) {
         super(repository, authService);
     }
 

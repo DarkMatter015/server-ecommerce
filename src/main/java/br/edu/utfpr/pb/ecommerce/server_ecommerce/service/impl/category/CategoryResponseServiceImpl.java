@@ -10,18 +10,21 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CategoryResponseServiceImpl extends BaseSoftDeleteResponseServiceImpl<Category, Long> implements ICategoryResponseService {
 
     private final CategoryRepository categoryRepository;
 
-    public CategoryResponseServiceImpl(CategoryRepository categoryRepository, AuthService authService) {
+    public CategoryResponseServiceImpl(CategoryRepository categoryRepository,
+                                       AuthService authService) {
         super(categoryRepository, authService);
         this.categoryRepository = categoryRepository;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Category> findByCriteria(String name, Pageable pageable) {
         Specification<Category> spec = Specification.anyOf();
 

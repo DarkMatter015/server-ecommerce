@@ -22,7 +22,10 @@ public class ProductRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<
     private final CategoryResponseServiceImpl categoryResponseService;
     private final AlertProductUpdatedPublisher alertProductUpdatedPublisher;
 
-    public ProductRequestServiceImpl(ProductRepository productRepository, ProductResponseServiceImpl productResponseService, CategoryResponseServiceImpl categoryResponseService, AlertProductUpdatedPublisher alertProductUpdatedPublisher) {
+    public ProductRequestServiceImpl(ProductRepository productRepository,
+                                     ProductResponseServiceImpl productResponseService,
+                                     CategoryResponseServiceImpl categoryResponseService,
+                                     AlertProductUpdatedPublisher alertProductUpdatedPublisher) {
         super(productRepository, productResponseService);
         this.productRepository = productRepository;
         this.productResponseService = productResponseService;

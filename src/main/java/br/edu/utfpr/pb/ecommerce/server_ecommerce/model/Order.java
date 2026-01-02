@@ -21,7 +21,6 @@ import java.util.List;
 @Builder
 public class Order extends BaseSoftDeleteEntity implements Ownable {
 
-
     @NotNull
     private final LocalDateTime data = LocalDateTime.now();
 
