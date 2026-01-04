@@ -8,6 +8,7 @@ public enum ErrorCode {
     ENTITY_NOT_FOUND("entity.not.found", 404),
     ENTITY_NOT_FOUND_WITH("entity.not.found.with", 404),
     SECURITY_PERMISSION_DENIED("security.permission.update.denied", 403),
+    SHIPMENT_SERVICE_UNAVAILABLE("external.integration.error", 503),
 
     // User
     USER_PERMISSION_MODIFY_DENIED("user.permission.modify.denied", 403),
@@ -32,6 +33,7 @@ public enum ErrorCode {
     PRODUCT_QUANTITY_INVALID("product.quantity.invalid", 400),
     CATEGORY_ACTIVATE_REQUIRED("category.activate.required", 400),
     PRODUCT_DISCREPANCY("product.discrepancy", 400),
+    PRODUCT_NOT_FOUND("product.not.found", 400),
 
     // Order
     ORDER_PERMISSION_MODIFY_DENIED("order.permission.modify.denied", 403),

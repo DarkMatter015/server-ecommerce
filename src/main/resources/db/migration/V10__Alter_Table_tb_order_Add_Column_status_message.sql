@@ -1,0 +1,1 @@
+ALTER TABLE tb_order ADD COLUMN status_message TEXT DEFAULT '' NULL;

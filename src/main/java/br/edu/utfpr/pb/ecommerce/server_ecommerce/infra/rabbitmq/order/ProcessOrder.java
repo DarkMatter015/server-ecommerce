@@ -1,15 +1,20 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.order;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.dto.AddressCEP;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.exception.CepException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.service.CepService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.request.PostalCodeRequest;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.request.ShipmentProductRequest;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.request.ShipmentRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.response.ShipmentResponseDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.exception.ShipmentException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.service.MelhorEnvioService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.BusinessException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.order.InvalidAddressException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.order.InvalidProductException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.order.InvalidShipmentException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.order.OrderProcessingException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ProductMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ShipmentMapper;
@@ -20,16 +25,19 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.address.Embedde
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.TranslationService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.orderStatus.OrderStatusResponseServiceImpl;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.flywaydb.core.internal.util.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.MapperUtils.map;
@@ -48,29 +56,44 @@ public class ProcessOrder {
     private final CepService cepService;
     private final ProductRepository productRepository;
     private final ModelMapper modelMapper;
+    private final TranslationService translator;
 
     @Transactional
     public void processOrder(OrderEventDTO orderEventDTO) {
         log.info("Processing Order Event: {}", orderEventDTO);
+        Locale userLocale = StringUtils.hasText(orderEventDTO.locale())
+                ? Locale.forLanguageTag(orderEventDTO.locale())
+                : Locale.getDefault();
         User user = authService.loadUserByCpf(orderEventDTO.userCpf());
-        Optional<Order> optOrder = orderRepository.findByIdAndUser(orderEventDTO.orderId(), user);
+        Order order = orderRepository.findByIdAndUser(orderEventDTO.orderId(), user)
+                .orElseThrow(() -> new ResourceNotFoundException(Order.class, orderEventDTO.orderId()));
 
-        if (optOrder.isEmpty())
-            throw new ResourceNotFoundException(Order.class, orderEventDTO.orderId());
-
-        Order order = optOrder.get();
         try {
             log.info("Validating Order Event: {}", orderEventDTO);
+
             Map<Product, Integer> productQuantityMap = validateOrder(orderEventDTO);
+
             validateAddress(order, orderEventDTO);
+
             validateShipment(order, orderEventDTO, productQuantityMap);
 
-            order.setStatus(orderStatusResponseService.findByName("PENDENTE"));
+            updateOrderStatus(order, "PENDENTE", "order.status.message.pending", userLocale);
+
+        } catch (OrderProcessingException e) {
+            String specificMessage = translator.getMessageLocale(e.getSpecificKey(), userLocale);
+            String finalMessage = translator.getMessageLocale(
+                    e.getGenericKey(),
+                    userLocale,
+                    specificMessage
+            );
+
+            log.warn("Business validation failed for Order {}: {}", order.getId(), specificMessage);
+            order.setStatus(orderStatusResponseService.findByName("CANCELADO"));
+            order.setStatusMessage(finalMessage);
             orderRepository.save(order);
         } catch (Exception e) {
-            log.error("Error processing Order with ID: {}", order.getId(), e);
-            order.setStatus(orderStatusResponseService.findByName("CANCELADO"));
-            orderRepository.save(order);
+            log.error("Unexpected error processing Order {}", order.getId(), e);
+            updateOrderStatus(order, "CANCELADO", "order.status.message.cancelled.generic", userLocale);
         }
     }
 
@@ -81,7 +104,7 @@ public class ProcessOrder {
         List<Product> products = productRepository.findAllById(quantityByIdMap.keySet());
 
         if (products.size() != quantityByIdMap.size()) {
-            throw new BusinessException(ErrorCode.PRODUCT_DISCREPANCY);
+            throw new InvalidProductException(ErrorCode.PRODUCT_DISCREPANCY);
         }
 
         Map<Product, Integer> productQuantityMap = products.stream()
@@ -91,31 +114,61 @@ public class ProcessOrder {
                 ));
 
         if (products.size() != productQuantityMap.size()) {
-            throw new ResourceNotFoundException(Product.class, productQuantityMap.keySet());
+            throw new InvalidProductException(ErrorCode.PRODUCT_NOT_FOUND);
         }
 
         return productQuantityMap;
     }
 
     private void validateShipment(Order order, OrderEventDTO orderEventDTO, Map<Product, Integer> productQuantityMap) {
-        ShipmentRequestDTO shipmentRequestDTO = new ShipmentRequestDTO();
-        shipmentRequestDTO.setTo(new PostalCodeRequest(orderEventDTO.address().getCep()));
+        try {
+            ShipmentRequestDTO shipmentRequestDTO = new ShipmentRequestDTO();
+            shipmentRequestDTO.setTo(new PostalCodeRequest(orderEventDTO.address().getCep()));
 
-        List<ShipmentProductRequest> shipmentProductRequests = productMapper.toShipmentProductRequestList(productQuantityMap);
-        shipmentRequestDTO.setProducts(shipmentProductRequests);
+            List<ShipmentProductRequest> shipmentProductRequests = productMapper.toShipmentProductRequestList(productQuantityMap);
+            shipmentRequestDTO.setProducts(shipmentProductRequests);
 
-        List<ShipmentResponseDTO> shipmentOptions = melhorEnvioService.calculateShipmentByProducts(shipmentRequestDTO);
+            List<ShipmentResponseDTO> shipmentOptions = melhorEnvioService.calculateShipmentByProducts(shipmentRequestDTO);
 
-        ShipmentResponseDTO selectedShipment = shipmentOptions.stream()
-                .filter(s -> s.id().equals(orderEventDTO.shipmentId()))
-                .findFirst()
-                .orElseThrow(() -> new BusinessException(ErrorCode.SHIPMENT_INVALID));
+            ShipmentResponseDTO selectedShipment = shipmentOptions.stream()
+                    .filter(s -> s.id().equals(orderEventDTO.shipmentId()))
+                    .findFirst()
+                    .orElseThrow(() -> new ShipmentException(ErrorCode.SHIPMENT_INVALID));
 
-        order.setShipment(shipmentMapper.toEmbedded(selectedShipment));
+            order.setShipment(shipmentMapper.toEmbedded(selectedShipment));
+        } catch (ShipmentException e) {
+            log.warn("Error validating Shipment: {}", e.getMessage());
+            throw new InvalidShipmentException(e.getCode());
+        } catch (FeignException e) {
+            log.error("External Shipment Service failed", e);
+            throw new InvalidShipmentException(ErrorCode.SHIPMENT_SERVICE_UNAVAILABLE);
+        } catch (Exception e) {
+            log.error("Unexpected error processing Shipment for Order {}", order.getId(), e);
+            throw new RuntimeException("Error validating shipment", e);
+        }
     }
 
     private void validateAddress(Order order, OrderEventDTO orderEventDTO) {
-        AddressCEP addressCEP = cepService.getAddressByCEP(orderEventDTO.address().getCep());
-        order.setAddress(map(addressCEP, EmbeddedAddress.class, modelMapper));
+        try {
+            order.getAddress().setNumber(orderEventDTO.address().getNumber());
+            order.getAddress().setComplement(orderEventDTO.address().getComplement());
+            AddressCEP addressCEP = cepService.getAddressByCEP(orderEventDTO.address().getCep());
+            order.setAddress(map(addressCEP, EmbeddedAddress.class, modelMapper));
+        } catch (CepException e) {
+            log.warn("Error validating CEP: {}", e.getMessage());
+            throw new InvalidAddressException(e.getCode());
+        } catch (FeignException e) {
+            log.error("External CEP Service failed", e);
+            throw new InvalidAddressException(ErrorCode.CEP_NOT_FOUND_OR_INVALID);
+        } catch (Exception e) {
+            log.error("Unexpected error processing CEP for Order {}", order.getId(), e);
+            throw new RuntimeException("Error validating address", e);
+        }
+    }
+
+    private void updateOrderStatus(Order order, String statusName, String messageKey, Locale locale) {
+        order.setStatus(orderStatusResponseService.findByName(statusName));
+        order.setStatusMessage(translator.getMessageLocale(messageKey, locale));
+        orderRepository.save(order);
     }
 }
