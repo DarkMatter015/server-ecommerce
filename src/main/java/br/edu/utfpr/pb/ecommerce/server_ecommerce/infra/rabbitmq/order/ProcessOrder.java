@@ -16,6 +16,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.order.InvalidProduct
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.order.InvalidShipmentException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.order.OrderProcessingException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.OrderMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ProductMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ShipmentMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
@@ -25,6 +26,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.address.Embedde
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.email.EmailService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.TranslationService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.orderStatus.OrderStatusResponseServiceImpl;
 import feign.FeignException;
@@ -57,6 +59,8 @@ public class ProcessOrder {
     private final ProductRepository productRepository;
     private final ModelMapper modelMapper;
     private final TranslationService translator;
+    private final EmailService emailService;
+    private final OrderMapper orderMapper;
 
     @Transactional
     public void processOrder(OrderEventDTO orderEventDTO) {
@@ -79,6 +83,7 @@ public class ProcessOrder {
 
             updateOrderStatus(order, "PENDENTE", "order.status.message.pending", userLocale);
 
+            sendSuccessEmail(order);
         } catch (OrderProcessingException e) {
             String specificMessage = translator.getMessageLocale(e.getSpecificKey(), userLocale);
             String finalMessage = translator.getMessageLocale(
@@ -90,10 +95,12 @@ public class ProcessOrder {
             log.warn("Business validation failed for Order {}: {}", order.getId(), specificMessage);
             order.setStatus(orderStatusResponseService.findByName("CANCELADO"));
             order.setStatusMessage(finalMessage);
-            orderRepository.save(order);
+            orderRepository.saveAndFlush(order);
+            sendCancellingEmail(order);
         } catch (Exception e) {
             log.error("Unexpected error processing Order {}", order.getId(), e);
             updateOrderStatus(order, "CANCELADO", "order.status.message.cancelled.generic", userLocale);
+            sendCancellingEmail(order);
         }
     }
 
@@ -169,6 +176,22 @@ public class ProcessOrder {
     private void updateOrderStatus(Order order, String statusName, String messageKey, Locale locale) {
         order.setStatus(orderStatusResponseService.findByName(statusName));
         order.setStatusMessage(translator.getMessageLocale(messageKey, locale));
-        orderRepository.save(order);
+        orderRepository.saveAndFlush(order);
+    }
+
+    private void sendCancellingEmail(Order order) {
+        try {
+            emailService.sendOrderCancellationEmail(order.getUser(), orderMapper.toDTO(order));
+        } catch (Exception e) {
+            log.error("Error sending Order Cancelling Email for Order ID: {}", order.getId(), e);
+        }
+    }
+
+    private void sendSuccessEmail(Order order) {
+        try {
+            emailService.sendOrderSuccessEmail(order.getUser(), orderMapper.toDTO(order));
+        } catch (Exception e) {
+            log.error("Error sending Order Success Email for Order ID: {}", order.getId(), e);
+        }
     }
 }

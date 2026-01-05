@@ -13,6 +13,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.address.Embedde
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.email.EmailService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.TranslationService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.BaseSoftDeleteRequestServiceImpl;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.order.IOrder.IOrderRequestService;
@@ -51,6 +52,7 @@ public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Or
     private final List<IValidationOrderItem> iValidationOrderItems;
     private final IPaymentResponseService paymentResponseService;
     private final TranslationService translator;
+    private final EmailService emailService;
 
     public OrderRequestServiceImpl(OrderRepository orderRepository,
                                    OrderResponseServiceImpl orderResponseService,
@@ -62,7 +64,8 @@ public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Or
                                    ProductRepository productRepository,
                                    List<IValidationOrderItem> iValidationOrderItems,
                                    IPaymentResponseService paymentResponseService,
-                                   TranslationService translator) {
+                                   TranslationService translator,
+                                   EmailService emailService) {
         super(orderRepository, orderResponseService);
         this.orderRepository = orderRepository;
         this.authService = authService;
@@ -74,6 +77,7 @@ public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Or
         this.iValidationOrderItems = iValidationOrderItems;
         this.paymentResponseService = paymentResponseService;
         this.translator = translator;
+        this.emailService = emailService;
     }
 
     private void validateOrderOwnership(Order order) {
@@ -108,6 +112,11 @@ public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Or
             public void afterCommit() {
                 // Só executa se o banco salvar com sucesso
                 orderPublisher.send(orderMapper.toEventDTO(order, user.getCpf(), currentLocaleTag));
+                try {
+                    emailService.sendOrderProcessingEmail(user, orderMapper.toDTO(order));
+                } catch (Exception e) {
+                    log.error("Error sending Order Processing Email for Order ID: {}", order.getId(), e);
+                }
                 log.info("Order Event sent to queue successfully for Order ID: {}", order.getId());
             }
         });
