@@ -34,6 +34,7 @@ public class OrderMapper {
                 .payment(map(order.getPayment(), PaymentResponseDTO.class, modelMapper))
                 .shipment(order.getShipment())
                 .status(order.getStatus().getName())
+                .statusMessage(order.getStatusMessage())
                 .build();
     }
 
@@ -45,7 +46,7 @@ public class OrderMapper {
                 .build();
     }
 
-    public OrderEventDTO toEventDTO(Order order, String cpf) {
+    public OrderEventDTO toEventDTO(Order order, String cpf, String locale) {
         return OrderEventDTO.builder()
                 .orderId(order.getId())
                 .date(order.getData().toLocalDate())
@@ -54,6 +55,7 @@ public class OrderMapper {
                 .address(map(order.getAddress(), AddressRequestDTO.class, modelMapper))
                 .shipmentId(order.getShipment().getId())
                 .userCpf(cpf)
+                .locale(locale)
                 .build();
     }
 

@@ -1,9 +1,13 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.alertProduct;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.AlertProduct;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.AlertProductStatus;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.AlertProductRepository;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.EmailService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.email.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -17,6 +21,7 @@ import java.util.List;
 public class StockAlertOrchestrator {
 
     private final AlertProductRepository alertRepository;
+    private final ProductRepository productRepository;
     private final EmailService emailService;
 
     public void processStockAlerts(AlertProductUpdatedEventDTO event) {
@@ -39,9 +44,12 @@ public class StockAlertOrchestrator {
 
         List<AlertProduct> alertsToSave = new ArrayList<>();
 
+        Product product = productRepository.findById(event.productId())
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.PRODUCT_NOT_FOUND));
+
         for (AlertProduct alert : pendingAlerts) {
             try {
-                emailService.sendAlertProductStockAvailableEmail(alert.getEmail(), event, alert.getId());
+                emailService.sendAlertProductStockAvailableEmail(alert.getEmail(), product, alert.getId());
                 alert.setStatus(AlertProductStatus.PROCESSING);
                 alertsToSave.add(alert);
             } catch (Exception e) {

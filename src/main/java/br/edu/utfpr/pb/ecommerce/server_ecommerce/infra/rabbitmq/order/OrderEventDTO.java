@@ -16,6 +16,7 @@ public record OrderEventDTO(
         Set<OrderItemRequestDTO> orderItems,
         AddressRequestDTO address,
         Long shipmentId,
-        String userCpf
+        String userCpf,
+        String locale
 ) {
 }

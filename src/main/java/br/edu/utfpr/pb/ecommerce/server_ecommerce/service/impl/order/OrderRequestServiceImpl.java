@@ -13,6 +13,8 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.address.Embedde
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.email.EmailService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.TranslationService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.BaseSoftDeleteRequestServiceImpl;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.order.IOrder.IOrderRequestService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.orderStatus.OrderStatusResponseServiceImpl;
@@ -20,8 +22,11 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.payment.IPayment.
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.validation.orderItem.IValidationOrderItem;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.HashSet;
 import java.util.List;
@@ -46,6 +51,8 @@ public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Or
     private final ProductRepository productRepository;
     private final List<IValidationOrderItem> iValidationOrderItems;
     private final IPaymentResponseService paymentResponseService;
+    private final TranslationService translator;
+    private final EmailService emailService;
 
     public OrderRequestServiceImpl(OrderRepository orderRepository,
                                    OrderResponseServiceImpl orderResponseService,
@@ -56,7 +63,9 @@ public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Or
                                    OrderStatusResponseServiceImpl orderStatusResponseService,
                                    ProductRepository productRepository,
                                    List<IValidationOrderItem> iValidationOrderItems,
-                                   IPaymentResponseService paymentResponseService) {
+                                   IPaymentResponseService paymentResponseService,
+                                   TranslationService translator,
+                                   EmailService emailService) {
         super(orderRepository, orderResponseService);
         this.orderRepository = orderRepository;
         this.authService = authService;
@@ -67,6 +76,8 @@ public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Or
         this.productRepository = productRepository;
         this.iValidationOrderItems = iValidationOrderItems;
         this.paymentResponseService = paymentResponseService;
+        this.translator = translator;
+        this.emailService = emailService;
     }
 
     private void validateOrderOwnership(Order order) {
@@ -93,9 +104,22 @@ public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Or
     @Override
     @Transactional
     public Order createOrder(OrderRequestDTO request) {
+        String currentLocaleTag = LocaleContextHolder.getLocale().toLanguageTag();
         User user = authService.getAuthenticatedUser();
         Order order = validateAndCreateOrder(request, user);
-        orderPublisher.send(orderMapper.toEventDTO(order, user.getCpf()));
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                // Só executa se o banco salvar com sucesso
+                orderPublisher.send(orderMapper.toEventDTO(order, user.getCpf(), currentLocaleTag));
+                try {
+                    emailService.sendOrderProcessingEmail(user, orderMapper.toDTO(order));
+                } catch (Exception e) {
+                    log.error("Error sending Order Processing Email for Order ID: {}", order.getId(), e);
+                }
+                log.info("Order Event sent to queue successfully for Order ID: {}", order.getId());
+            }
+        });
         return order;
     }
 
@@ -113,7 +137,7 @@ public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Or
         Order order = orderMapper.toEntity(request, payment);
         order.setUser(user);
         order.setStatus(processingStatus);
-
+        order.setStatusMessage(translator.getMessageContext("order.status.message.processing"));
         List<OrderItem> items = buildItemsAndReserveStock(order, request.getOrderItems(), productMap);
         order.setOrderItems(items);
 

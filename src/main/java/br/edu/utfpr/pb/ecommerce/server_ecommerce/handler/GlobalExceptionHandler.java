@@ -2,13 +2,11 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.handler;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.BaseException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.handler.dto.ApiErrorDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.TranslationService;
 import feign.FeignException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.MessageSource;
-import org.springframework.context.NoSuchMessageException;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -27,20 +25,12 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
-    private final MessageSource messageSource;
-
-    private String getLocalizedMessage(String key, Object[] args) {
-        try {
-            return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
-        } catch (NoSuchMessageException e) {
-            return key;
-        }
-    }
+    private final TranslationService translator;
 
     @ExceptionHandler(BaseException.class)
     public ResponseEntity<ApiErrorDTO> handleBaseException(BaseException exception,
                                                            HttpServletRequest request) {
-        String message = getLocalizedMessage(exception.getCode().getMessageKey(), exception.getArgs());
+        String message = translator.getMessageContext(exception.getCode().getMessageKey(), exception.getArgs());
         int status = exception.getCode().getStatus();
 
         ApiErrorDTO error = new ApiErrorDTO(message, status, request.getServletPath());
@@ -53,7 +43,7 @@ public class GlobalExceptionHandler {
         log.error(Arrays.toString(ex.getStackTrace()));
         log.error(ex.getMessage());
 
-        String message = getLocalizedMessage("error.internal.server", null);
+        String message = translator.getMessageContext("error.internal.server");
 
         return new ApiErrorDTO(
                 message,
@@ -65,15 +55,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiErrorDTO handleValidationArguments(MethodArgumentNotValidException ex,
-                                             HttpServletRequest request) {
+                                                 HttpServletRequest request) {
         Map<String, String> errors = new HashMap<>();
 
         for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
-            String message = messageSource.getMessage(fieldError, LocaleContextHolder.getLocale());
+            String message = translator.getMessageContext(fieldError.getDefaultMessage(), fieldError.getArguments());
             errors.put(fieldError.getField(), message);
         }
 
-        String message = getLocalizedMessage("fields.not.valid", null);
+        String message = translator.getMessageContext("fields.not.valid");
         return new ApiErrorDTO(
                 message,
                 HttpStatus.BAD_REQUEST.value(),
@@ -83,10 +73,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(FeignException.class)
     public ResponseEntity<ApiErrorDTO> handleFeignException(FeignException ex,
-                                                         HttpServletRequest request) {
+                                                            HttpServletRequest request) {
         int status = ex.status() != -1 ? ex.status() : HttpStatus.INTERNAL_SERVER_ERROR.value();
 
-        String message = getLocalizedMessage("external.integration.error", null);
+        String message = translator.getMessageContext("external.integration.error");
 
         ApiErrorDTO error = new ApiErrorDTO(
                 message,
@@ -102,7 +92,7 @@ public class GlobalExceptionHandler {
                                                             HttpServletRequest request) {
         log.error(ex.getMessage());
 
-        String message = getLocalizedMessage("version.conflict.error", null);
+        String message = translator.getMessageContext("version.conflict.error");
         HttpStatus status = HttpStatus.CONFLICT;
         ApiErrorDTO error = new ApiErrorDTO(
                 message,

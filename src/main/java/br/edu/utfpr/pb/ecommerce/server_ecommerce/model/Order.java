@@ -50,6 +50,9 @@ public class Order extends BaseSoftDeleteEntity implements Ownable {
     @JoinColumn(name = "status_id")
     private OrderStatus status;
 
+    @Column(name = "status_message")
+    private String statusMessage;
+
     public void addItem(OrderItem item){
         item.setOrder(this);
         this.orderItems.add(item);

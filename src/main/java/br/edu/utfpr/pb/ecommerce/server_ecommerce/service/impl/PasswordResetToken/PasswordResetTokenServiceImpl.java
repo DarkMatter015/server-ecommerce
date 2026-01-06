@@ -10,7 +10,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.password.ForgetPasswordDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.password.ResetPasswordDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.PasswordResetToken.IPasswordResetToken.IPasswordResetTokenService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.EmailService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.email.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

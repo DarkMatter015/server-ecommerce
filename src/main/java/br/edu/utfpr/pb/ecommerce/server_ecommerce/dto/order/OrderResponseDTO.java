@@ -33,4 +33,6 @@ public class OrderResponseDTO {
     private EmbeddedShipmentDetails shipment;
 
     private String status;
+
+    private String statusMessage;
 }
