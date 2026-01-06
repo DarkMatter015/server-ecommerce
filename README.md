@@ -6,145 +6,196 @@
 ![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3.12-orange?style=for-the-badge&logo=rabbitmq)
 ![Docker](https://img.shields.io/badge/Docker-Compose-blue?style=for-the-badge&logo=docker)
 
-## 📖 About the Project
+## 📖 Sobre o Projeto
 
-**RiffHouse API** is the robust backend REST API for the RiffHouse e-commerce platform, specialized in musical instruments. It is built with **Java 21** and **Spring Boot 3**, following modern architectural patterns to ensure scalability, maintainability, and performance.
+**RiffHouse API** é o backend REST robusto para a plataforma de e-commerce RiffHouse, especializada em instrumentos musicais. Foi construído com **Java 21** e **Spring Boot 3**, seguindo padrões arquiteturais modernos para garantir escalabilidade, manutenibilidade e desempenho.
 
-This project was designed to demonstrate advanced backend concepts, including **Event-Driven Architecture** for asynchronous processing, **CQRS** principles for order management, and secure **JWT Authentication**.
-
----
-
-## 🚀 Key Features
-
-### 🛒 E-commerce Core
-*   **Product Management**: CRUD for products, categories, and inventory control.
-*   **Order Processing**: Complete lifecycle management (Creation, Payment, Shipping, Delivery).
-    *   *Architecture Highlight*: Separation of `ReadOrderController` (queries) and `WriteOrderController` (commands).
-*   **Shopping Cart & Checkout**: Logic for validation and order placement.
-
-### ⚡ Asynchronous & Event-Driven
-*   **RabbitMQ Integration**: Decouples heavy operations from the main request thread.
-    *   **Order Creation**: Orders are processed asynchronously.
-    *   **Email Notifications**: Confirmation emails are sent via background workers.
-    *   **Stock Alerts**: Automatic alerts when product stock is low.
-*   **Reliability**: Implements **Dead Letter Queues (DLQ)** and retry mechanisms for fault tolerance.
-
-### 🔒 Security & Users
-*   **Authentication**: Secure login with **JWT (JSON Web Tokens)** via Auth0.
-*   **Authorization**: Role-based access control (Admin vs. User).
-*   **User Management**: Registration, profile updates, and address management.
-
-### 🌐 Integrations
-*   **BrasilAPI**: Automated ZIP code (CEP) lookup for addresses.
-*   **MelhorEnvio**: Shipping calculation integration (via OpenFeign).
-*   **MailHog**: Email testing in development environment.
+Este projeto foi desenvolvido para demonstrar conceitos avançados de backend, incluindo **Arquitetura Orientada a Eventos** para processamento assíncrono, princípios de **CQRS** para gerenciamento de pedidos e **Autenticação JWT** segura.
 
 ---
 
-## 🏗️ Architecture & Tech Stack
+## 🚀 Funcionalidades Principais
 
-The application follows a **Layered Architecture** with strict separation of concerns, enhanced by event-driven components.
+### 🛒 Núcleo de E-commerce
+*   **Gerenciamento de Produtos**: CRUD para produtos, categorias e controle de estoque.
+*   **Processamento de Pedidos**: Ciclo de vida completo (Criação, Pagamento, Envio, Entrega).
+    *   *Destaque Arquitetural*: Separação entre `ReadOrderController` (consultas) e `WriteOrderController` (comandos).
+*   **Carrinho de Compras e Checkout**: Lógica para validação e fechamento de pedidos.
 
-### 🛠️ Technologies
-*   **Language**: Java 21
+### ⚡ Assíncrono e Orientado a Eventos
+*   **Integração com RabbitMQ**: Desacopla operações pesadas da thread principal da requisição.
+    *   **Criação de Pedidos**: Pedidos são processados assincronamente.
+    *   **Notificações por Email**: Emails de confirmação são enviados por workers em segundo plano.
+    *   **Alertas de Estoque**: Alertas automáticos quando o estoque de um produto está baixo.
+*   **Confiabilidade**: Implementa **Dead Letter Queues (DLQ)** e mecanismos de repetição (retry) para tolerância a falhas.
+
+### 🔒 Segurança e Usuários
+*   **Autenticação**: Login seguro com **JWT (JSON Web Tokens)** via Auth0.
+*   **Autorização**: Controle de acesso baseado em funções (Admin vs. User).
+*   **Gerenciamento de Usuários**: Registro, atualização de perfil e gerenciamento de endereços.
+
+### 🌐 Integrações
+*   **BrasilAPI**: Consulta automatizada de CEP.
+*   **MelhorEnvio**: Integração para cálculo de frete (via OpenFeign).
+*   **MailHog**: Teste de emails em ambiente de desenvolvimento.
+
+---
+
+## 🏗️ Arquitetura e Stack Tecnológico
+
+A aplicação segue uma **Arquitetura em Camadas** com estrita separação de responsabilidades, aprimorada por componentes orientados a eventos.
+
+### 🛠️ Tecnologias
+*   **Linguagem**: Java 21
 *   **Framework**: Spring Boot 3.5.5 (Web, Data JPA, Security, Validation, AMQP, Mail)
-*   **Database**: PostgreSQL (Production/Dev), H2 (Test)
-*   **Migration**: Flyway
-*   **Messaging**: RabbitMQ
-*   **Documentation**: SpringDoc OpenAPI (Swagger UI)
-*   **Containerization**: Docker & Docker Compose
+*   **Banco de Dados**: PostgreSQL (Produção/Dev), H2 (Teste)
+*   **Migração**: Flyway
+*   **Mensageria**: RabbitMQ
+*   **Documentação**: SpringDoc OpenAPI (Swagger UI)
+*   **Containerização**: Docker e Docker Compose
 
-### 📐 Architectural Decisions
-*   **CQRS-Lite**: The Order domain splits Read and Write operations into different controllers to optimize performance and clarity.
-*   **DTO Pattern**: Uses Data Transfer Objects for all external communication to decouple the internal domain model from the API contract.
-*   **Strategy Pattern**: Implements generic `Validator<T>` interfaces for complex business rule validations.
-*   **Infrastructure Isolation**: External services (like Shipping) are accessed via Interfaces/Feign Clients to allow easy mocking and testing.
+### 📐 Decisões Arquiteturais
+*   **CQRS-Lite**: O domínio de Pedidos divide operações de Leitura e Escrita em controladores diferentes para otimizar desempenho e clareza.
+*   **Padrão DTO**: Utiliza Objetos de Transferência de Dados (Data Transfer Objects) para toda comunicação externa, desacoplando o modelo de domínio interno do contrato da API.
+*   **Padrão Strategy**: Implementa interfaces genéricas `Validator<T>` para validações de regras de negócio complexas.
+*   **Isolamento de Infraestrutura**: Serviços externos (como Envio) são acessados via Interfaces/Feign Clients para facilitar mocks e testes.
 
 ---
 
-## ⚙️ Configuration & Environment
+## ⚙️ Configuração e Ambiente
 
-The application uses Spring Profiles to manage configurations for different environments.
+A aplicação utiliza Spring Profiles para gerenciar configurações em diferentes ambientes.
 
-### 📁 Profiles
-*   `dev`: Active by default. Connects to local PostgreSQL and RabbitMQ. Uses MailHog for emails.
-*   `prod`: For production deployment (e.g., Render). Uses environment variables for secrets.
-*   `test`: Uses H2 in-memory database for fast integration testing.
+### 📁 Perfis (Profiles)
+*   `dev`: Ativo por padrão. Conecta ao PostgreSQL local e RabbitMQ. Usa MailHog para emails.
+*   `prod`: Para deploy em produção (ex: Render). Usa variáveis de ambiente para segredos.
+*   `test`: Usa banco de dados em memória H2 para testes de integração rápidos.
 
-### 🔑 Environment Variables (Production)
-| Variable | Description |
+### 🔑 Variáveis de Ambiente (Produção)
+| Variável | Descrição |
 | :--- | :--- |
-| `DB_HOST`, `DB_PORT`, `DB_NAME` | Database connection details |
-| `DB_USER`, `DB_PASS` | Database credentials |
-| `RABBITMQ_HOST`, `RABBITMQ_PORT` | RabbitMQ connection |
-| `RABBITMQ_USERNAME`, `RABBITMQ_PASSWORD` | RabbitMQ credentials |
-| `EMAIL_USERNAME`, `EMAIL_PASSWORD` | SMTP credentials for sending emails |
-| `JWT_SECRET` | Secret key for token generation |
+| `DB_HOST`, `DB_PORT`, `DB_NAME` | Detalhes de conexão do Banco de Dados |
+| `DB_USER`, `DB_PASS` | Credenciais do Banco de Dados |
+| `RABBITMQ_HOST`, `RABBITMQ_PORT` | Conexão RabbitMQ |
+| `RABBITMQ_USERNAME`, `RABBITMQ_PASSWORD` | Credenciais RabbitMQ |
+| `EMAIL_USERNAME`, `EMAIL_PASSWORD` | Credenciais SMTP para envio de emails |
+| `JWT_SECRET` | Chave secreta para geração de tokens |
 
 ---
 
-## ⚡ Getting Started
+## ⚡ Começando
 
-### Prerequisites
-*   **Docker & Docker Compose** (Recommended)
-*   **Java 21 JDK** (If running manually)
-*   **Maven** (Included wrapper `./mvnw`)
+### Pré-requisitos
+*   **Docker e Docker Compose** (Recomendado)
+*   **Java 21 JDK** (Se rodar manualmente)
+*   **Maven** (Wrapper incluído `./mvnw`)
 
-### 🐳 Run with Docker (Recommended)
-This is the easiest way to start the entire stack (API + DB + RabbitMQ + MailHog).
+### 🐳 Rodar com Docker (Recomendado)
+Esta é a maneira mais fácil de iniciar toda a stack (API + DB + RabbitMQ + MailHog).
 
 ```bash
-# 1. Clone the repository
+# 1. Clone o repositório
 git clone https://github.com/DarkMatter015/server-ecommerce.git
 cd server-ecommerce
 
-# 2. Start services
+# 2. Inicie os serviços
 docker-compose up --build -d
 ```
-The API will be available at: `http://localhost:8080`
+A API estará disponível em: `http://localhost:8080`
 
-### 💻 Run Manually
-If you prefer to run the application locally (e.g., for debugging), you still need PostgreSQL and RabbitMQ running.
+### 💻 Rodar Manualmente
+Se preferir rodar a aplicação localmente (ex: para debugging), você ainda precisa do PostgreSQL e RabbitMQ rodando.
 
-1.  **Start Infrastructure**:
+1.  **Inicie a Infraestrutura**:
     ```bash
     docker-compose up postgres rabbitmq mailhog -d
     ```
-2.  **Run Application**:
+2.  **Rode a Aplicação**:
     ```bash
     ./mvnw spring-boot:run
     ```
 
 ---
 
-## 📚 Documentation
+## 📚 Documentação e Exemplos
 
 ### Swagger UI
-Interactive API documentation is available when the application is running.
+Documentação interativa da API disponível quando a aplicação está rodando.
 👉 **URL**: `http://localhost:8080/swagger-ui.html`
 
-### Postman Collection
-A complete Postman collection with pre-configured requests is available in the `postman/` directory.
-👉 [View Postman README](postman/README_Postman.md)
+### Coleção Postman
+Uma coleção completa do Postman com requisições pré-configuradas está disponível no diretório `postman/`.
+👉 [Ver README do Postman](postman/README_Postman.md)
+
+### Exemplos de Respostas e Tratamento de Erros
+A API utiliza um formato padronizado para tratamento de erros (`ApiErrorDTO`). Abaixo estão exemplos de respostas comuns.
+
+#### ✅ 201 Created (Sucesso)
+Exemplo de resposta ao criar um novo recurso (ex: Usuário ou Pedido). O corpo retorna os dados do recurso criado.
+```json
+{
+  "id": 1,
+  "displayName": "João Silva",
+  "email": "joao@email.com",
+  "cpf": "123.456.789-00"
+}
+```
+
+#### ❌ 400 Bad Request (Erro de Validação)
+Ocorre quando os campos enviados não atendem às regras de validação (ex: email inválido, campos obrigatórios). O campo `validationErrors` detalha o problema.
+```json
+{
+  "timestamp": 1709664000000,
+  "message": "Campos inválidos",
+  "status": 400,
+  "url": "/users",
+  "validationErrors": {
+    "email": "Deve ser um endereço de e-mail bem formado",
+    "password": "A senha deve ter no mínimo 6 caracteres"
+  }
+}
+```
+
+#### ⛔ 401 Unauthorized / 403 Forbidden
+Ocorre quando o usuário não está autenticado ou não tem permissão para acessar o recurso.
+```json
+{
+  "timestamp": 1709664000000,
+  "message": "Acesso negado",
+  "status": 403,
+  "url": "/products"
+}
+```
+
+#### 💥 500 Internal Server Error
+Erro genérico do servidor. O sistema captura exceções não tratadas e retorna uma mensagem padronizada.
+```json
+{
+  "timestamp": 1709664000000,
+  "message": "Ocorreu um erro interno no servidor",
+  "status": 500,
+  "url": "/orders"
+}
+```
 
 ---
 
-## 🧪 Testing
+## 🧪 Testes
 
-The project includes integration tests to ensure API reliability.
+O projeto inclui testes de integração para garantir a confiabilidade da API.
 
 ```bash
-# Run all tests
+# Rodar todos os testes
 ./mvnw test
 ```
 
 ---
 
-## 👨‍💻 Author
+## 👨‍💻 Autor
 
 **Lucas Matheus de Camargo**
 *   **LinkedIn**: [Lucas Matheus de Camargo](https://www.linkedin.com/in/lucas-matheus-de-camargo-49a315236/)
-*   **Role**: Java Backend Developer
+*   **Função**: Desenvolvedor Backend Java
 
 ---
-*Built with ❤️ for the Dev Community.*
+*Construído com ❤️ para a Comunidade Dev.*
