@@ -14,30 +14,38 @@ Este projeto foi desenvolvido para demonstrar conceitos avançados de backend, i
 
 ---
 
-## 🚀 Funcionalidades Principais
+## 🚀 Funcionalidades Principais por Módulo
 
-### 🛒 Núcleo de E-commerce
-*   **Gerenciamento de Produtos**: CRUD para produtos, categorias e controle de estoque.
-*   **Processamento de Pedidos**: Ciclo de vida completo (Criação, Pagamento, Envio, Entrega).
-    *   *Destaque Arquitetural*: Separação entre `ReadOrderController` (consultas) e `WriteOrderController` (comandos).
-*   **Carrinho de Compras e Checkout**: Lógica para validação e fechamento de pedidos.
+### 👤 Usuários e Autenticação
+*   **Cadastro**: Aberto ao público (`POST /users`).
+*   **Segurança**: Login com JWT, recuperação de senha e validação de token.
+*   **Perfil**: Usuários autenticados gerenciam seus dados e endereços.
 
-### ⚡ Assíncrono e Orientado a Eventos
-*   **Integração com RabbitMQ**: Desacopla operações pesadas da thread principal da requisição.
-    *   **Criação de Pedidos**: Pedidos são processados assincronamente.
-    *   **Notificações por Email**: Emails de confirmação são enviados por workers em segundo plano.
-    *   **Alertas de Estoque**: Alertas automáticos quando o estoque de um produto está baixo.
-*   **Confiabilidade**: Implementa **Dead Letter Queues (DLQ)** e mecanismos de repetição (retry) para tolerância a falhas.
+### 📦 Produtos e Categorias
+*   **Catálogo**: Listagem de produtos e categorias pública para todos os visitantes.
+*   **Gestão (ADMIN)**: Apenas administradores podem criar, editar ou excluir produtos e categorias.
+*   **Alerta de Estoque**: Usuários podem cadastrar alertas (`POST /alerts`) para serem notificados quando um produto indispovível voltar ao estoque.
 
-### 🔒 Segurança e Usuários
-*   **Autenticação**: Login seguro com **JWT (JSON Web Tokens)** via Auth0.
-*   **Autorização**: Controle de acesso baseado em funções (Admin vs. User).
-*   **Gerenciamento de Usuários**: Registro, atualização de perfil e gerenciamento de endereços.
+### 🛒 Pedidos e Checkout
+*   **Arquitetura CQRS**: Separação clara entre leitura (`ReadOrderController`) e escrita (`WriteOrderController`).
+*   **Fluxo Completo**: Criação de pedido, adição de itens e integração com cálculo de frete.
+*   **Assíncrono**: O processamento do pedido utiliza filas RabbitMQ para alta performance.
 
-### 🌐 Integrações
-*   **BrasilAPI**: Consulta automatizada de CEP.
-*   **MelhorEnvio**: Integração para cálculo de frete (via OpenFeign).
-*   **MailHog**: Teste de emails em ambiente de desenvolvimento.
+### 🔔 Notificações e Alertas
+*   **Alertas de Produto**: Endpoint `/alerts` permite que qualquer usuário (autenticado ou não) registre interesse em produtos sem estoque.
+*   **Emails**: Envio de confirmações e notificações via background workers.
+
+---
+
+## 🔒 Controle de Acesso e Endpoints
+
+A aplicação utiliza Spring Security para garantir que cada recurso seja acessado apenas por quem tem permissão.
+
+| Perfil de Acesso | Permissões / Rotas Principais |
+| :--- | :--- |
+| **Público (Sem Login)** | • Ver Produtos e Categorias (`GET`)<br>• Criar Conta (`POST /users`)<br>• Recuperar Senha (`/auth/**`)<br>• Cadastrar Alerta de Estoque (`POST /alerts`) |
+| **Usuário Autenticado** | • Fazer Pedidos (`POST /orders`)<br>• Gerenciar Endereços (`/addresses`)<br>• Ver seus próprios pedidos<br>• Gerenciar seus alertas |
+| **Administrador (ADMIN)** | • Criar/Editar/Excluir Produtos (`/products`)<br>• Criar/Editar/Excluir Categorias (`/categories`)<br>• Gerenciar Meios de Pagamento (`/payments`) |
 
 ---
 
@@ -128,21 +136,28 @@ Uma coleção completa do Postman com requisições pré-configuradas está disp
 👉 [Ver README do Postman](postman/README_Postman.md)
 
 ### Exemplos de Respostas e Tratamento de Erros
-A API utiliza um formato padronizado para tratamento de erros (`ApiErrorDTO`). Abaixo estão exemplos de respostas comuns.
+A API utiliza um formato padronizado para tratamento de erros (`ApiErrorDTO`). Abaixo estão exemplos de respostas comuns baseadas nos DTOs reais da aplicação.
 
-#### ✅ 201 Created (Sucesso)
-Exemplo de resposta ao criar um novo recurso (ex: Usuário ou Pedido). O corpo retorna os dados do recurso criado.
+#### ✅ 201 Created (Sucesso - UserResponseDTO)
+Resposta ao criar um novo usuário com sucesso.
 ```json
 {
   "id": 1,
+  "active": true,
   "displayName": "João Silva",
   "email": "joao@email.com",
-  "cpf": "123.456.789-00"
+  "cpf": "123.456.789-00",
+  "roles": [
+    {
+      "id": 1,
+      "name": "ROLE_USER"
+    }
+  ]
 }
 ```
 
 #### ❌ 400 Bad Request (Erro de Validação)
-Ocorre quando os campos enviados não atendem às regras de validação (ex: email inválido, campos obrigatórios). O campo `validationErrors` detalha o problema.
+Exemplo real de falha na validação de campos ao tentar criar um usuário, retornando as mensagens configuradas no sistema.
 ```json
 {
   "timestamp": 1709664000000,
@@ -150,14 +165,14 @@ Ocorre quando os campos enviados não atendem às regras de validação (ex: ema
   "status": 400,
   "url": "/users",
   "validationErrors": {
-    "email": "Deve ser um endereço de e-mail bem formado",
-    "password": "A senha deve ter no mínimo 6 caracteres"
+    "displayName": "O nome de exibicao deve ter entre 3 e 255 caracteres.",
+    "password": "A senha deve ter pelo menos 6 caracteres."
   }
 }
 ```
 
 #### ⛔ 401 Unauthorized / 403 Forbidden
-Ocorre quando o usuário não está autenticado ou não tem permissão para acessar o recurso.
+Ocorre quando o usuário não está autenticado ou tenta acessar um recurso de ADMIN (como `/products` POST) sem permissão.
 ```json
 {
   "timestamp": 1709664000000,
@@ -168,7 +183,7 @@ Ocorre quando o usuário não está autenticado ou não tem permissão para aces
 ```
 
 #### 💥 500 Internal Server Error
-Erro genérico do servidor. O sistema captura exceções não tratadas e retorna uma mensagem padronizada.
+Erro genérico do servidor tratado globalmente.
 ```json
 {
   "timestamp": 1709664000000,
