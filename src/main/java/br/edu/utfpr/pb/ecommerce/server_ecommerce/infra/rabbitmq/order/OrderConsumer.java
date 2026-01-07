@@ -1,5 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.order;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.order.process.ProcessOrder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.context.annotation.Profile;

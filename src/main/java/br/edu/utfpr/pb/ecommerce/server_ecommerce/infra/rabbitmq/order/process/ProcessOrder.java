@@ -1,4 +1,4 @@
-package br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.order;
+package br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.order.process;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.dto.AddressCEP;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.brasilAPI.exception.CepException;
@@ -15,20 +15,23 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.order.InvalidAddress
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.order.InvalidProductException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.order.InvalidShipmentException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.order.OrderProcessingException;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.order.OrderEventDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.OrderMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ProductMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ShipmentMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.OrderItem;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.address.EmbeddedAddress;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderRepository;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.email.EmailService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.TranslationService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.email.EmailService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.order.OrderRequestServiceImpl;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.order.OrderResponseServiceImpl;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.orderStatus.OrderStatusResponseServiceImpl;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.product.ProductRequestServiceImpl;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.product.ProductResponseServiceImpl;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +40,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -52,11 +56,13 @@ public class ProcessOrder {
     private final AuthService authService;
     private final ProductMapper productMapper;
     private final OrderStatusResponseServiceImpl orderStatusResponseService;
-    private final OrderRepository orderRepository;
+    private final OrderRequestServiceImpl orderRequestServiceImpl;
+    private final OrderResponseServiceImpl orderResponseServiceImpl;
     private final ShipmentMapper shipmentMapper;
     private final MelhorEnvioService melhorEnvioService;
     private final CepService cepService;
-    private final ProductRepository productRepository;
+    private final ProductRequestServiceImpl productRequestService;
+    private final ProductResponseServiceImpl productResponseService;
     private final ModelMapper modelMapper;
     private final TranslationService translator;
     private final EmailService emailService;
@@ -69,8 +75,7 @@ public class ProcessOrder {
                 ? Locale.forLanguageTag(orderEventDTO.locale())
                 : Locale.getDefault();
         User user = authService.loadUserByCpf(orderEventDTO.userCpf());
-        Order order = orderRepository.findByIdAndUser(orderEventDTO.orderId(), user)
-                .orElseThrow(() -> new ResourceNotFoundException(Order.class, orderEventDTO.orderId()));
+        Order order = orderResponseServiceImpl.findOrderByOrderIdAndUser(orderEventDTO.orderId(), user);
 
         try {
             log.info("Validating Order Event: {}", orderEventDTO);
@@ -91,16 +96,13 @@ public class ProcessOrder {
                     userLocale,
                     specificMessage
             );
+            log.warn("Business validation failed for Order {}: {}", order.getId(), finalMessage);
+            performCancellation(order, finalMessage);
 
-            log.warn("Business validation failed for Order {}: {}", order.getId(), specificMessage);
-            order.setStatus(orderStatusResponseService.findByName("CANCELADO"));
-            order.setStatusMessage(finalMessage);
-            orderRepository.saveAndFlush(order);
-            sendCancellingEmail(order);
         } catch (Exception e) {
             log.error("Unexpected error processing Order {}", order.getId(), e);
-            updateOrderStatus(order, "CANCELADO", "order.status.message.cancelled.generic", userLocale);
-            sendCancellingEmail(order);
+            String finalMessage = translator.getMessageLocale("order.status.message.cancelled.generic", userLocale);
+            performCancellation(order, finalMessage);
         }
     }
 
@@ -108,7 +110,7 @@ public class ProcessOrder {
         Map<Long, Integer> quantityByIdMap = orderEventDTO.orderItems().stream()
                 .collect(Collectors.toMap(OrderItemRequestDTO::getProductId, OrderItemRequestDTO::getQuantity));
 
-        List<Product> products = productRepository.findAllById(quantityByIdMap.keySet());
+        List<Product> products = productResponseService.findAll(quantityByIdMap.keySet());
 
         if (products.size() != quantityByIdMap.size()) {
             throw new InvalidProductException(ErrorCode.PRODUCT_DISCREPANCY);
@@ -176,7 +178,15 @@ public class ProcessOrder {
     private void updateOrderStatus(Order order, String statusName, String messageKey, Locale locale) {
         order.setStatus(orderStatusResponseService.findByName(statusName));
         order.setStatusMessage(translator.getMessageLocale(messageKey, locale));
-        orderRepository.saveAndFlush(order);
+        orderRequestServiceImpl.saveAndFlush(order);
+    }
+
+    private void sendSuccessEmail(Order order) {
+        try {
+            emailService.sendOrderSuccessEmail(order.getUser(), orderMapper.toDTO(order));
+        } catch (Exception e) {
+            log.error("Error sending Order Success Email for Order ID: {}", order.getId(), e);
+        }
     }
 
     private void sendCancellingEmail(Order order) {
@@ -187,11 +197,28 @@ public class ProcessOrder {
         }
     }
 
-    private void sendSuccessEmail(Order order) {
-        try {
-            emailService.sendOrderSuccessEmail(order.getUser(), orderMapper.toDTO(order));
-        } catch (Exception e) {
-            log.error("Error sending Order Success Email for Order ID: {}", order.getId(), e);
+    private void restoreStock(List<OrderItem> orderItems) {
+        if (orderItems == null) return;
+
+        List<Product> productsToUpdate = new ArrayList<>();
+        for (OrderItem item : orderItems) {
+            Product product = item.getProduct();
+            product.setQuantityAvailableInStock(product.getQuantityAvailableInStock() + item.getQuantity());
+            productsToUpdate.add(product);
         }
+        productRequestService.save(productsToUpdate);
     }
+
+    private void performCancellation(Order order, String finalMessage) {
+        log.warn("Performing cancellation for Order {}: {}", order.getId(), finalMessage);
+        order.setStatus(orderStatusResponseService.findByName("CANCELADO"));
+        order.setStatusMessage(finalMessage);
+
+        orderRequestServiceImpl.saveAndFlush(order);
+        sendCancellingEmail(order);
+
+        restoreStock(order.getOrderItems());
+    }
+
+
 }

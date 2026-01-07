@@ -1,7 +1,8 @@
-package br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.alertProduct;
+package br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.alertProduct.process;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.alertProduct.AlertProductUpdatedEventDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.AlertProduct;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.AlertProductStatus;
@@ -18,7 +19,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class StockAlertOrchestrator {
+public class ProcessStockAlert {
 
     private final AlertProductRepository alertRepository;
     private final ProductRepository productRepository;
