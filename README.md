@@ -1,105 +1,111 @@
 # 🎸 RiffHouse API — E-commerce Backend
 
-![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=java)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.5-green?style=for-the-badge&logo=spring)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?style=for-the-badge&logo=postgresql)
-![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3.12-orange?style=for-the-badge&logo=rabbitmq)
-![Docker](https://img.shields.io/badge/Docker-Compose-blue?style=for-the-badge&logo=docker)
+<div align="center">
+
+![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=java&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.5-brightgreen?style=for-the-badge&logo=spring&logoColor=white)
+![Spring Security](https://img.shields.io/badge/Spring_Security-6-green?style=for-the-badge&logo=springsecurity&logoColor=white)
+![OpenFeign](https://img.shields.io/badge/OpenFeign-Declarative_Client-lightgrey?style=for-the-badge&logo=spring)
+
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![H2 Database](https://img.shields.io/badge/H2_Database-In_Memory-darkblue?style=for-the-badge&logo=h2)
+![Flyway](https://img.shields.io/badge/Flyway-Migrations-CC0200?style=for-the-badge&logo=flyway&logoColor=white)
+![JPA](https://img.shields.io/badge/Spring_Data_JPA-Hibernate-gray?style=for-the-badge&logo=hibernate)
+
+![RabbitMQ](https://img.shields.io/badge/RabbitMQ-Messaging-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Swagger](https://img.shields.io/badge/Swagger-OpenAPI_3-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)
+
+</div>
 
 ## 📖 Sobre o Projeto
 
-**RiffHouse API** é o backend REST robusto para a plataforma de e-commerce RiffHouse, especializada em instrumentos musicais. Foi construído com **Java 21** e **Spring Boot 3**, seguindo padrões arquiteturais modernos para garantir escalabilidade, manutenibilidade e desempenho.
+**RiffHouse API** é um backend REST robusto desenvolvido para a plataforma de e-commerce RiffHouse, especializada em instrumentos musicais. O projeto foi construído com **Java 21** e **Spring Boot 3**, adotando padrões arquiteturais modernos para garantir escalabilidade, manutenibilidade e alta performance.
 
-Este projeto foi desenvolvido para demonstrar conceitos avançados de backend, incluindo **Arquitetura Orientada a Eventos** para processamento assíncrono, princípios de **CQRS** para gerenciamento de pedidos e **Autenticação JWT** segura.
+O objetivo principal é demonstrar a aplicação de conceitos avançados de engenharia de software, incluindo **Arquitetura Orientada a Eventos**, **CQRS (Command Query Responsibility Segregation)** e estratégias de **Concorrência Otimista**.
 
----
+> **🌐 Live Demo:** [Acesse a API aqui](https://riffhouse-api.onrender.com/)
+>
+> ⚠️ **Nota:** O servidor está hospedado no plano gratuito do Render. A primeira requisição pode levar de 1 a 2 minutos para "acordar" a API.
 
-## 🚀 Funcionalidades Principais por Módulo
-
-### 👤 Usuários e Autenticação
-*   **Cadastro**: Aberto ao público (`POST /users`).
-*   **Segurança**: Login com JWT, recuperação de senha e validação de token.
-*   **Perfil**: Usuários autenticados gerenciam seus dados e endereços.
-
-### 📦 Produtos e Categorias
-*   **Catálogo**: Listagem de produtos e categorias pública para todos os visitantes.
-*   **Gestão (ADMIN)**: Apenas administradores podem criar, editar ou excluir produtos e categorias.
-*   **Alerta de Estoque**: Usuários podem cadastrar alertas (`POST /alerts`) para serem notificados quando um produto indispovível voltar ao estoque.
-
-### 🛒 Pedidos e Checkout
-*   **Arquitetura CQRS**: Separação clara entre leitura (`ReadOrderController`) e escrita (`WriteOrderController`).
-*   **Fluxo Completo**: Criação de pedido, adição de itens e integração com cálculo de frete.
-*   **Assíncrono**: O processamento do pedido utiliza filas RabbitMQ para alta performance.
-
-### 🔔 Notificações e Alertas
-*   **Alertas de Produto**: Endpoint `/alerts` permite que qualquer usuário (autenticado ou não) registre interesse em produtos sem estoque.
-*   **Emails**: Envio de confirmações e notificações via background workers.
+👉 **Documentação Interativa (Swagger):** [Acesse o Swagger UI](https://riffhouse-api.onrender.com/swagger-ui.html)
 
 ---
 
-## 🔒 Controle de Acesso e Endpoints
+## 🏗️ Arquitetura e Decisões Técnicas
 
-A aplicação utiliza Spring Security para garantir que cada recurso seja acessado apenas por quem tem permissão.
+A aplicação segue uma **Arquitetura em Camadas** com estrita separação de responsabilidades. O design foi pensado para resolver problemas reais de concorrência e escalabilidade.
 
-| Perfil de Acesso | Permissões / Rotas Principais |
-| :--- | :--- |
-| **Público (Sem Login)** | • Ver Produtos e Categorias (`GET`)<br>• Criar Conta (`POST /users`)<br>• Recuperar Senha (`/auth/**`)<br>• Cadastrar Alerta de Estoque (`POST /alerts`) |
-| **Usuário Autenticado** | • Fazer Pedidos (`POST /orders`)<br>• Gerenciar Endereços (`/addresses`)<br>• Ver seus próprios pedidos<br>• Gerenciar seus alertas |
-| **Administrador (ADMIN)** | • Criar/Editar/Excluir Produtos (`/products`)<br>• Criar/Editar/Excluir Categorias (`/categories`)<br>• Gerenciar Meios de Pagamento (`/payments`) |
-
----
-
-## 🏗️ Arquitetura e Stack Tecnológico
-
-A aplicação segue uma **Arquitetura em Camadas** com estrita separação de responsabilidades, aprimorada por componentes orientados a eventos.
+### 📐 Destaques Arquiteturais
+* **Abstração Genérica (CRUD Base)**: Implementação de controladores base (`BaseReadController` e `BaseWriteController`) e serviços genéricos. Isso garante padronização, reduz código duplicado (DRY) e acelera o desenvolvimento de novas entidades.
+* **CQRS-Lite**: Separação física e lógica das operações de Leitura e Escrita. Isso permite otimizar consultas e comandos de forma independente, melhorando a clareza do código.
+* **Concorrência Otimista (`@Version`)**: Solução para evitar conflitos de estoque (Lost Update Problem). Garante que dois usuários não consigam comprar o último item do estoque simultaneamente, utilizando versionamento de registro no banco de dados.
+* **Arquitetura Orientada a Eventos (RabbitMQ)**: Processamento assíncrono para tarefas pesadas e lentas (envio de e-mails, processamento de pedidos), desacoplando o fluxo principal e melhorando o tempo de resposta para o usuário.
+* **Soft Delete**: Implementação de exclusão lógica em nível de entidade base, permitindo desativar registros sem perda de histórico de dados.
+* **Strategy Pattern**: Uso de interfaces genéricas `Validator<T>` para encapsular regras de negócio complexas, facilitando testes e extensão.
+* **Tratamento Global de Erros**:
+    * `ApiErrorDTO` para padronização de respostas JSON (RFC 7807 inspired).
+    * Supressão de stacktrace em produção para segurança.
+    * Exceções personalizadas de negócio.
+* **Internacionalização (i18n)**: A API responde mensagens de erro e validação em **Inglês** ou **Português**, baseando-se automaticamente no header `Accept-Language`.
 
 ### 🛠️ Tecnologias
 *   **Linguagem**: Java 21
-*   **Framework**: Spring Boot 3.5.5 (Web, Data JPA, Security, Validation, AMQP, Mail)
+*   **Framework**: Spring Boot 3.5.5 (Web, Data JPA, Security, Validation, ModelMapper, OpenFeign, AMQP, Mail)
 *   **Banco de Dados**: PostgreSQL (Produção/Dev), H2 (Teste)
 *   **Migração**: Flyway
 *   **Mensageria**: RabbitMQ
 *   **Documentação**: SpringDoc OpenAPI (Swagger UI)
 *   **Containerização**: Docker e Docker Compose
 
-### 📐 Decisões Arquiteturais
-*   **CQRS-Lite**: O domínio de Pedidos divide operações de Leitura e Escrita em controladores diferentes para otimizar desempenho e clareza.
-*   **Padrão DTO**: Utiliza Objetos de Transferência de Dados (Data Transfer Objects) para toda comunicação externa, desacoplando o modelo de domínio interno do contrato da API.
-*   **Padrão Strategy**: Implementa interfaces genéricas `Validator<T>` para validações de regras de negócio complexas.
-*   **Isolamento de Infraestrutura**: Serviços externos (como Envio) são acessados via Interfaces/Feign Clients para facilitar mocks e testes.
+---
+
+## 🚀 Funcionalidades Principais
+
+### 👤 Gestão de Usuários & Segurança
+* **Autenticação JWT:** Login seguro, validação de token stateless e recuperação de senha via e-mail.
+* **RBAC (Role-Based Access Control):** Sistema de permissões hierárquico. Usuários nascem como `USER`; apenas `ADMIN` pode elevar privilégios.
+* **Proteção de Dados:** Usuários gerenciam apenas seus próprios dados sensíveis, independente do nível de acesso.
+
+### 🛒 Core E-commerce (Pedidos & Estoque)
+* **Checkout Assíncrono:** O pedido é recebido e processado em background via fila, garantindo alta disponibilidade mesmo em picos de acesso.
+* **Validação de Estoque:** Checagem rigorosa de disponibilidade antes e durante o processamento do pedido.
+* **Alertas de Interesse:** Usuários podem assinar notificações (`POST /alerts`) para produtos sem estoque. O sistema dispara e-mails automaticamente via RabbitMQ assim que o produto é reposto.
+
+### 🔔 Notificações & Integrações
+* **Feedback por E-mail:** Atualizações de status de pedidos e confirmações de cadastro enviadas via integração SMTP (MailHog em dev).
+* **Validação de CEP e FRETE:** Integração com API externa para garantir a integridade dos endereços de entrega e cálculo de frete.
+
+---
+
+## 🔒 Endpoints e Controle de Acesso
+
+| Perfil | Acesso Permitido |
+| :--- | :--- |
+| **Público** | • Visualizar Catálogo (`GET /products`)<br>• Registro (`POST /users`)<br>• Recuperação de Senha<br>• Cadastrar Alerta de Estoque |
+| **Usuário (USER)** | • Realizar Pedidos (`POST /orders`)<br>• Gerenciar seus Endereços e Alertas<br>• Visualizar histórico de compras |
+| **Admin (ADMIN)** | • Gestão de Catálogo (CRUD Produtos/Categorias)<br>• Gestão de Meios de Pagamento<br>• Gestão de Usuários |
 
 ---
 
 ## ⚙️ Configuração e Ambiente
 
-A aplicação utiliza Spring Profiles para gerenciar configurações em diferentes ambientes.
+A aplicação utiliza **Spring Profiles** para alternar comportamentos conforme o ambiente:
 
-### 📁 Perfis (Profiles)
-*   `dev`: Ativo por padrão. Conecta ao PostgreSQL local e RabbitMQ. Usa MailHog para emails.
-*   `prod`: Para deploy em produção (ex: Render). Usa variáveis de ambiente para segredos.
-*   `test`: Usa banco de dados em memória H2 para testes de integração rápidos.
-
-### 🔑 Variáveis de Ambiente (Produção)
-| Variável | Descrição |
-| :--- | :--- |
-| `DB_HOST`, `DB_PORT`, `DB_NAME` | Detalhes de conexão do Banco de Dados |
-| `DB_USER`, `DB_PASS` | Credenciais do Banco de Dados |
-| `RABBITMQ_HOST`, `RABBITMQ_PORT` | Conexão RabbitMQ |
-| `RABBITMQ_USERNAME`, `RABBITMQ_PASSWORD` | Credenciais RabbitMQ |
-| `EMAIL_USERNAME`, `EMAIL_PASSWORD` | Credenciais SMTP para envio de emails |
-| `JWT_SECRET` | Chave secreta para geração de tokens |
+* 🟢 `dev`: (Default) PostgreSQL local, RabbitMQ local e MailHog para simulação de e-mails.
+* 🔴 `prod`: Variáveis de ambiente, conexão segura com banco na nuvem.
+* 🟡 `test`: Banco H2 em memória para testes de integração ultra-rápidos.
 
 ---
 
-## ⚡ Começando
+## ⚡ Como Rodar o Projeto
 
 ### Pré-requisitos
-*   **Docker e Docker Compose** (Recomendado)
-*   **Java 21 JDK** (Se rodar manualmente)
-*   **Maven** (Wrapper incluído `./mvnw`)
+* **Docker & Docker Compose** (Método Recomendado)
+* Ou: Java 21 JDK + Maven + PostgreSQL + RabbitMQ instalados localmente.
 
-### 🐳 Rodar com Docker (Recomendado)
-Esta é a maneira mais fácil de iniciar toda a stack (API + DB + RabbitMQ + MailHog).
+### 🐳 Via Docker (Recomendado)
+Sobe toda a infraestrutura (API, Banco, Broker e Servidor de E-mail) com um comando:
 
 ```bash
 # 1. Clone o repositório
@@ -109,10 +115,10 @@ cd server-ecommerce
 # 2. Inicie os serviços
 docker-compose up --build -d
 ```
-A API estará disponível em: `http://localhost:8080`
+✅ API: http://localhost:8080 | MailHog: http://localhost:8025
 
 ### 💻 Rodar Manualmente
-Se preferir rodar a aplicação localmente (ex: para debugging), você ainda precisa do PostgreSQL e RabbitMQ rodando.
+Caso queira rodar a aplicação via IDE, mas manter a infraestrutura no Docker:
 
 1.  **Inicie a Infraestrutura**:
     ```bash
@@ -125,49 +131,55 @@ Se preferir rodar a aplicação localmente (ex: para debugging), você ainda pre
 
 ---
 
-## 📚 Documentação e Exemplos
+## 📚 Documentação e Consumo da API
 
-### Swagger UI
-Documentação interativa da API disponível quando a aplicação está rodando.
-👉 **URL**: `http://localhost:8080/swagger-ui.html`
+Para facilitar a integração e o teste dos endpoints, disponibilizo duas formas principais de documentação.
+
+### Swagger UI (OpenAPI)
+A documentação interativa é gerada automaticamente e permite testar requisições diretamente pelo navegador.
+👉 **Acesso Local**: `http://localhost:8080/swagger-ui.html`
 
 ### Coleção Postman
 Uma coleção completa do Postman com requisições pré-configuradas está disponível no diretório `postman/`.
-👉 [Ver README do Postman](postman/README_Postman.md)
+👉 [**Ver Guia e Download da Coleção**](postman/README_Postman.md)
 
-### Exemplos de Respostas e Tratamento de Erros
-A API utiliza um formato padronizado para tratamento de erros (`ApiErrorDTO`). Abaixo estão exemplos de respostas comuns baseadas nos DTOs reais da aplicação.
+---
 
-#### ✅ 201 Created (Sucesso - UserResponseDTO)
-Resposta ao criar um novo usuário com sucesso.
+## 📡 Padrões de Resposta (JSON)
+
+A API segue um contrato estrito de respostas. O tratamento de erros é centralizado (`GlobalExceptionHandler`), garantindo que o client (Front-end) sempre receba um JSON previsível, mesmo em falhas críticas.
+
+#### ✅ 201 Created (Sucesso)
+Exemplo de resposta ao criar um recurso (ex: Usuário). O payload retorna os dados públicos da entidade criada.
 ```json
 {
-  "id": 1,
-  "active": true,
-  "displayName": "João Silva",
-  "email": "joao@email.com",
-  "cpf": "123.456.789-00",
-  "roles": [
-    {
-      "id": 1,
-      "name": "ROLE_USER"
-    }
-  ]
+    "id": 3,
+    "active": true,
+    "displayName": "Lucas Camargo",
+    "email": "decamargoluk@gmail.com",
+    "cpf": "11111111111",
+    "roles": [
+        {
+            "id": 2,
+            "active": true,
+            "name": "USER"
+        }
+    ]
 }
 ```
 
 #### ❌ 400 Bad Request (Erro de Validação)
-Exemplo real de falha na validação de campos ao tentar criar um usuário, retornando as mensagens configuradas no sistema.
+Retornado quando os dados enviados violam as regras do DTO (Bean Validation). O campo `validationErrors` fornece um mapa detalhado `campo: erro` para facilitar o feedback no front-end.
 ```json
 {
-  "timestamp": 1709664000000,
-  "message": "Campos inválidos",
-  "status": 400,
-  "url": "/users",
-  "validationErrors": {
-    "displayName": "O nome de exibicao deve ter entre 3 e 255 caracteres.",
-    "password": "A senha deve ter pelo menos 6 caracteres."
-  }
+    "timestamp": 1767828796670,
+    "message": "Campos preenchidos incorretamente.",
+    "status": 400,
+    "url": "/users",
+    "validationErrors": {
+        "password": "A senha deve conter pelo menos uma letra minuscula, uma maiuscula e um numero.",
+        "displayName": "O nome de exibicao deve ter entre 3 e 255 caracteres."
+    }
 }
 ```
 
@@ -175,19 +187,20 @@ Exemplo real de falha na validação de campos ao tentar criar um usuário, reto
 Ocorre quando o usuário não está autenticado ou tenta acessar um recurso de ADMIN (como `/products` POST) sem permissão.
 ```json
 {
-  "timestamp": 1709664000000,
-  "message": "Acesso negado",
-  "status": 403,
-  "url": "/products"
+    "path": "/users/3",
+    "error": "Unauthorized",
+    "message": "Authentication credentials are missing or invalid.",
+    "timestamp": "2026-01-07T23:33:59.396305900Z",
+    "status": 401
 }
 ```
 
 #### 💥 500 Internal Server Error
-Erro genérico do servidor tratado globalmente.
+Para segurança da aplicação, erros internos não expõem o stacktrace Java em produção. Uma mensagem genérica é retornada enquanto o erro real é logado no servidor.
 ```json
 {
   "timestamp": 1709664000000,
-  "message": "Ocorreu um erro interno no servidor",
+  "message": "Ocorreu um erro interno inesperado. Tente Novamente mais tarde.",
   "status": 500,
   "url": "/orders"
 }
@@ -195,9 +208,15 @@ Erro genérico do servidor tratado globalmente.
 
 ---
 
-## 🧪 Testes
+## 🧪 Testes e Qualidade
 
-O projeto inclui testes de integração para garantir a confiabilidade da API.
+A confiabilidade é um pilar deste projeto. Foram implementados Testes de Integração que sobem o contexto do Spring Boot para validar os fluxos de ponta a ponta.
+
+*   **Ambiente Isolado:** Utiliza banco de dados em memória (**H2 Database**) para garantir que os testes não impactem os dados de desenvolvimento.
+
+*   **Escopo:** Validação de regras de negócio, restrições de banco e segurança dos endpoints.
+
+Para executar a suíte de testes:
 
 ```bash
 # Rodar todos os testes
@@ -208,9 +227,26 @@ O projeto inclui testes de integração para garantir a confiabilidade da API.
 
 ## 👨‍💻 Autor
 
-**Lucas Matheus de Camargo**
-*   **LinkedIn**: [Lucas Matheus de Camargo](https://www.linkedin.com/in/lucas-matheus-de-camargo-49a315236/)
-*   **Função**: Desenvolvedor Backend Java
+<table style="border: none;">
+  <tr>
+    <td width="100px" align="center">
+      <img src="https://github.com/DarkMatter015.png" width="100px" style="border-radius: 50%;" alt="Avatar do Lucas"/>
+    </td>
+    <td style="padding-left: 15px;">
+      <strong>Lucas Matheus de Camargo</strong><br>
+      <i>Desenvolvedor Full Stack | QA Engineer</i><br>
+      <br>
+      <a href="https://www.linkedin.com/in/lucas-matheus-de-camargo-49a315236/" target="_blank">
+        <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white" alt="LinkedIn Badge">
+      </a>
+      <a href="https://github.com/DarkMatter015" target="_blank">
+        <img src="https://img.shields.io/badge/GitHub-100000?style=flat&logo=github&logoColor=white" alt="GitHub Badge">
+      </a>
+    </td>
+  </tr>
+</table>
+
 
 ---
-*Construído com ❤️ para a Comunidade Dev.*
+
+<div align="center"> <sub>Feito com ☕ e Java por Lucas Matheus.</sub> </div>
