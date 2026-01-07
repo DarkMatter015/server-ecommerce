@@ -22,7 +22,8 @@ services:
     restart: on-failure
 
   postgres:
-    image: postgres:15-alpine
+    image: pgvector/pgvector:pg17
+    restart: always
     container_name: riffhouse-db
     environment:
       - POSTGRES_DB=riffhouse
@@ -37,7 +38,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    restart: always
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
