@@ -1,5 +1,6 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.alertProduct;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.alertProduct.process.ProcessStockAlert;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -12,11 +13,11 @@ import org.springframework.stereotype.Component;
 @Profile("!test")
 public class AlertProductUpdatedConsumer {
 
-    private final StockAlertOrchestrator stockAlertOrchestrator;
+    private final ProcessStockAlert processStockAlert;
 
     @RabbitListener(queues = "${alertProduct.queue.name}")
     public void consumeAlertProductUpdatedMessage(AlertProductUpdatedEventDTO alertProductUpdatedEventDTO) {
         log.info("Consuming PRODUCT_STOCK_UPDATED message: {}", alertProductUpdatedEventDTO);
-        stockAlertOrchestrator.processStockAlerts(alertProductUpdatedEventDTO);
+        processStockAlert.processStockAlerts(alertProductUpdatedEventDTO);
     }
 }
