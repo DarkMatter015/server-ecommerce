@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,5 +45,17 @@ public class OrderItemMapper {
                         .quantity(item.getQuantity())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    public List<String> toAIResponseDTOListNameOfProducts(List<OrderItem> items) {
+        return items.stream()
+                .map(item -> item.getProduct().getName())
+                .collect(Collectors.toList());
+    }
+
+    public BigDecimal getTotalPriceOfListOrderItems(List<OrderItem> items) {
+        return items.stream()
+                .map(OrderItem::getTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

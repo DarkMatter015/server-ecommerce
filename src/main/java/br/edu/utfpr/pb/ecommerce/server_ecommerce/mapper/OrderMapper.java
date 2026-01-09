@@ -1,14 +1,15 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressRequestDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderAIDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.payment.PaymentResponseDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.shipment.EmbeddedShipmentDetails;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.order.OrderEventDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Payment;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.address.EmbeddedAddress;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.shipment.EmbeddedShipmentDetails;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,8 @@ public class OrderMapper {
 
     private final OrderItemMapper orderItemMapper;
     private final ModelMapper modelMapper;
+    private final ShipmentMapper shipmentMapper;
+    private final AddressMapper addressMapper;
 
     public OrderResponseDTO toDTO(Order order) {
         return OrderResponseDTO.builder()
@@ -56,6 +59,20 @@ public class OrderMapper {
                 .shipmentId(order.getShipment().getId())
                 .userCpf(cpf)
                 .locale(locale)
+                .build();
+    }
+
+    public OrderAIDTO toAIResponseDTO(Order order) {
+        return OrderAIDTO.builder()
+                .id(order.getId())
+                .status(order.getStatus().getName())
+                .statusMessage(order.getStatusMessage())
+                .data(order.getData())
+                .address(addressMapper.toAddressInfo(order.getAddress()))
+                .payment(order.getPayment().getName())
+                .shipment(shipmentMapper.toShipmentInfo(order.getShipment()))
+                .total(orderItemMapper.getTotalPriceOfListOrderItems(order.getOrderItems()))
+                .items(orderItemMapper.toAIResponseDTOListNameOfProducts(order.getOrderItems()))
                 .build();
     }
 

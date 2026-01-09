@@ -5,6 +5,8 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.shipment.Embedd
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.shipment.EmbeddedShipmentDetails;
 import org.springframework.stereotype.Component;
 
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.FormatUtils.CURRENCY_FORMAT;
+
 @Component
 public class ShipmentMapper {
 
@@ -24,5 +26,19 @@ public class ShipmentMapper {
                         .picture(response.company().picture())
                         .build())
                 .build();
+    }
+
+    public String toShipmentInfo(EmbeddedShipmentDetails shipment) {
+        if (shipment == null) return "";
+        return "Name:" +
+                shipment.getName() + " - " +
+                "Company:" +
+                shipment.getCompany().getName() + " - " +
+                "Price:" +
+                CURRENCY_FORMAT.format(shipment.getPrice()) + " - " +
+                "Delivery Time:" +
+                shipment.getDelivery_time() +
+                " days" +
+                (shipment.getDiscount() != null ? " - Discount: " + CURRENCY_FORMAT.format(shipment.getDiscount()) : "");
     }
 }
