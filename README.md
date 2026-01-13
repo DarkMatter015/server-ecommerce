@@ -234,7 +234,7 @@ Para executar a suíte de testes:
     </td>
     <td style="padding-left: 15px;">
       <strong>Lucas Matheus de Camargo</strong><br>
-      <i>Desenvolvedor Full Stack | QA Engineer</i><br>
+      <i>Desenvolvedor Full Stack | QA</i><br>
       <br>
       <a href="https://www.linkedin.com/in/lucas-matheus-de-camargo-49a315236/" target="_blank">
         <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white" alt="LinkedIn Badge">
