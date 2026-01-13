@@ -5,15 +5,13 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderItem.OrderItemRespons
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.text.NumberFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
+
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.FormatUtils.CURRENCY_FORMAT;
+import static br.edu.utfpr.pb.ecommerce.server_ecommerce.util.FormatUtils.DATE_FORMAT;
 
 @Component
 public class EmailTemplateProvider {
-    private static final NumberFormat CURRENCY_FORMAT = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("pt-BR"));
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     public String buildOrderSuccessEmail(OrderResponseDTO order, String userName, String link) {
         OrderTotals totals = calculateTotals(order);
