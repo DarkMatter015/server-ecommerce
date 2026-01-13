@@ -11,7 +11,7 @@ CREATE INDEX product_embedding_search_idx ON product_embeddings USING GIN (searc
 
 -- 4. Criar Trigger para manter o vetor atualizado automaticamente
 CREATE
-OR REPLACE FUNCTION tsvector_update_trigger() RETURNS trigger AS $$
+OR REPLACE FUNCTION update_product_search_vector() RETURNS trigger AS $$
 BEGIN
   NEW.search_vector
 := to_tsvector('portuguese', NEW.content);
@@ -23,4 +23,4 @@ LANGUAGE plpgsql;
 CREATE TRIGGER tsvector_update
     BEFORE INSERT OR
 UPDATE ON product_embeddings
-    FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger();
+    FOR EACH ROW EXECUTE FUNCTION update_product_search_vector();

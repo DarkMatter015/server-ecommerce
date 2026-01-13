@@ -1,0 +1,17 @@
+.idea
+.vscode
+*.iml
+.classpath
+.project
+.settings
+
+target/
+build/
+out/
+
+*.log
+*.tmp
+
+.env
+.env.local
+config/application-prod.properties
