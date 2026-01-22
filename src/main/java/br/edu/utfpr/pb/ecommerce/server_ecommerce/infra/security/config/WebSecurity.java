@@ -3,6 +3,8 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.config;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.JwtProperties;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.filter.JWTAuthenticationFilter;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.filter.JWTAuthorizationFilter;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.handler.CustomAccessDeniedHandler;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.handler.CustomAuthenticationEntryPoint;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.handler.CustomAuthenticationFailureHandler;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.alertProduct.IAlertProduct.IAlertProductRequestService;
@@ -21,7 +23,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -36,14 +37,15 @@ import java.util.List;
 public class WebSecurity {
     // Service responsável por buscar um usuário no banco de dados por meio do método loadByUsername()
     private final AuthService authService;
-    // Objeto responsável por realizar o tratamento de exceção quando o usuário informar credenciais incorretas ao autenticar-se.
-    private final AuthenticationEntryPoint authenticationEntryPoint;
-    private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
     private final ObjectMapper objectMapper;
     private final JwtProperties jwtProperties;
     private final Environment env;
     private final PasswordEncoder passwordEncoder;
     private final IAlertProductRequestService alertProductRequestService;
+
+    private final CustomAuthenticationEntryPoint entryPoint;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
+    private final CustomAuthenticationFailureHandler failureHandler;
 
     @Bean
     @SneakyThrows
@@ -70,8 +72,11 @@ public class WebSecurity {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
 
         //define o objeto responsável pelo tratamento de exceção ao entrar com credenciais inválidas
-        http.exceptionHandling(exceptionHandling ->
-                exceptionHandling.authenticationEntryPoint(authenticationEntryPoint));
+        http.exceptionHandling(ex -> ex
+                .authenticationEntryPoint(entryPoint) // Trata 401 (Sem token)
+                .accessDeniedHandler(accessDeniedHandler) // Trata 403 (Sem permissão)
+        );
+        http.formLogin(form -> form.failureHandler(failureHandler));
 
         // configura a authorização das requisições
         http.authorizeHttpRequests((authorize) -> {
@@ -82,7 +87,7 @@ public class WebSecurity {
                     authorize
                             // ROTAS PÚBLICAS (permitAll)
                             .requestMatchers(HttpMethod.POST, "/users", "/shipment/products", "/auth/forgot-password", "/auth/reset-password", "/alerts").permitAll()
-                            .requestMatchers(HttpMethod.GET, "/products/**", "/categories/**", "/payments/**", "/cep/validate/", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/auth/validate-reset-token").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/products/**", "/categories/**", "/payments/**", "/cep/validate/", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/auth/validate-reset-token", "/api/health").permitAll()
                             .requestMatchers("/error/**").permitAll()
 
                             // ROTAS DE ADMIN
@@ -97,7 +102,7 @@ public class WebSecurity {
         );
         http.authenticationManager(authenticationManager)
                 //Filtro da Autenticação - sobrescreve o método padrão do Spring Security para Autenticação.
-                .addFilter(new JWTAuthenticationFilter(authenticationManager, authService, objectMapper, jwtProperties, customAuthenticationFailureHandler, alertProductRequestService))
+                .addFilter(new JWTAuthenticationFilter(authenticationManager, authService, objectMapper, jwtProperties, failureHandler, alertProductRequestService))
                 //Filtro da Autorização - - sobrescreve o método padrão do Spring Security para Autorização.
                 .addFilter(new JWTAuthorizationFilter(authenticationManager, jwtProperties))
                 //Como será criada uma API REST e todas as requisições que necessitam de autenticação/autorização serão realizadas com o envio do token JWT do usuário, não será necessário fazer controle de sessão no *back-end*.
