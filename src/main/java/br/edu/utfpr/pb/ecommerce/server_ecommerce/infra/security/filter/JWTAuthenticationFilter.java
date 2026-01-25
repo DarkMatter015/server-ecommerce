@@ -1,9 +1,9 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.filter;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.JwtProperties;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.AuthenticationResponseDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.LoginRequestDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.SecurityUserResponseDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.auth.AuthenticationResponseDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.auth.LoginRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.exception.JsonAuthenticationException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
@@ -84,7 +84,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .withSubject(user.getId().toString())
                 //a data de validade do token é a data atual mais o valor armazenado na constante EXPIRATION_TIME, nesse caso 1 dia
                 .withExpiresAt(
-                        new Date(System.currentTimeMillis()  + jwtProperties.getExpirationTime())
+                        new Date(System.currentTimeMillis() + jwtProperties.getExpirationTime())
                 )
                 .withClaim("roles", user.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
@@ -95,7 +95,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(
                 objectMapper.writeValueAsString(
-                        new AuthenticationResponseDTO(token, new SecurityUserResponseDTO(user))
+                        new AuthenticationResponseDTO(token, new UserResponseDTO(user))
                 )
         );
     }
