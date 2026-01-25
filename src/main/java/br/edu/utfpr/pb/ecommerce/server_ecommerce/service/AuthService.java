@@ -1,12 +1,12 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.user.UserResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.AuthUserNotFoundException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundWithException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.auth.AuthenticationResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.UserRepository;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.AuthenticationResponseDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.SecurityUserResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -59,7 +59,7 @@ public class AuthService implements UserDetailsService {
     public AuthenticationResponseDTO validateUserToken() {
         User user = getAuthenticatedUser();
         AuthenticationResponseDTO response = new AuthenticationResponseDTO();
-        response.setUser(new SecurityUserResponseDTO(user));
+        response.setUser(new UserResponseDTO(user));
         return response;
     }
 

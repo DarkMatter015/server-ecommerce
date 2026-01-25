@@ -1,4 +1,4 @@
-package br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto;
+package br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

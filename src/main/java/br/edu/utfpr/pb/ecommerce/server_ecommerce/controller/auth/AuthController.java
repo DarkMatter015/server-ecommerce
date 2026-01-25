@@ -1,7 +1,7 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.auth;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.auth.iAuthController.IAuthController;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.AuthenticationResponseDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.auth.AuthenticationResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.password.ChangePasswordDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.password.ForgetPasswordDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.password.ResetPasswordDTO;
