@@ -12,6 +12,9 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 public class RabbitMQConfig {
 
+    @Value("${email.wait.time}")
+    private int waitTime;
+
     //    ORDER
     @Value("${order.queue.name}")
     private String orderQueueName;
@@ -54,8 +57,9 @@ public class RabbitMQConfig {
     @Value("${alertProduct.dlk.key}")
     private String alertProductDlrkKey;
 
-    @Value("${email.wait.time}")
-    private int waitTime;
+    //    SYNC_PRODUCT
+    @Value("${products.exchange.name}")
+    private String productsExchangeName;
 
     //    ORDER
     @Bean
@@ -137,6 +141,12 @@ public class RabbitMQConfig {
                 .withArgument("x-dead-letter-exchange", alertProductDlxName)
                 .withArgument("x-dead-letter-routing-key", alertProductDlrkKey)
                 .build();
+    }
+
+    //    SYNC_PRODUCT
+    @Bean
+    public TopicExchange productsExchange() {
+        return new TopicExchange(productsExchangeName);
     }
 
     @Bean

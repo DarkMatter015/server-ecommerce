@@ -1,36 +1,67 @@
 package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.product;
 
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.product.ProductRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.product.ProductUpdateDTO;
-import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.BusinessException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.BusinessException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.alertProduct.AlertProductUpdatedEventDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.alertProduct.AlertProductUpdatedPublisher;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.syncProducts.SyncProductPublisher;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ProductMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Category;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.CRUD.BaseSoftDeleteRequestServiceImpl;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.category.CategoryResponseServiceImpl;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.product.IProduct.IProductRequestService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
+@Slf4j
 public class ProductRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Product, ProductUpdateDTO> implements IProductRequestService {
 
     private final ProductRepository productRepository;
     private final ProductResponseServiceImpl productResponseService;
     private final CategoryResponseServiceImpl categoryResponseService;
     private final AlertProductUpdatedPublisher alertProductUpdatedPublisher;
+    private final ProductMapper productMapper;
+    private final SyncProductPublisher syncProductPublisher;
 
     public ProductRequestServiceImpl(ProductRepository productRepository,
                                      ProductResponseServiceImpl productResponseService,
                                      CategoryResponseServiceImpl categoryResponseService,
-                                     AlertProductUpdatedPublisher alertProductUpdatedPublisher) {
+                                     AlertProductUpdatedPublisher alertProductUpdatedPublisher,
+                                     ProductMapper productMapper,
+                                     SyncProductPublisher syncProductPublisher) {
         super(productRepository, productResponseService);
         this.productRepository = productRepository;
         this.productResponseService = productResponseService;
         this.categoryResponseService = categoryResponseService;
         this.alertProductUpdatedPublisher = alertProductUpdatedPublisher;
+        this.productMapper = productMapper;
+        this.syncProductPublisher = syncProductPublisher;
+    }
+
+    @Override
+    @Transactional
+    public Product create(ProductRequestDTO dto) {
+        Category category = categoryResponseService.findById(dto.getCategoryId());
+        Product product = productMapper.toEntity(dto, category);
+        Product savedProduct = productRepository.save(product);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                // Só executa se o banco salvar com sucesso
+                syncProductPublisher.sendSyncCreated(productMapper.toEventDTO(savedProduct, savedProduct.getCategory()));
+                log.info("Created Product Event sent to queue successfully for Product ID: {}", savedProduct.getId());
+            }
+        });
+        return savedProduct;
     }
 
     @Override
@@ -67,6 +98,15 @@ public class ProductRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<
             alertProductUpdatedPublisher.send(
                     new AlertProductUpdatedEventDTO(savedProduct.getId(), savedProduct.getName(), newQuantity)
             );
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                // Só executa se o banco salvar com sucesso
+                syncProductPublisher.sendSyncUpdated(productMapper.toEventDTO(savedProduct, savedProduct.getCategory()));
+                log.info("Updated Product Event sent to queue successfully for Product ID: {}", savedProduct.getId());
+            }
+        });
 
         return savedProduct;
     }

@@ -4,6 +4,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.BaseIntegrationTest;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.product.ProductRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.product.ProductResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.ResourceNotFoundException;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.syncProducts.SyncProductPublisher;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Category;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.CategoryRepository;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -22,6 +24,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ProductControllerTest extends BaseIntegrationTest {
 
     private static final String API_URL = "/products";
+
+    @MockitoBean
+    private SyncProductPublisher syncProductPublisher;
+
     @Autowired
     private CategoryRepository categoryRepository;
 

@@ -2,6 +2,7 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.client.melhorEnvioAPI.dto.request.ShipmentProductRequest;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.product.ProductRequestDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.syncProducts.SyncProductEventDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Category;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import org.springframework.stereotype.Component;
@@ -52,4 +53,16 @@ public class ProductMapper {
                 .collect(Collectors.toList());
     }
 
+    public SyncProductEventDTO toEventDTO(Product product, Category category) {
+        if (product == null || category == null)
+            return null;
+        return new SyncProductEventDTO(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getPrice(),
+                product.getQuantityAvailableInStock(),
+                category.getName()
+        );
+    }
 }
