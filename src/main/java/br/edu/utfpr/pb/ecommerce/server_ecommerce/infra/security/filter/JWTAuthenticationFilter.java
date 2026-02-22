@@ -24,8 +24,8 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.stream.Collectors;
 
 
@@ -84,7 +84,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .withSubject(user.getId().toString())
                 //a data de validade do token é a data atual mais o valor armazenado na constante EXPIRATION_TIME, nesse caso 1 dia
                 .withExpiresAt(
-                        new Date(System.currentTimeMillis() + jwtProperties.getExpirationTime())
+                        getExpirationDate()
                 )
                 .withClaim("roles", user.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
@@ -95,9 +95,12 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(
                 objectMapper.writeValueAsString(
-                        new AuthenticationResponseDTO(token, new UserResponseDTO(user))
+                        new AuthenticationResponseDTO(token, new UserResponseDTO(user), getExpirationDate().toEpochMilli())
                 )
         );
     }
 
+    private Instant getExpirationDate() {
+        return Instant.now().plusMillis(jwtProperties.getExpirationTime());
+    }
 }
