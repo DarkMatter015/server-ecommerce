@@ -7,6 +7,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.handler.CustomA
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.handler.CustomAuthenticationEntryPoint;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.handler.CustomAuthenticationFailureHandler;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.TranslationService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.alertProduct.IAlertProduct.IAlertProductRequestService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.LocaleResolver;
 
 import java.util.Arrays;
 import java.util.List;
@@ -46,6 +48,9 @@ public class WebSecurity {
     private final CustomAuthenticationEntryPoint entryPoint;
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final CustomAuthenticationFailureHandler failureHandler;
+
+    private final TranslationService translationService;
+    private final LocaleResolver localeResolver;
 
     @Bean
     @SneakyThrows
@@ -86,13 +91,36 @@ public class WebSecurity {
 
                     authorize
                             // ROTAS PÚBLICAS (permitAll)
-                            .requestMatchers(HttpMethod.POST, "/users", "/shipment/products", "/auth/forgot-password", "/auth/reset-password", "/alerts").permitAll()
-                            .requestMatchers(HttpMethod.GET, "/products/**", "/categories/**", "/payments/**", "/cep/validate/", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/auth/validate-reset-token", "/api/health").permitAll()
-                            .requestMatchers("/error/**").permitAll()
+                            .requestMatchers(HttpMethod.POST,
+                                    "/users",
+                                    "/shipment/products",
+                                    "/auth/forgot-password",
+                                    "/auth/reset-password",
+                                    "/alerts")
+                            .permitAll()
+
+                            .requestMatchers(HttpMethod.GET,
+                                    "/products/**",
+                                    "/categories/**",
+                                    "/payments/**",
+                                    "/cep/validate/",
+                                    "/v3/api-docs/**",
+                                    "/swagger-ui.html",
+                                    "/swagger-ui/**",
+                                    "/auth/validate-reset-token",
+                                    "/api/health")
+                            .permitAll()
+
+                            .requestMatchers("/error/**")
+                            .permitAll()
 
                             // ROTAS DE ADMIN
                             // Apenas ADMIN pode gerenciar (criar, editar, deletar) produtos, categorias e pagamentos
-                            .requestMatchers("/products/**", "/categories/**", "/payments/**").hasAnyAuthority("ADMIN");
+                            .requestMatchers(
+                                    "/products/**",
+                                    "/categories/**",
+                                    "/payments/**")
+                            .hasAnyAuthority("ADMIN");
 
                     // ROTAS AUTENTICADAS (USER ou ADMIN)
                     // Qualquer usuário autenticado pode acessar as demais rotas
@@ -102,7 +130,16 @@ public class WebSecurity {
         );
         http.authenticationManager(authenticationManager)
                 //Filtro da Autenticação - sobrescreve o método padrão do Spring Security para Autenticação.
-                .addFilter(new JWTAuthenticationFilter(authenticationManager, authService, objectMapper, jwtProperties, failureHandler, alertProductRequestService))
+                .addFilter(new JWTAuthenticationFilter(
+                        authenticationManager,
+                        authService,
+                        objectMapper,
+                        jwtProperties,
+                        failureHandler,
+                        alertProductRequestService,
+                        translationService,
+                        localeResolver
+                ))
                 //Filtro da Autorização - - sobrescreve o método padrão do Spring Security para Autorização.
                 .addFilter(new JWTAuthorizationFilter(authenticationManager, jwtProperties))
                 //Como será criada uma API REST e todas as requisições que necessitam de autenticação/autorização serão realizadas com o envio do token JWT do usuário, não será necessário fazer controle de sessão no *back-end*.
@@ -126,7 +163,8 @@ public class WebSecurity {
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
         // Lista dos Headers autorizados, o Authorization será o header que iremos utilizar para transferir o Token
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin", "X-App-Source"));
+        configuration.setExposedHeaders(List.of("Authorization"));
 
         configuration.setAllowCredentials(false);
 

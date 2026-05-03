@@ -7,6 +7,7 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.dto.auth.LoginR
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.security.exception.JsonAuthenticationException;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.User;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.TranslationService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.alertProduct.IAlertProduct.IAlertProductRequestService;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -16,22 +17,25 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.LocaleResolver;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthService authService;
     private final ObjectMapper objectMapper;
+    private final TranslationService translationService;
+    private final LocaleResolver localeResolver;
     private final JwtProperties jwtProperties;
     private final IAlertProductRequestService alertProductRequestService;
 
@@ -39,11 +43,16 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                    AuthService authService,
                                    ObjectMapper objectMapper,
                                    JwtProperties jwtProperties,
-                                   AuthenticationFailureHandler authenticationFailureHandler, IAlertProductRequestService alertProductRequestService) {
+                                   AuthenticationFailureHandler authenticationFailureHandler,
+                                   IAlertProductRequestService alertProductRequestService,
+                                   TranslationService translationService,
+                                   LocaleResolver localeResolver) {
         super(authenticationManager);
         this.authService = authService;
         this.objectMapper = objectMapper;
+        this.translationService = translationService;
         this.jwtProperties = jwtProperties;
+        this.localeResolver = localeResolver;
         this.alertProductRequestService = alertProductRequestService;
 
         this.setAuthenticationFailureHandler(authenticationFailureHandler);
@@ -53,15 +62,24 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         try {
+            String appSource = request.getHeader(JwtProperties.HEADER_ORIGIN);
             LoginRequestDTO credentials = objectMapper.readValue(request.getInputStream(), LoginRequestDTO.class);
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                    credentials.getEmail(),
+                    credentials.getPassword());
 
-            return super.getAuthenticationManager().authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            credentials.getEmail(),
-                            credentials.getPassword(),
-                            new ArrayList<>()
-                    )
-            );
+            Authentication authResult = super.getAuthenticationManager().authenticate(authToken);
+
+            if ("admin".equalsIgnoreCase(appSource)) {
+                boolean isAdmin = authResult.getAuthorities().stream()
+                        .anyMatch(role -> role.getAuthority().equals("ADMIN"));
+
+                if (!isAdmin) {
+                    throw new BadCredentialsException(translationService.getMessageLocale("access.denied", localeResolver.resolveLocale(request)));
+                }
+            }
+
+            return authResult;
         } catch (IOException e) {
             throw new JsonAuthenticationException("Invalid data format for login request", e);
         }
@@ -77,12 +95,8 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         alertProductRequestService.syncOrphanAlerts(user);
 
-        // o método create() da classe JWT é utilizado para criação de um novo token JWT
         String token = JWT.create()
-                // o objeto authResult possui os dados do usuário autenticado, nesse caso o método getId() retorna o id do usuário foi autenticado no método attemptAuthentication.
-                // mudei para getId() por ser um atributo imutável
                 .withSubject(user.getId().toString())
-                //a data de validade do token é a data atual mais o valor armazenado na constante EXPIRATION_TIME, nesse caso 1 dia
                 .withExpiresAt(
                         getExpirationDate()
                 )

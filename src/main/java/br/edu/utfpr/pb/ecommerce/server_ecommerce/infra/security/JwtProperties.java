@@ -17,4 +17,5 @@ public class JwtProperties {
 
     public static final String HEADER_STRING = "Authorization"; // header que será passado ao server com o token
 
+    public static final String HEADER_ORIGIN = "X-App-Source"; // header que será passado a origem para validar autenticação (user or admin)
 }
