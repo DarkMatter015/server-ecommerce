@@ -40,6 +40,12 @@ public enum ErrorCode {
     SHIPMENT_DATA_INVALID("shipment.data.invalid", 400),
     SHIPMENT_INVALID("shipment.invalid", 400),
 
+    // Order Document
+    ORDER_NOTA_FISCAL_REQUIRED("order.nota.fiscal.required", 400),
+    DOCUMENT_TYPE_NOT_ALLOWED("document.type.not.allowed", 400),
+    DOCUMENT_EMPTY("document.empty", 400),
+    DOCUMENT_STORAGE_ERROR("document.storage.error", 500),
+
 
     // Alert Product
     ALERT_PRODUCT_ALREADY_SENT("alert.product.already.sent", 400),

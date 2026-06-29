@@ -11,6 +11,8 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.infra.rabbitmq.order.OrderPubl
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.OrderMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.*;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.embedded.address.EmbeddedAddress;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.DocumentType;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderDocumentRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.ProductRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
@@ -54,6 +56,7 @@ public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Or
     private final IPaymentResponseService paymentResponseService;
     private final TranslationService translator;
     private final EmailService emailService;
+    private final OrderDocumentRepository orderDocumentRepository;
 
     public OrderRequestServiceImpl(OrderRepository orderRepository,
                                    OrderResponseServiceImpl orderResponseService,
@@ -66,7 +69,8 @@ public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Or
                                    List<IValidationOrderItem> iValidationOrderItems,
                                    IPaymentResponseService paymentResponseService,
                                    TranslationService translator,
-                                   EmailService emailService) {
+                                   EmailService emailService,
+                                   OrderDocumentRepository orderDocumentRepository) {
         super(orderRepository, orderResponseService);
         this.orderRepository = orderRepository;
         this.authService = authService;
@@ -79,6 +83,7 @@ public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Or
         this.paymentResponseService = paymentResponseService;
         this.translator = translator;
         this.emailService = emailService;
+        this.orderDocumentRepository = orderDocumentRepository;
     }
 
     private void validateOrderOwnership(Order order) {
@@ -109,6 +114,12 @@ public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Or
                 .orElseThrow(() -> new ResourceNotFoundException(Order.class, id));
 
         OrderStatus newStatus = orderStatusResponseService.findById(dto.getStatusId());
+
+        if ("ENVIADO".equalsIgnoreCase(newStatus.getName())
+                && !orderDocumentRepository.existsByOrderIdAndDocumentTypeAndDeletedAtIsNull(id, DocumentType.NOTA_FISCAL)) {
+            throw new BusinessException(ErrorCode.ORDER_NOTA_FISCAL_REQUIRED);
+        }
+
         order.setStatus(newStatus);
 
         if (dto.getStatusMessage() != null && !dto.getStatusMessage().isBlank()) {
