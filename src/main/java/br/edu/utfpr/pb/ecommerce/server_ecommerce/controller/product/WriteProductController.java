@@ -40,6 +40,13 @@ public class WriteProductController extends BaseSoftDeleteWriteController<Produc
     }
 
     @Override
+    protected ProductResponseDTO convertToResponseDto(Product entity) {
+        ProductResponseDTO dto = super.convertToResponseDto(entity);
+        productMapper.enrichResponse(entity, dto);
+        return dto;
+    }
+
+    @Override
     @PostMapping
     public ResponseEntity<ProductResponseDTO> create(ProductRequestDTO productRequestDTO) {
         Product createdProduct = productRequestService.create(productRequestDTO);

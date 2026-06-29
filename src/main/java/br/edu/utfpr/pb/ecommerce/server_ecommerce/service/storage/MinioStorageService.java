@@ -23,14 +23,29 @@ public class MinioStorageService implements StorageService {
 
     @Override
     public void upload(String objectKey, InputStream stream, long size, String contentType) {
+        upload(properties.getBucket(), objectKey, stream, size, contentType);
+    }
+
+    @Override
+    public InputStream download(String objectKey) {
+        return download(properties.getBucket(), objectKey);
+    }
+
+    @Override
+    public void remove(String objectKey) {
+        remove(properties.getBucket(), objectKey);
+    }
+
+    @Override
+    public void upload(String bucket, String objectKey, InputStream stream, long size, String contentType) {
         try {
             minioClient.putObject(PutObjectArgs.builder()
-                    .bucket(properties.getBucket())
+                    .bucket(bucket)
                     .object(objectKey)
                     .stream(stream, size, -1)
                     .contentType(contentType)
                     .build());
-            log.info("Object '{}' uploaded to bucket '{}'", objectKey, properties.getBucket());
+            log.info("Object '{}' uploaded to bucket '{}'", objectKey, bucket);
         } catch (Exception e) {
             log.error("Failed to upload object '{}': {}", objectKey, e.getMessage());
             throw new BusinessException(ErrorCode.DOCUMENT_STORAGE_ERROR);
@@ -38,10 +53,10 @@ public class MinioStorageService implements StorageService {
     }
 
     @Override
-    public InputStream download(String objectKey) {
+    public InputStream download(String bucket, String objectKey) {
         try {
             return minioClient.getObject(GetObjectArgs.builder()
-                    .bucket(properties.getBucket())
+                    .bucket(bucket)
                     .object(objectKey)
                     .build());
         } catch (Exception e) {
@@ -51,13 +66,13 @@ public class MinioStorageService implements StorageService {
     }
 
     @Override
-    public void remove(String objectKey) {
+    public void remove(String bucket, String objectKey) {
         try {
             minioClient.removeObject(RemoveObjectArgs.builder()
-                    .bucket(properties.getBucket())
+                    .bucket(bucket)
                     .object(objectKey)
                     .build());
-            log.info("Object '{}' removed from bucket '{}'", objectKey, properties.getBucket());
+            log.info("Object '{}' removed from bucket '{}'", objectKey, bucket);
         } catch (Exception e) {
             log.error("Failed to remove object '{}': {}", objectKey, e.getMessage());
             throw new BusinessException(ErrorCode.DOCUMENT_STORAGE_ERROR);

@@ -35,6 +35,11 @@ public enum ErrorCode {
     PRODUCT_DISCREPANCY("product.discrepancy", 400),
     PRODUCT_NOT_FOUND("product.not.found", 400),
 
+    // Product Image
+    PRODUCT_IMAGE_EMPTY("product.image.empty", 400),
+    PRODUCT_IMAGE_TYPE_NOT_ALLOWED("product.image.type.not.allowed", 400),
+    PRODUCT_IMAGE_STORAGE_ERROR("product.image.storage.error", 500),
+
     // Order
     ORDER_PERMISSION_MODIFY_DENIED("order.permission.modify.denied", 403),
     SHIPMENT_DATA_INVALID("shipment.data.invalid", 400),

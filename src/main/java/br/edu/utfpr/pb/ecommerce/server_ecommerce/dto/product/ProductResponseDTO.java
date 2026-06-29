@@ -8,6 +8,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -26,4 +28,6 @@ public class ProductResponseDTO extends BaseResponseDTO {
     private Integer quantityAvailableInStock;
 
     private CategoryResponseDTO category;
+
+    private List<ProductImageResponseDTO> images = new ArrayList<>();
 }

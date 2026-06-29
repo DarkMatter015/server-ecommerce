@@ -3,6 +3,7 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.softDeleteController.BaseSoftDeleteReadController;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.product.iProductController.IReadProductController;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.product.ProductResponseDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.ProductMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Product;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.product.IProduct.IProductResponseService;
 import org.modelmapper.ModelMapper;
@@ -20,10 +21,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReadProductController extends BaseSoftDeleteReadController<Product, ProductResponseDTO> implements IReadProductController {
 
     private final IProductResponseService productResponseService;
+    private final ProductMapper productMapper;
 
-    public ReadProductController(IProductResponseService productResponseService, ModelMapper modelMapper, IProductResponseService productResponseService1) {
+    public ReadProductController(IProductResponseService productResponseService, ModelMapper modelMapper, ProductMapper productMapper) {
         super(ProductResponseDTO.class, productResponseService, modelMapper);
-        this.productResponseService = productResponseService1;
+        this.productResponseService = productResponseService;
+        this.productMapper = productMapper;
+    }
+
+    @Override
+    protected ProductResponseDTO convertToDto(Product entity) {
+        ProductResponseDTO dto = super.convertToDto(entity);
+        productMapper.enrichResponse(entity, dto);
+        return dto;
     }
 
     @Override

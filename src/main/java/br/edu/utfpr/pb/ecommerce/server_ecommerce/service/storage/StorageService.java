@@ -9,4 +9,10 @@ public interface StorageService {
     InputStream download(String objectKey);
 
     void remove(String objectKey);
+
+    void upload(String bucket, String objectKey, InputStream stream, long size, String contentType);
+
+    InputStream download(String bucket, String objectKey);
+
+    void remove(String bucket, String objectKey);
 }

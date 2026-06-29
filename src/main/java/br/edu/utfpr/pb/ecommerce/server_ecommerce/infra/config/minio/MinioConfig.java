@@ -22,22 +22,23 @@ public class MinioConfig {
                 .credentials(properties.getAccessKey(), properties.getSecretKey())
                 .build();
 
-        ensureBucketExists(client);
+        ensureBucketExists(client, properties.getBucket());
+        ensureBucketExists(client, properties.getProductBucket());
         return client;
     }
 
-    private void ensureBucketExists(MinioClient client) {
+    private void ensureBucketExists(MinioClient client, String bucket) {
         try {
             boolean exists = client.bucketExists(
-                    BucketExistsArgs.builder().bucket(properties.getBucket()).build());
+                    BucketExistsArgs.builder().bucket(bucket).build());
             if (!exists) {
-                client.makeBucket(MakeBucketArgs.builder().bucket(properties.getBucket()).build());
-                log.info("MinIO bucket '{}' created successfully", properties.getBucket());
+                client.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
+                log.info("MinIO bucket '{}' created successfully", bucket);
             } else {
-                log.info("MinIO bucket '{}' already exists", properties.getBucket());
+                log.info("MinIO bucket '{}' already exists", bucket);
             }
         } catch (Exception e) {
-            log.error("Failed to initialize MinIO bucket '{}': {}", properties.getBucket(), e.getMessage());
+            log.error("Failed to initialize MinIO bucket '{}': {}", bucket, e.getMessage());
         }
     }
 }
