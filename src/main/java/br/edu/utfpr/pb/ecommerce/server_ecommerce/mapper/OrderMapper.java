@@ -2,6 +2,7 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.address.AddressRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderAIDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderCustomerDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.payment.PaymentResponseDTO;
@@ -32,12 +33,26 @@ public class OrderMapper {
                 .id(order.getId())
                 .data(order.getData())
                 .userId(order.getUser().getId())
+                .customer(toCustomerDTO(order))
                 .address(order.getAddress())
                 .orderItems(orderItemMapper.toDTOList(order.getOrderItems()))
                 .payment(map(order.getPayment(), PaymentResponseDTO.class, modelMapper))
                 .shipment(order.getShipment())
                 .status(order.getStatus().getName())
                 .statusMessage(order.getStatusMessage())
+                .build();
+    }
+
+    private OrderCustomerDTO toCustomerDTO(Order order) {
+        var user = order.getUser();
+        if (user == null) {
+            return null;
+        }
+        return OrderCustomerDTO.builder()
+                .id(user.getId())
+                .name(user.getDisplayName())
+                .email(user.getEmail())
+                .cpf(user.getCpf())
                 .build();
     }
 

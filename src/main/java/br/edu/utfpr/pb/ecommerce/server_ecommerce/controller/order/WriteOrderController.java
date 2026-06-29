@@ -3,6 +3,7 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.order;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.order.iOrderController.IWriteOrderController;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderResponseDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderStatusChangeDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderUpdateDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.OrderMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
@@ -32,6 +33,13 @@ public class WriteOrderController implements IWriteOrderController {
     @PatchMapping("{id}")
     public ResponseEntity<OrderResponseDTO> updateOrder(@PathVariable Long id, @RequestBody @Valid OrderUpdateDTO updateDTO) {
         Order order = orderRequestService.update(id, updateDTO);
+        return ResponseEntity.ok(orderMapper.toDTO(order));
+    }
+
+    @Override
+    @PatchMapping("{id}/status")
+    public ResponseEntity<OrderResponseDTO> updateOrderStatus(@PathVariable Long id, @RequestBody @Valid OrderStatusChangeDTO statusDTO) {
+        Order order = orderRequestService.updateStatus(id, statusDTO);
         return ResponseEntity.ok(orderMapper.toDTO(order));
     }
 }

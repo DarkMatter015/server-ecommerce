@@ -2,6 +2,7 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.order;
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderItemDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderRequestDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderStatusChangeDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderUpdateDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.base.ErrorCode;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.exception.util.BusinessException;
@@ -98,6 +99,23 @@ public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Or
             order.setAddress(newAddress);
         }
 
+        return orderRepository.save(order);
+    }
+
+    @Override
+    @Transactional
+    public Order updateStatus(Long id, OrderStatusChangeDTO dto) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(Order.class, id));
+
+        OrderStatus newStatus = orderStatusResponseService.findById(dto.getStatusId());
+        order.setStatus(newStatus);
+
+        if (dto.getStatusMessage() != null && !dto.getStatusMessage().isBlank()) {
+            order.setStatusMessage(dto.getStatusMessage());
+        }
+
+        log.info("Admin updated status of Order ID {} to {}", id, newStatus.getName());
         return orderRepository.save(order);
     }
 

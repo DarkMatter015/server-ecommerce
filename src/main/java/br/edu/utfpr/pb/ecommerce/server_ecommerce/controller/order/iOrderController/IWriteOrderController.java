@@ -2,6 +2,7 @@ package br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.order.iOrderContro
 
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderRequestDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderResponseDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderStatusChangeDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderUpdateDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -34,4 +35,13 @@ public interface IWriteOrderController {
     })
     @PatchMapping
     ResponseEntity<OrderResponseDTO> updateOrder(@Parameter(description = "Order ID") @PathVariable Long id, OrderUpdateDTO updateDTO);
+
+    @Operation(summary = "Update order status", description = "Updates the status of an existing order (admin only)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Order status updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Order not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid data")
+    })
+    @PatchMapping("{id}/status")
+    ResponseEntity<OrderResponseDTO> updateOrderStatus(@Parameter(description = "Order ID") @PathVariable Long id, OrderStatusChangeDTO statusDTO);
 }

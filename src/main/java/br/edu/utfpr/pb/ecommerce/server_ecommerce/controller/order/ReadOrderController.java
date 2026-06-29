@@ -4,9 +4,11 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.CRUD.softDeleteCont
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.controller.order.iOrderController.IReadOrderController;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderAIDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.order.OrderResponseDTO;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.dto.orderStatus.OrderStatusResponseDTO;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.mapper.OrderMapper;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.Order;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.order.IOrder.IOrderResponseService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.orderStatus.iOrderStatus.IOrderStatusResponseService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,17 +16,21 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("orders")
 public class ReadOrderController extends BaseSoftDeleteReadController<Order, OrderResponseDTO> implements IReadOrderController {
 
     private final OrderMapper orderMapper;
     private final IOrderResponseService orderResponseService;
+    private final IOrderStatusResponseService orderStatusResponseService;
 
-    public ReadOrderController(IOrderResponseService orderResponseService, ModelMapper modelMapper, OrderMapper orderMapper) {
+    public ReadOrderController(IOrderResponseService orderResponseService, ModelMapper modelMapper, OrderMapper orderMapper, IOrderStatusResponseService orderStatusResponseService) {
         super(OrderResponseDTO.class, orderResponseService, modelMapper);
         this.orderMapper = orderMapper;
         this.orderResponseService = orderResponseService;
+        this.orderStatusResponseService = orderStatusResponseService;
     }
 
     @Override
@@ -36,5 +42,16 @@ public class ReadOrderController extends BaseSoftDeleteReadController<Order, Ord
     @GetMapping("/ai/{id}")
     public ResponseEntity<OrderAIDTO> getOrderForAI(@PathVariable Long id) {
         return ResponseEntity.ok(this.orderResponseService.getOrderForAI(id));
+    }
+
+    @GetMapping("statuses")
+    public ResponseEntity<List<OrderStatusResponseDTO>> getOrderStatuses() {
+        List<OrderStatusResponseDTO> statuses = this.orderStatusResponseService.findAll().stream()
+                .map(status -> OrderStatusResponseDTO.builder()
+                        .id(status.getId())
+                        .name(status.getName())
+                        .build())
+                .toList();
+        return ResponseEntity.ok(statuses);
     }
 }

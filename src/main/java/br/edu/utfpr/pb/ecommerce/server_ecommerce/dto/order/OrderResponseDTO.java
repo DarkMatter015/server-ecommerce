@@ -24,6 +24,8 @@ public class OrderResponseDTO {
 
     private Long userId;
 
+    private OrderCustomerDTO customer;
+
     private List<OrderItemResponseDTO> orderItems;
 
     private EmbeddedAddress address;

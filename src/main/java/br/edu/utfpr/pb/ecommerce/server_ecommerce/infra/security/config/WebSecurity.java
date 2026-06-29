@@ -122,6 +122,11 @@ public class WebSecurity {
                                     "/payments/**")
                             .hasAnyAuthority("ADMIN");
 
+                    // Apenas ADMIN pode alterar o status de um pedido
+                    authorize
+                            .requestMatchers(HttpMethod.PATCH, "/orders/*/status")
+                            .hasAnyAuthority("ADMIN");
+
                     // ROTAS AUTENTICADAS (USER ou ADMIN)
                     // Qualquer usuário autenticado pode acessar as demais rotas
                     // A lógica de negócio nos services já garante que um usuário só acesse seus próprios dados (pedidos, endereços, etc.)
