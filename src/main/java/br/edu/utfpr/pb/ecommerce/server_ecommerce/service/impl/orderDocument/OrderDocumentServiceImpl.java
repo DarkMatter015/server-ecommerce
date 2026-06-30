@@ -11,11 +11,14 @@ import br.edu.utfpr.pb.ecommerce.server_ecommerce.model.enums.DocumentType;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderDocumentRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.repository.OrderRepository;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.AuthService;
+import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.impl.email.EmailService;
 import br.edu.utfpr.pb.ecommerce.server_ecommerce.service.storage.StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,6 +41,7 @@ public class OrderDocumentServiceImpl implements IOrderDocumentService {
     private final OrderRepository orderRepository;
     private final StorageService storageService;
     private final AuthService authService;
+    private final EmailService emailService;
 
     @Override
     @Transactional
@@ -71,6 +75,21 @@ public class OrderDocumentServiceImpl implements IOrderDocumentService {
         OrderDocument saved = orderDocumentRepository.save(document);
         log.info("Document ID {} ({}) attached to Order ID {} by user ID {}",
                 saved.getId(), documentType, orderId, uploader.getId());
+
+        User customer = order.getUser();
+        String documentName = saved.getOriginalName();
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                try {
+                    emailService.sendOrderDocumentEmail(customer, orderId, documentName, documentType);
+                    log.info("Order Document Email sent for Order ID: {}", orderId);
+                } catch (Exception e) {
+                    log.error("Error sending Order Document Email for Order ID: {}", orderId, e);
+                }
+            }
+        });
+
         return toDTO(saved);
     }
 

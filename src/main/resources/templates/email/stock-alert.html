@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{email/layout :: head}"></head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+       style="background-color: #f4f4f4; padding: 20px;">
+    <tr>
+        <td align="center">
+            <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0"
+                   style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+
+                <th:block th:replace="~{email/layout :: header('#1a1a1a', 'ESTOQUE RENOVADO')}"></th:block>
+
+                <tr>
+                    <td style="padding: 30px 30px 10px 30px; text-align: center;">
+                        <h2 style="color: #333; margin-top: 0;">A espera acabou, <span th:text="${userName}">cliente</span>!</h2>
+                        <p style="color: #666; font-size: 16px; line-height: 1.5;">
+                            Você pediu e nós avisamos. O produto que você estava de olho voltou ao nosso estoque.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td align="center" style="padding: 10px 30px;">
+                        <div style="border: 1px solid #eee; border-radius: 8px; padding: 20px; max-width: 300px;">
+                            <img th:src="${productImageUrl}" th:alt="${productName}" width="200" height="auto"
+                                 style="display: block; margin: 0 auto; border-radius: 4px;">
+                            <h3 style="color: #333; font-size: 18px; margin: 15px 0 5px 0;" th:text="${productName}">Produto</h3>
+                            <p style="margin: 10px 0 0 0; font-size: 14px; color: #666;">
+                                <span th:text="${scarcityText}">Quantidade disponível:</span>
+                                <strong th:style="'color: ' + ${stockColor} + '; font-size: 16px;'">
+                                    <span th:text="${stockQuantity}">0</span> unidades</strong>
+                            </p>
+                        </div>
+                    </td>
+                </tr>
+
+                <th:block th:replace="~{email/layout :: button(${link}, 'GARANTIR O MEU AGORA')}"></th:block>
+
+                <tr>
+                    <td style="padding: 0 30px 20px 30px; text-align: center;">
+                        <p style="color: #999; font-size: 12px; margin: 0;">
+                            Não perca tempo, os produtos podem acabar rapidamente.
+                        </p>
+                    </td>
+                </tr>
+
+                <th:block th:replace="~{email/layout :: footer}"></th:block>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

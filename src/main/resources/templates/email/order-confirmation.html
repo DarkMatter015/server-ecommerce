@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{email/layout :: head}"></head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+       style="background-color: #f4f4f4; padding: 20px;">
+    <tr>
+        <td align="center">
+            <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0"
+                   style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+
+                <th:block th:replace="~{email/layout :: header('#1a1a1a', 'PEDIDO RECEBIDO')}"></th:block>
+
+                <tr>
+                    <td style="padding: 30px 30px 10px 30px;">
+                        <h2 style="color: #333; margin-top: 0;">Olá, <span th:text="${userName}">cliente</span>!</h2>
+                        <p style="color: #666; font-size: 16px; line-height: 1.5;">Seu pedido foi recebido com sucesso e
+                            já está sendo processado.</p>
+                        <table width="100%" style="background-color: #f9f9f9; border-radius: 5px; margin-top: 15px;">
+                            <tr>
+                                <td style="padding: 15px;">
+                                    <p style="margin: 0; color: #888; font-size: 12px;">NÚMERO DO PEDIDO</p>
+                                    <p style="margin: 5px 0 0 0; color: #333; font-weight: bold;">#<span
+                                            th:text="${orderId}">0</span></p>
+                                </td>
+                                <td style="padding: 15px;">
+                                    <p style="margin: 0; color: #888; font-size: 12px;">DATA DO PEDIDO</p>
+                                    <p style="margin: 5px 0 0 0; color: #333; font-weight: bold;" th:text="${date}">data</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <th:block th:replace="~{email/layout :: orderBody}"></th:block>
+                <th:block th:replace="~{email/layout :: button(${link}, 'Acompanhar Pedido')}"></th:block>
+                <th:block th:replace="~{email/layout :: footer}"></th:block>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

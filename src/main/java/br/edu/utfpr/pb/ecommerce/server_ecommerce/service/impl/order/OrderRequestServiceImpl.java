@@ -127,7 +127,22 @@ public class OrderRequestServiceImpl extends BaseSoftDeleteRequestServiceImpl<Or
         }
 
         log.info("Admin updated status of Order ID {} to {}", id, newStatus.getName());
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+
+        User customer = saved.getUser();
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                try {
+                    emailService.sendOrderStatusChangeEmail(customer, orderMapper.toDTO(saved));
+                    log.info("Order Status Change Email sent for Order ID: {}", saved.getId());
+                } catch (Exception e) {
+                    log.error("Error sending Order Status Change Email for Order ID: {}", saved.getId(), e);
+                }
+            }
+        });
+
+        return saved;
     }
 
     @Override
